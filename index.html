@@ -224,21 +224,27 @@ async function fetchQ(t) {
     return `https://thingproxy.freeboard.io/fetch/${url}`;
   };
   let d = null;
-  outer: for (let ei = 0; ei < endpoints.length && !d; ei++) {
-    for (let pi = 0; pi < 4 && !d; pi++) {
+  const race = async (url) => {
+    const tries = [0,1,2,3].map(async pi => {
       try {
-        const r = await fetch(wrapProxy(endpoints[ei], pi), {signal: AbortSignal.timeout(6000)});
-        if (!r.ok) continue;
-        const txt = await r.text();
-        let parsed;
-        try {
-          const j = JSON.parse(txt);
-          parsed = j.contents ? JSON.parse(j.contents) : j;
-        } catch { continue; }
-        if (parsed?.chart?.result?.[0]) { d = parsed; break outer; }
-      } catch { continue; }
-    }
-  }
+        const r=await fetch(wrapProxy(url,pi),{signal:AbortSignal.timeout(6000)});
+        if(!r.ok) return null;
+        const txt=await r.text();
+        try{const j=JSON.parse(txt);const p=j.contents?JSON.parse(j.contents):j;return p?.chart?.result?.[0]?p:null;}
+        catch{return null;}
+      } catch{return null;}
+    });
+    // Return first non-null result
+    return new Promise(resolve=>{
+      let done=0;
+      tries.forEach(p=>p.then(res=>{
+        if(res&&!d){resolve(res);}
+        else if(++done===tries.length){resolve(null);}
+      }));
+    });
+  };
+  d = await race(endpoints[0]);
+  if(!d) d = await race(endpoints[1]);
   if (!d) throw new Error('Failed: ' + t);
   const res=d.chart.result[0], meta=res.meta, q=res.indicators.quote[0], ts=res.timestamp, cl=q.close;
   const hi=q.high.filter(Boolean), lo=q.low.filter(Boolean);
@@ -263,15 +269,19 @@ async function loadAll(){
   document.getElementById('sdot').className='sdot live';
   document.getElementById('sTxt').textContent='Lade Kursdaten…';
   await fetchFX();
-  const all=[...P,...W];let n=0;
-  // Sequential loading with small delay to avoid proxy rate limits
-  for (const item of all) {
-    try { live[item.t] = await fetchQ(item.t); }
-    catch { live[item.t] = {error:true}; }
-    n++;
-    document.getElementById('sTxt').textContent=`Lade… ${n}/${all.length} Titel`;
-    renderTable(); // update display as each loads
-    if (n < all.length) await new Promise(r => setTimeout(r, 200));
+    const all=[...P,...W]; let n=0;
+  // Parallel batches for speed
+  const BATCH=5;
+  for (let i=0;i<all.length;i+=BATCH) {
+    const batch=all.slice(i,i+BATCH);
+    await Promise.all(batch.map(async item=>{
+      try{live[item.t]=await fetchQ(item.t);}
+      catch{live[item.t]={error:true};}
+      n++;
+      document.getElementById('sTxt').textContent=`Lade… ${n}/${all.length}`;
+    }));
+    renderTable();renderKPIs();
+    if(i+BATCH<all.length) await new Promise(r=>setTimeout(r,300));
   }
   btn.classList.remove('loading');btn.textContent='↻ Aktualisieren';
   const ts=new Date().toLocaleTimeString('de-DE');
@@ -370,6 +380,8 @@ function renderTable(){
 document.getElementById('kN').textContent=P.length;
 document.getElementById('kNs').textContent='20 Positionen · 2026 JK';
 renderTable();
+// Auto-start
+window.addEventListener('load', loadAll);
 
 function fitLogo() {
   const logo = document.getElementById('logoImg');
