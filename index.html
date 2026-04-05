@@ -197,25 +197,35 @@ const D=`<span class="dim">—</span>`;
 const fc=q=>{if(!q.mktCap)return D;const v=q.currency==='USD'&&fx?q.mktCap/fx:q.mktCap;return(v>=1e12?f(v/1e12,2)+' Bio.':v>=1e9?f(v/1e9,1)+' Mrd.':f(v/1e6,1)+' Mio.')+' €';};
 
 async function fetchQ(t) {
-  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${t}?interval=1d&range=1y`;
-  const proxies = [
-    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
-    u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
-    u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  // Try multiple Yahoo endpoints and proxies
+  const endpoints = [
+    `https://query1.finance.yahoo.com/v8/finance/chart/${t}?interval=1d&range=1y`,
+    `https://query2.finance.yahoo.com/v8/finance/chart/${t}?interval=1d&range=1y`,
+    `https://query1.finance.yahoo.com/v8/finance/chart/${t}?interval=1wk&range=1y`,
   ];
+  const wrapProxy = (url, i) => {
+    if (i === 0) return `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    if (i === 1) return `https://corsproxy.io/?${encodeURIComponent(url)}`;
+    if (i === 2) return `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+    return `https://thingproxy.freeboard.io/fetch/${url}`;
+  };
   let d = null;
-  for (const makeProxy of proxies) {
-    try {
-      const r = await fetch(makeProxy(url), {signal: AbortSignal.timeout(10000)});
-      const txt = await r.text();
-      // allorigins wraps in {contents:...}, others return raw
-      let parsed;
-      try { const j = JSON.parse(txt); parsed = j.contents ? JSON.parse(j.contents) : j; }
-      catch { parsed = JSON.parse(txt); }
-      if (parsed?.chart?.result?.[0]) { d = parsed; break; }
-    } catch(e) { continue; }
+  outer: for (let ei = 0; ei < endpoints.length && !d; ei++) {
+    for (let pi = 0; pi < 4 && !d; pi++) {
+      try {
+        const r = await fetch(wrapProxy(endpoints[ei], pi), {signal: AbortSignal.timeout(9000)});
+        if (!r.ok) continue;
+        const txt = await r.text();
+        let parsed;
+        try {
+          const j = JSON.parse(txt);
+          parsed = j.contents ? JSON.parse(j.contents) : j;
+        } catch { continue; }
+        if (parsed?.chart?.result?.[0]) { d = parsed; break outer; }
+      } catch { continue; }
+    }
   }
-  if (!d) throw new Error('All proxies failed for ' + t);
+  if (!d) throw new Error('Failed: ' + t);
   const res=d.chart.result[0], meta=res.meta, q=res.indicators.quote[0], ts=res.timestamp, cl=q.close;
   const hi=q.high.filter(Boolean), lo=q.low.filter(Boolean);
   return{price:meta.regularMarketPrice,currency:meta.currency,w52High:Math.max(...hi),w52Low:Math.min(...lo),ref:null,pe:meta.trailingPE||null,divYield:meta.dividendYield||meta.trailingAnnualDividendYield||null,mktCap:meta.marketCap||null};
@@ -247,7 +257,7 @@ async function loadAll(){
     n++;
     document.getElementById('sTxt').textContent=`Lade… ${n}/${all.length} Titel`;
     renderTable(); // update display as each loads
-    if (n < all.length) await new Promise(r => setTimeout(r, 300));
+    if (n < all.length) await new Promise(r => setTimeout(r, 500));
   }
   btn.classList.remove('loading');btn.textContent='↻ Aktualisieren';
   const ts=new Date().toLocaleTimeString('de-DE');
