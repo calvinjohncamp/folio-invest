@@ -198,24 +198,40 @@ const fc=q=>{if(!q.mktCap)return D;const v=q.currency==='USD'&&fx?q.mktCap/fx:q.
 
 async function fetchQ(t) {
   const url=`https://query1.finance.yahoo.com/v8/finance/chart/${t}?interval=1d&range=1y`;
-  let j, r;
-  // Try primary proxy
-  try {
-    r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, {signal:AbortSignal.timeout(12000)});
-    j = await r.json();
-  } catch(e) {
-    // Try backup proxy
-    r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, {signal:AbortSignal.timeout(12000)});
-    const txt = await r.text();
-    j = { contents: txt };
+  const proxies = [
+    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+    u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  ];
+  let d = null;
+  for (const makeProxy of proxies) {
+    try {
+      const r = await fetch(makeProxy(url), {signal: AbortSignal.timeout(10000)});
+      const txt = await r.text();
+      // allorigins wraps in {contents:...}, others return raw
+      let parsed;
+      try { const j = JSON.parse(txt); parsed = j.contents ? JSON.parse(j.contents) : j; }
+      catch { parsed = JSON.parse(txt); }
+      if (parsed?.chart?.result?.[0]) { d = parsed; break; }
+    } catch(e) { continue; }
   }
-  const d=JSON.parse(j.contents);
+  if (!d) throw new Error('All proxies failed for ' + t);
   const res=d.chart.result[0], meta=res.meta, q=res.indicators.quote[0], ts=res.timestamp, cl=q.close;
   const hi=q.high.filter(Boolean), lo=q.low.filter(Boolean);
   return{price:meta.regularMarketPrice,currency:meta.currency,w52High:Math.max(...hi),w52Low:Math.min(...lo),ref:null,pe:meta.trailingPE||null,divYield:meta.dividendYield||meta.trailingAnnualDividendYield||null,mktCap:meta.marketCap||null};
 }
 
-async function fetchFX(){try{const d=await fetchQ('EURUSD=X');fx=d.price;document.getElementById('hdFx').textContent=(1/fx).toFixed(4);}catch{fx=1.09;document.getElementById('hdFx').textContent='≈0.917';}}
+async function fetchFX(){
+  try {
+    const d = await fetchQ('USDEUR=X');
+    const usdeur = d.price; // direct USD→EUR rate e.g. 0.872
+    fx = 1 / usdeur;        // store as EUR/USD for conversions
+    document.getElementById('hdFx').textContent = usdeur.toFixed(4);
+  } catch {
+    fx = 1 / 0.872;
+    document.getElementById('hdFx').textContent = '≈0.872';
+  }
+}
 
 async function loadAll(){
   const btn=document.getElementById('btnRef');
@@ -224,10 +240,15 @@ async function loadAll(){
   document.getElementById('sTxt').textContent='Lade Kursdaten…';
   await fetchFX();
   const all=[...P,...W];let n=0;
-  await Promise.all(all.map(async item=>{
-    try{live[item.t]=await fetchQ(item.t);}catch{live[item.t]={error:true};}
-    n++;document.getElementById('sTxt').textContent=`Lade… ${n}/${all.length} Titel`;
-  }));
+  // Sequential loading with small delay to avoid proxy rate limits
+  for (const item of all) {
+    try { live[item.t] = await fetchQ(item.t); }
+    catch { live[item.t] = {error:true}; }
+    n++;
+    document.getElementById('sTxt').textContent=`Lade… ${n}/${all.length} Titel`;
+    renderTable(); // update display as each loads
+    if (n < all.length) await new Promise(r => setTimeout(r, 300));
+  }
   btn.classList.remove('loading');btn.textContent='↻ Aktualisieren';
   const ts=new Date().toLocaleTimeString('de-DE');
   document.getElementById('sTxt').textContent=`${n} Titel geladen`;
