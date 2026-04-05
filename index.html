@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="folio·invest">
+<meta name="theme-color" content="#1a1814">
+<title>folio·invest</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: #f0ede8; color: #111; font-family: 'DM Sans', -apple-system, sans-serif; font-size: 13px; line-height: 1.45; min-height: 100vh; }
+
+.hd { background: #1a1814; padding: 0 24px; display: flex; align-items: center; height: 56px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #2a2520; }
+.logo { font-family: 'DM Serif Display', serif; font-size: 22px; color: #faf9f6; letter-spacing: -0.01em; line-height: 1; display: flex; align-items: baseline; }
+.logo-dot { color: #c8441a; }
+.logo-sub { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 400; color: #555; letter-spacing: 0.14em; text-transform: uppercase; margin-left: 10px; padding-left: 10px; border-left: 1px solid #333; }
+.hd-spacer { flex: 1; }
+.hd-fx-wrap { text-align: right; }
+.hd-fx-lbl { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: #444; }
+.hd-fx { font-size: 13px; font-weight: 600; color: #888; }
+
+.tabbar { background: #1a1814; border-bottom: 1px solid #2a2520; display: flex; align-items: center; padding: 0 24px; }
+.tab { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #555; padding: 12px 16px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.15s; white-space: nowrap; }
+.tab.active { color: #faf9f6; border-bottom-color: #c8441a; }
+.tab:hover:not(.active) { color: #999; }
+.tabbar-spacer { flex: 1; }
+.btn-ref { font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 6px 14px; border: 1px solid #333; background: none; color: #666; cursor: pointer; border-radius: 3px; transition: all 0.15s; }
+.btn-ref:hover, .btn-ref.loading { border-color: #c8441a; color: #c8441a; }
+
+.sbar { background: #141210; border-bottom: 1px solid #222; padding: 5px 24px; display: flex; align-items: center; gap: 8px; font-size: 10px; color: #555; }
+.sdot { width:6px; height:6px; border-radius:50%; background:#333; flex-shrink:0; }
+.sdot.live { background:#c8441a; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.sbar-r { margin-left:auto; color:#444; }
+
+.content { max-width: 1400px; margin: 0 auto; padding: 0 24px 40px; }
+
+.vbar { display: flex; align-items: center; gap: 6px; padding: 14px 0 12px; border-bottom: 1px solid #d8d4ce; margin-bottom: 20px; }
+.v-lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #bbb; margin-right: 4px; }
+.btn-v { font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.07em; padding: 5px 13px; border: 1px solid #ccc; background: #fff; color: #888; cursor: pointer; border-radius: 3px; transition: all 0.12s; white-space: nowrap; }
+.btn-v.active { background: #1a1814; color: #faf9f6; border-color: #1a1814; }
+.btn-v:hover:not(.active) { border-color: #c8441a; color: #c8441a; }
+
+.sec-t { font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #bbb; padding-bottom: 10px; border-bottom: 1px solid #d8d4ce; margin-bottom: 16px; }
+.sec-n { color: #1a1814; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: #d8d4ce; border: 1px solid #d8d4ce; margin-bottom: 28px; }
+.kpi { background: #fff; padding: 14px 16px; }
+.kpi-l { font-size: 9px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: #bbb; margin-bottom: 4px; }
+.kpi-v { font-size: 21px; font-weight: 700; color: #111; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi-v.pos { color: #1a6e3a; }
+.kpi-v.neg { color: #c8441a; }
+.kpi-s { font-size: 10px; color: #bbb; margin-top: 3px; }
+
+.tw { overflow-x: auto; -webkit-overflow-scrolling: touch; background: #fff; border: 1px solid #d8d4ce; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+thead th { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #bbb; padding: 9px 10px; text-align: right; border-bottom: 1px solid #e8e4de; white-space: nowrap; background: #faf9f6; }
+thead th:first-child, thead th:nth-child(2) { text-align: left; }
+tbody tr { border-bottom: 1px solid #f2efe9; transition: background 0.1s; }
+tbody tr:hover { background: #fdf9f5; }
+tbody tr:last-child { border-bottom: none; }
+td { padding: 10px 10px; text-align: right; white-space: nowrap; color: #444; vertical-align: middle; }
+td:first-child { text-align: left; font-weight: 600; color: #111; }
+td:nth-child(2) { text-align: left; color: #aaa; font-size: 10px; }
+.gr td { background: #f5f2ed; color: #aaa; font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; padding: 6px 10px; border-top: 1px solid #e8e4de; border-bottom: none; }
+
+.badge { display: inline-block; font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 2px; margin-left: 5px; vertical-align: middle; }
+.b-stock { background: #f0ede8; color: #1a1814; border: 1px solid #d8d4ce; }
+.b-etf   { background: #e8f0e8; color: #1a5e2a; border: 1px solid #c0dcc0; }
+.b-etc   { background: #fdf0e8; color: #8a4010; border: 1px solid #e8cdb0; }
+
+.pos { color: #1a6e3a; } .neg { color: #c8441a; } .dim { color: #ccc; } .bold { font-weight: 700; }
+.curr { font-size: 9px; color: #ccc; margin-left: 2px; }
+
+.bw { display:flex; align-items:center; gap:5px; justify-content:flex-end; }
+.bt { width:54px; height:3px; background:#eee; border-radius:2px; overflow:hidden; flex-shrink:0; }
+.bf { height:100%; border-radius:2px; }
+.bp { font-size:10px; color:#999; min-width:28px; text-align:right; }
+
+.sk { display:inline-block; width:52px; height:11px; background: linear-gradient(90deg,#f0ede8 25%,#e8e4de 50%,#f0ede8 75%); background-size:200% 100%; animation:sh 1.4s infinite; border-radius:2px; vertical-align:middle; }
+@keyframes sh { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid #d8d4ce; font-size: 10px; color: #bbb; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+
+@media (max-width: 640px) {
+  .content, .hd, .tabbar, .sbar { padding-left: 14px; padding-right: 14px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .logo-sub, .hd-fx-wrap { display: none; }
+  table { font-size: 11px; }
+  td, thead th { padding: 7px 5px; }
+  .bt { width: 36px; }
+}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="logo">Folio<span class="logo-dot">.</span><span class="logo-sub">invest</span></div>
+  <div class="hd-spacer"></div>
+  <div class="hd-fx-wrap">
+    <div class="hd-fx-lbl">EUR / USD</div>
+    <div class="hd-fx" id="hdFx">—</div>
+  </div>
+</div>
+
+<div class="tabbar">
+  <button class="tab active" onclick="switchTab('portfolio')">▣ Portfolio</button>
+  <button class="tab" onclick="switchTab('watchlist')">◎ Watchlist</button>
+  <div class="tabbar-spacer"></div>
+  <button class="btn-ref" id="btnRef" onclick="loadAll()">↻ Aktualisieren</button>
+</div>
+
+<div class="sbar">
+  <div class="sdot" id="sdot"></div>
+  <span id="sTxt">Bitte „Aktualisieren" klicken · Ref.: Schlusskurs 31.12.2025 (automatisch)</span>
+  <span class="sbar-r" id="sTime"></span>
+</div>
+
+<div class="content">
+  <div class="vbar">
+    <span class="v-lbl">Ansicht</span>
+    <button class="btn-v active" onclick="setV('kurs')" id="vKurs">📊 Kurs</button>
+    <button class="btn-v" onclick="setV('kenn')" id="vKenn">📈 Kennzahlen</button>
+    <button class="btn-v" onclick="setV('anal')" id="vAnal">🔍 Analyse</button>
+  </div>
+
+  <div class="sec-t"><span class="sec-n">1 ·</span> Übersicht — <span id="secName">Portfolio 2026 JK</span></div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-l">Positionen</div><div class="kpi-v" id="kN">—</div><div class="kpi-s" id="kNs">—</div></div>
+    <div class="kpi"><div class="kpi-l">Ø YTD seit 31.12.25</div><div class="kpi-v" id="kY">—</div><div class="kpi-s">Portfolioschnitt</div></div>
+    <div class="kpi"><div class="kpi-l">Gewinner</div><div class="kpi-v pos" id="kW">—</div><div class="kpi-s" id="kWs">—</div></div>
+    <div class="kpi"><div class="kpi-l">Verlierer</div><div class="kpi-v neg" id="kL">—</div><div class="kpi-s" id="kLs">—</div></div>
+    <div class="kpi"><div class="kpi-l">Bester Titel</div><div class="kpi-v pos" id="kB">—</div><div class="kpi-s" id="kBn">—</div></div>
+    <div class="kpi"><div class="kpi-l">Schwächster</div><div class="kpi-v neg" id="kWo">—</div><div class="kpi-s" id="kWon">—</div></div>
+    <div class="kpi"><div class="kpi-l">Ø Abstand 52W-H</div><div class="kpi-v neg" id="kD">—</div><div class="kpi-s">Aufholpotenzial</div></div>
+    <div class="kpi"><div class="kpi-l">Nahe 52W-Hoch</div><div class="kpi-v" id="kNh">—</div><div class="kpi-s">&lt; 5 % vom Hoch</div></div>
+  </div>
+
+  <div class="sec-t" style="margin-top:4px"><span class="sec-n">2 ·</span> <span id="tblT">Positionen — Portfolio</span></div>
+  <div class="tw">
+    <table><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table>
+  </div>
+
+  <div style="font-size:10px;color:#bbb;margin-top:8px">
+    * US-Aktien in USD · YTD-Vergleich in Originalwährung · ETFs Xetra in EUR · Referenzkurs automatisch (31.12.2025)
+  </div>
+
+  <footer>
+    <span>folio<span style="color:#c8441a">.</span>invest · Yahoo Finance (~15 Min. verzögert) · Keine Anlageberatung</span>
+    <span id="footT"></span>
+  </footer>
+</div>
+
+<script>
+const P=[
+  {name:"Alphabet A",          wkn:"A14Y6F", t:"GOOGL",   type:"stock",cur:"USD"},
+  {name:"Apple",               wkn:"865985",  t:"AAPL",    type:"stock",cur:"USD"},
+  {name:"NVIDIA",              wkn:"918422",  t:"NVDA",    type:"stock",cur:"USD"},
+  {name:"Amazon",              wkn:"906866",  t:"AMZN",    type:"stock",cur:"USD"},
+  {name:"Microsoft",           wkn:"870747",  t:"MSFT",    type:"stock",cur:"USD"},
+  {name:"Berkshire Hath. B",   wkn:"A0YJQ2", t:"BRK-B",   type:"stock",cur:"USD"},
+  {name:"Broadcom",            wkn:"A2JG9Z", t:"AVGO",    type:"stock",cur:"USD"},
+  {name:"Exxon Mobil",         wkn:"852549",  t:"XOM",     type:"stock",cur:"USD"},
+  {name:"Johnson & Johnson",   wkn:"853260",  t:"JNJ",     type:"stock",cur:"USD"},
+  {name:"Coca-Cola",           wkn:"850663",  t:"KO",      type:"stock",cur:"USD"},
+  {name:"Pfizer",              wkn:"852009",  t:"PFE",     type:"stock",cur:"USD"},
+  {name:"McDonald's",          wkn:"856958",  t:"MCD",     type:"stock",cur:"USD"},
+  {name:"Procter & Gamble",    wkn:"852062",  t:"PG",      type:"stock",cur:"USD"},
+  {name:"iSh. Core EURO STOXX 50",  wkn:"A0YEDJ",t:"EXW1.DE",type:"etf",cur:"EUR"},
+  {name:"iSh. Core S&P 500",        wkn:"A0YEDG",t:"SXR8.DE",type:"etf",cur:"EUR"},
+  {name:"iSh. STOXX Gl. Sel. Div.", wkn:"A0F5UH",t:"ISPA.DE",type:"etf",cur:"EUR"},
+  {name:"iSh. STOXX Europe 600",    wkn:"263530", t:"EXSA.DE",type:"etf",cur:"EUR"},
+  {name:"Vanguard FTSE All-World",  wkn:"A1T8FV", t:"VWCE.DE",type:"etf",cur:"EUR"},
+  {name:"VanEck Mstar Dev. Mkts.",  wkn:"A2JAHJ", t:"MOTI.L", type:"etf",cur:"EUR"},
+  {name:"Xetra-Gold (100g ETC)",    wkn:"EWG2LD", t:"4GLD.DE",type:"etc",cur:"EUR"},
+];
+const W=[
+  {name:"Tesla",          wkn:"A1CX3T",t:"TSLA",  type:"stock",cur:"USD"},
+  {name:"Meta Platforms", wkn:"A1JWVX",t:"META",  type:"stock",cur:"USD"},
+  {name:"Novo Nordisk",   wkn:"A3EU6F",t:"NVO",   type:"stock",cur:"USD"},
+  {name:"LVMH",           wkn:"853292",t:"MC.PA", type:"stock",cur:"EUR"},
+  {name:"SAP SE",         wkn:"716460",t:"SAP.DE",type:"stock",cur:"EUR"},
+];
+
+let tab='portfolio', view='kurs', live={}, fx=null;
+
+const f=(n,d=2)=>n!=null?n.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+const fp=n=>n!=null?(n>=0?'▲ +':'▼ ')+f(Math.abs(n))+'%':'—';
+const cl=n=>n==null?'':n>=0?'pos':'neg';
+const D=`<span class="dim">—</span>`;
+const fc=q=>{if(!q.mktCap)return D;const v=q.currency==='USD'&&fx?q.mktCap/fx:q.mktCap;return(v>=1e12?f(v/1e12,2)+' Bio.':v>=1e9?f(v/1e9,1)+' Mrd.':f(v/1e6,1)+' Mio.')+' €';};
+
+async function fetchQ(t) {
+  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${t}?interval=1d&range=1y`;
+  const r=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,{signal:AbortSignal.timeout(14000)});
+  const j=await r.json(); const d=JSON.parse(j.contents);
+  const res=d.chart.result[0], meta=res.meta, q=res.indicators.quote[0], ts=res.timestamp, cl=q.close;
+  const hi=q.high.filter(Boolean), lo=q.low.filter(Boolean);
+  let ref=null, minD=Infinity;
+  for(let i=0;i<ts.length;i++){const diff=Math.abs(ts[i]-1735603200);if(diff<minD&&cl[i]){minD=diff;ref=cl[i];}}
+  return{price:meta.regularMarketPrice,currency:meta.currency,w52High:Math.max(...hi),w52Low:Math.min(...lo),ref,pe:meta.trailingPE||null,divYield:meta.dividendYield||meta.trailingAnnualDividendYield||null,mktCap:meta.marketCap||null};
+}
+
+async function fetchFX(){try{const d=await fetchQ('EURUSD=X');fx=d.price;document.getElementById('hdFx').textContent=fx.toFixed(4);}catch{fx=1.09;document.getElementById('hdFx').textContent='≈1.09';}}
+
+async function loadAll(){
+  const btn=document.getElementById('btnRef');
+  btn.classList.add('loading');btn.textContent='↻ Lade…';
+  document.getElementById('sdot').className='sdot live';
+  document.getElementById('sTxt').textContent='Lade Kursdaten…';
+  await fetchFX();
+  const all=[...P,...W];let n=0;
+  await Promise.all(all.map(async item=>{
+    try{live[item.t]=await fetchQ(item.t);}catch{live[item.t]={error:true};}
+    n++;document.getElementById('sTxt').textContent=`Lade… ${n}/${all.length} Titel`;
+  }));
+  btn.classList.remove('loading');btn.textContent='↻ Aktualisieren';
+  const ts=new Date().toLocaleTimeString('de-DE');
+  document.getElementById('sTxt').textContent=`${n} Titel geladen`;
+  document.getElementById('sTime').textContent=`Stand: ${ts}`;
+  document.getElementById('footT').textContent=`Datenstand: ${ts}`;
+  renderAll();
+}
+
+function switchTab(t){
+  tab=t;
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='portfolio')||(i===1&&t==='watchlist')));
+  document.getElementById('secName').textContent=t==='portfolio'?'Portfolio 2026 JK':'Watchlist';
+  document.getElementById('tblT').textContent=t==='portfolio'?'Positionen — Portfolio':'Positionen — Watchlist';
+  renderAll();
+}
+
+function setV(v){
+  view=v;
+  ['kurs','kenn','anal'].forEach(x=>document.getElementById('v'+x[0].toUpperCase()+x.slice(1)).classList.toggle('active',x===v));
+  renderTable();
+}
+
+function renderAll(){renderKPIs();renderTable();}
+
+function renderKPIs(){
+  const items=tab==='portfolio'?P:W;
+  document.getElementById('kN').textContent=items.length;
+  document.getElementById('kNs').textContent=tab==='portfolio'?'20 Positionen · 2026 JK':'Beobachtungsliste';
+  const ld=items.filter(i=>live[i.t]&&!live[i.t].error&&live[i.t].ref);
+  if(!ld.length)return;
+  let ytds=[],win=0,lose=0,dists=[],nh=0,best={y:-999,n:''},worst={y:999,n:''};
+  for(const item of ld){
+    const q=live[item.t];const ytd=(q.price-q.ref)/q.ref*100;const d52=(q.price-q.w52High)/q.w52High*100;
+    ytds.push(ytd);dists.push(d52);ytd>=0?win++:lose++;if(d52>=-5)nh++;
+    if(ytd>best.y){best={y:ytd,n:item.name};}if(ytd<worst.y){worst={y:ytd,n:item.name};}
+  }
+  const avg=a=>a.reduce((x,y)=>x+y)/a.length;
+  const ay=avg(ytds),ad=avg(dists);
+  const sv=(id,v,c='')=>{const e=document.getElementById(id);e.textContent=v;if(c)e.className='kpi-v '+c;};
+  sv('kY',fp(ay),cl(ay));sv('kW',win,'pos');sv('kL',lose,'neg');
+  document.getElementById('kWs').textContent=f(win/items.length*100,0)+' % des Depots';
+  document.getElementById('kLs').textContent=f(lose/items.length*100,0)+' % des Depots';
+  sv('kB',fp(best.y),'pos');document.getElementById('kBn').textContent=best.n;
+  sv('kWo',fp(worst.y),'neg');document.getElementById('kWon').textContent=worst.n;
+  sv('kD',fp(ad),'neg');sv('kNh',nh,nh>0?'pos':'');
+}
+
+const COLS={
+  kurs:['name','ticker','ref','price','ytd','pos52'],
+  kenn:['name','ticker','price','ytd','w52h','w52l','dist52','pe','div','mcap'],
+  anal:['name','ticker','ref','price','ytd','w52h','w52l','dist52','pos52','pe','div','mcap'],
+};
+const HDRS={name:'Titel',ticker:'Ticker / WKN',ref:'Ref. 31.12.25',price:'Kurs aktuell',ytd:'YTD %',pos52:'Position 52W',w52h:'52W-Hoch',w52l:'52W-Tief',dist52:'Abst. 52W-H',pe:'KGV',div:'Div.-Rend.',mcap:'Marktk.'};
+
+function renderTable(){
+  const items=tab==='portfolio'?P:W;
+  const cols=COLS[view];
+  const types=tab==='portfolio'?['stock','etf','etc']:['stock','etf'];
+  const gl={stock:'Aktien',etf:'ETFs · Index-Fonds',etc:'ETCs · Rohstoffe'};
+  document.getElementById('thead').innerHTML=cols.map(c=>`<th>${HDRS[c]}</th>`).join('');
+  let html='';
+  for(const type of types){
+    const grp=items.filter(i=>i.type===type);if(!grp.length)continue;
+    html+=`<tr class="gr"><td colspan="${cols.length}">${gl[type]}</td></tr>`;
+    for(const item of grp){
+      const q=live[item.t];
+      const bl=item.type==='etc'?'ETC':item.type==='etf'?'ETF':'AKTIE';
+      const nc=`<td>${item.name}<span class="badge b-${item.type}">${bl}</span></td>`;
+      const tc=`<td>${item.t}<br><span style="color:#ccc;font-size:9px">${item.wkn}</span></td>`;
+      if(!q){html+=`<tr>${nc}${tc}${cols.slice(2).map(()=>`<td><span class="sk"></span></td>`).join('')}</tr>`;continue;}
+      if(q.error){html+=`<tr>${nc}${tc}<td colspan="${cols.length-2}" style="color:#ccc;font-size:10px">Fehler</td></tr>`;continue;}
+      const p=q.price,r=q.ref,ytd=r?(p-r)/r*100:null,d52=(p-q.w52High)/q.w52High*100;
+      const p52=q.w52High>q.w52Low?(p-q.w52Low)/(q.w52High-q.w52Low)*100:50;
+      const bW=Math.min(100,Math.max(0,p52)),bC=p52>70?'#1a6e3a':p52>30?'#1a1814':'#c8441a';
+      const sc=item.cur!=='EUR';const cur=`<span class="curr">${item.cur}</span>`;
+      const cells={
+        name:nc,ticker:tc,
+        ref:`<td class="dim">${r?f(r):D}${sc?' '+cur:''}</td>`,
+        price:`<td class="bold">${f(p)}${sc?' '+cur:''}</td>`,
+        ytd:`<td class="${cl(ytd)} bold">${fp(ytd)}</td>`,
+        pos52:`<td><div class="bw"><span class="bp">${f(p52,0)}%</span><div class="bt"><div class="bf" style="width:${bW}%;background:${bC}"></div></div></div></td>`,
+        w52h:`<td class="dim">${f(q.w52High)}${sc?' '+cur:''}</td>`,
+        w52l:`<td class="dim">${f(q.w52Low)}${sc?' '+cur:''}</td>`,
+        dist52:`<td class="${cl(d52)} bold">${fp(d52)}</td>`,
+        pe:`<td>${q.pe?f(q.pe,1):D}</td>`,
+        div:`<td>${q.divYield?f(q.divYield*100,2)+'%':D}</td>`,
+        mcap:`<td>${fc(q)}</td>`,
+      };
+      html+=`<tr>${cols.map(c=>cells[c]||`<td>${D}</td>`).join('')}</tr>`;
+    }
+  }
+  document.getElementById('tbody').innerHTML=html;
+}
+
+document.getElementById('kN').textContent=P.length;
+document.getElementById('kNs').textContent='20 Positionen · 2026 JK';
+renderTable();
+</script>
+</body>
+</html>
