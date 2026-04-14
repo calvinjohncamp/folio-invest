@@ -24,6 +24,9 @@ body { background: #f0ede8; color: #111; font-family: 'DM Sans', sans-serif; fon
 .nav-btn:first-child{padding-left:10px;margin-left:0}
 .nav-btn.active { color: #faf9f6; border-bottom-color: #c8441a; }
 .nav-btn:hover:not(.active) { color: #ccc; }
+.nav-btn-pflege{color:#c8441a;padding-right:10px}
+.nav-btn-pflege:hover{color:#e35a2d !important;border-bottom-color:#c8441a}
+.nav-btn-pflege.active{color:#c8441a;border-bottom-color:#c8441a}
 .statusbar { background: #141210; border-top: none; border-bottom: 1px solid #222; margin-top:-1px; padding: 5px 24px; display: flex; align-items: center; gap: 8px; font-size: 10px; color: #666; position: sticky; top: 101px; z-index: 98; }
 .sdot { width: 6px; height: 6px; border-radius: 50%; background: #2a9a5a; flex-shrink: 0; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
@@ -36,6 +39,7 @@ body { background: #f0ede8; color: #111; font-family: 'DM Sans', sans-serif; fon
 .push-right{margin-left:auto}
 .mode-toggle { border:1px solid #d8d4ce; background:#fff; color:#444; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:6px 10px; cursor:pointer; border-radius:999px; }
 .mode-toggle:hover { background:#f6f3ef; }
+.mode-toggle.active{background:#1a1814;color:#faf9f6;border-color:#1a1814}
 .icon-btn{width:34px;height:34px;border:1px solid #d8d4ce;background:#fff;color:#444;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s, background .15s, border-color .15s, opacity .15s;font-size:15px;line-height:1}
 .refresh-btn{width:30px;height:30px;font-size:22px;font-weight:600;margin-right:8px}
 .icon-btn:hover{background:#f6f3ef;border-color:#c8441a}
@@ -65,10 +69,12 @@ td:nth-child(2) { text-align: left; }
 .positions-shell{margin-bottom:24px}
 .positions-shell.detail-width{max-width:980px}
 .positions-header-card,.position-card{border:1px solid #d8d4ce;border-radius:18px;overflow:hidden}
-.positions-header-card{background:#d9d7d3;margin-bottom:8px}
+.positions-header-card{background:#d9d7d3;margin-bottom:8px;position:sticky;top:140px;z-index:40;box-shadow:0 4px 10px rgba(0,0,0,.06)}
 .position-card{margin-bottom:8px;box-shadow:0 1px 0 rgba(0,0,0,.03)}
 .position-card.light,.position-card.dark{background:#ffffff;color:#111}
 .pos-grid{display:grid;grid-template-columns:72px 2.5fr 1.2fr 1fr 1fr 1fr 0.95fr;gap:0}
+body.page-watchlist .pos-grid{grid-template-columns:72px 2.7fr 1.25fr 1fr 1fr 1fr}
+body.page-watchlist .positions-header-card .pos-col:nth-child(7),body.page-watchlist .position-card .pos-col:nth-child(7),body.page-watchlist .positions-summary-card .pos-col:nth-child(7){display:none}
 .pos-col{padding:13px 14px 11px;border-right:1px solid #ece7df;min-width:0}
 .positions-header-card .pos-col{border-right:1px solid rgba(0,0,0,.06)}
 .pos-col:last-child{border-right:none}
@@ -136,11 +142,112 @@ td:nth-child(2) { text-align: left; }
 .structure-footer{margin-top:10px;padding-top:7px;border-top:1px solid #e5e1db;font-size:11px;font-weight:700;color:#111;text-align:right}
 .structure-footer.bars{margin-top:8px}
 
-@media (max-width: 1180px){.pos-grid{grid-template-columns:72px 1.7fr 1fr 1fr;}.pos-col:nth-child(5),.pos-col:nth-child(6),.pos-col:nth-child(7){border-top:1px solid rgba(255,255,255,.10)}.positions-header-card .pos-col:nth-child(5),.positions-header-card .pos-col:nth-child(6),.positions-header-card .pos-col:nth-child(7){border-top:1px solid rgba(0,0,0,.06)}.pos-col:nth-child(5){grid-column:2}.pos-col:nth-child(6){grid-column:3}.pos-col:nth-child(7){grid-column:4}.structure-grid{grid-template-columns:1fr}}
-@media (max-width: 720px){.pos-main-title{font-size:15px}.pos-main-meta{font-size:10px}.pos-value-sub{font-size:11px}.pos-share-sub{font-size:10.5px}.pos-pctnote{font-size:9.5px}.content, .statusbar { padding-left: 14px; padding-right: 14px; } .hd-inner{padding-left:14px;padding-right:14px}.nav-inner{padding-left:14px;padding-right:14px} .nav-btn:first-child{padding-left:0}.kpi-grid{grid-template-columns:repeat(2,1fr)} .donut-wrap{flex-direction:column;align-items:flex-start}.donut{width:118px;height:118px;flex-basis:118px}.structure-card{min-height:auto}.positions-header-card{display:none}.position-card{border-radius:16px}.pos-grid{grid-template-columns:54px 1fr 1fr;}.pos-col{padding:14px 14px 13px}.pos-col{border-right:1px solid rgba(255,255,255,.10)}.pos-col:nth-child(1){grid-row:1 / span 3}.pos-col:nth-child(2){grid-column:2 / -1;border-right:none;border-bottom:1px solid rgba(255,255,255,.10)}.pos-col:nth-child(3){grid-column:2}.pos-col:nth-child(4){grid-column:3;border-right:none}.pos-col:nth-child(5){grid-column:2;border-top:1px solid rgba(255,255,255,.10)}.pos-col:nth-child(6){grid-column:3;border-top:1px solid rgba(255,255,255,.10);border-right:none}.pos-col:nth-child(7){grid-column:2 / -1;border-top:1px solid rgba(255,255,255,.10);border-right:none}.pos-main-title{font-size:18px}.pos-value-top{font-size:18px}.pos-main-meta{gap:8px 14px;font-size:10px}.pos-head-main{font-size:10px}.pos-head-sub{font-size:9px}.pos-rank-badge{width:34px;height:34px}.pos-rank-badge strong{font-size:14px}.pos-share-top{font-size:16px}}
+@media (max-width: 1180px){.positions-header-card{top:140px}.pos-grid{grid-template-columns:72px 1.7fr 1fr 1fr;}.pos-col:nth-child(5),.pos-col:nth-child(6),.pos-col:nth-child(7){border-top:1px solid rgba(255,255,255,.10)}.positions-header-card .pos-col:nth-child(5),.positions-header-card .pos-col:nth-child(6),.positions-header-card .pos-col:nth-child(7){border-top:1px solid rgba(0,0,0,.06)}.pos-col:nth-child(5){grid-column:2}.pos-col:nth-child(6){grid-column:3}.pos-col:nth-child(7){grid-column:4}body.page-watchlist .pos-grid{grid-template-columns:72px 1.9fr 1fr 1fr;}body.page-watchlist .pos-col:nth-child(6){grid-column:4}.structure-grid{grid-template-columns:1fr}}
+@media (max-width: 720px){.pos-main-title{font-size:15px}.pos-main-meta{font-size:10px}.pos-value-sub{font-size:11px}.pos-share-sub{font-size:10.5px}.pos-pctnote{font-size:9.5px}.content, .statusbar { padding-left: 14px; padding-right: 14px; } .hd-inner{padding-left:14px;padding-right:14px}.nav-inner{padding-left:14px;padding-right:14px} .nav-btn:first-child{padding-left:0}.kpi-grid{grid-template-columns:repeat(2,1fr)} .donut-wrap{flex-direction:column;align-items:flex-start}.donut{width:118px;height:118px;flex-basis:118px}.structure-card{min-height:auto}.positions-header-card{display:none}.position-card{border-radius:16px}.pos-grid{grid-template-columns:54px 1fr 1fr;}.pos-col{padding:14px 14px 13px}.pos-col{border-right:1px solid rgba(255,255,255,.10)}.pos-col:nth-child(1){grid-row:1 / span 3}.pos-col:nth-child(2){grid-column:2 / -1;border-right:none;border-bottom:1px solid rgba(255,255,255,.10)}.pos-col:nth-child(3){grid-column:2}.pos-col:nth-child(4){grid-column:3;border-right:none}.pos-col:nth-child(5){grid-column:2;border-top:1px solid rgba(255,255,255,.10)}.pos-col:nth-child(6){grid-column:3;border-top:1px solid rgba(255,255,255,.10);border-right:none}.pos-col:nth-child(7){grid-column:2 / -1;border-top:1px solid rgba(255,255,255,.10);border-right:none}body.page-watchlist .pos-col:nth-child(6){grid-column:2 / -1}.pos-main-title{font-size:18px}.pos-value-top{font-size:18px}.pos-main-meta{gap:8px 14px;font-size:10px}.pos-head-main{font-size:10px}.pos-head-sub{font-size:9px}.pos-rank-badge{width:34px;height:34px}.pos-rank-badge strong{font-size:14px}.pos-share-top{font-size:16px}}
+
+.pflege-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.36);display:none;z-index:300}
+.pflege-backdrop.open{display:block}
+.pflege-modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(760px,calc(100vw - 28px));max-height:calc(100vh - 40px);overflow:auto;background:#faf9f6;border:1px solid #d8d4ce;border-radius:22px;box-shadow:0 18px 60px rgba(0,0,0,.18);display:none;z-index:301;padding:18px}
+.pflege-modal.open{display:block}
+.pflege-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.pflege-title{font-size:18px;font-weight:700;color:#111}
+.pflege-close{border:none;background:none;font-size:24px;line-height:1;cursor:pointer;color:#666}
+.pflege-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pflege-card{background:#fff;border:1px solid #d8d4ce;border-radius:18px;padding:14px}
+.pflege-card h4{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#666;margin-bottom:10px}
+.pflege-form{display:grid;gap:10px}
+.pflege-form label{font-size:11px;font-weight:700;color:#555}
+.pflege-form input,.pflege-form select{width:100%;margin-top:4px;padding:10px 11px;border:1px solid #d8d4ce;border-radius:12px;background:#fff;font:inherit;color:#111}
+.pflege-actions{display:flex;gap:8px;align-items:center;margin-top:2px}
+.pflege-submit{border:1px solid #1a1814;background:#1a1814;color:#faf9f6;border-radius:999px;padding:9px 14px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.pflege-submit.secondary{background:#fff;color:#444;border-color:#d8d4ce}
+.pflege-note{font-size:11px;color:#777;line-height:1.35}
+.page-empty{background:#fff;border:1px solid #d8d4ce;border-radius:18px;padding:18px;color:#666}
+@media (max-width: 720px){.pflege-grid{grid-template-columns:1fr}.pflege-modal{padding:14px}}
+
 </style>
 </head>
 <body>
+<!-- PIN OVERLAY -->
+<div id="pinOverlay" style="
+position:fixed; inset:0; z-index:9999;
+display:flex; align-items:center; justify-content:center;
+background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.03), transparent 32%),
+linear-gradient(180deg, #1a1511 0%, #17130f 100%);
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+color:#f3efe9;
+">
+
+<div style="text-align:center; max-width:420px; width:100%;">
+
+<img src="folio-invest-logo.png" style="width:300px; margin-bottom:15px;">
+
+<div style="font-size:12px; letter-spacing:3px; color:#8f8579; margin-bottom:40px;">
+DEPOT + WATCHLIST · JÖRN KÄMPER
+</div>
+
+<div id="dots" style="display:flex; justify-content:center; gap:10px; margin-bottom:30px;">
+<div class="dot" style="width:14px;height:14px;border-radius:50%;border:1px solid #786f65;"></div><div class="dot" style="width:14px;height:14px;border-radius:50%;border:1px solid #786f65;"></div><div class="dot" style="width:14px;height:14px;border-radius:50%;border:1px solid #786f65;"></div><div class="dot" style="width:14px;height:14px;border-radius:50%;border:1px solid #786f65;"></div><div class="dot" style="width:14px;height:14px;border-radius:50%;border:1px solid #786f65;"></div><div class="dot" style="width:14px;height:14px;border-radius:50%;border:1px solid #786f65;"></div>
+</div>
+
+<div id="keypad" style="width:220px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+<button class="k" onclick="press(1)">1</button><button class="k" onclick="press(2)">2</button><button class="k" onclick="press(3)">3</button><button class="k" onclick="press(4)">4</button><button class="k" onclick="press(5)">5</button><button class="k" onclick="press(6)">6</button><button class="k" onclick="press(7)">7</button><button class="k" onclick="press(8)">8</button><button class="k" onclick="press(9)">9</button>
+<button class="k meta" onclick="clearPin()">Löschen</button>
+<button class="k" onclick="press(0)">0</button>
+<button class="k meta" onclick="resetPin()">Neu</button>
+</div>
+
+<div style="margin-top:40px; font-size:11.5px; color:#6f665d;">
+Diese Ansicht ist geschützt. Pflege- und Bestandsfunktionen sind erst nach Eingabe des Zugangscodes verfügbar.
+</div>
+
+</div>
+</div>
+
+<style>
+.k{
+border:1px solid #37302a;
+background:#201c18;
+color:#f3efe9;
+border-radius:6px;
+min-height:48px;
+font-size:16px;
+cursor:pointer;
+}
+.k:hover{background:#2a241f;}
+.k.meta{font-size:14px;color:#d0c7bd;}
+</style>
+
+<script>
+const correctPIN="337114";
+let input="";
+
+function press(n){
+ if(input.length>=6) return;
+ input+=n;
+ updateDots();
+ if(input.length===6){
+   if(input===correctPIN){
+     document.getElementById('pinOverlay').style.display='none';
+   } else {
+     input="";
+     updateDots();
+   }
+ }
+}
+function updateDots(){
+ document.querySelectorAll('#dots div').forEach((d,i)=>{
+   d.style.background = i<input.length ? "#ddd7cf":"transparent";
+ });
+}
+function clearPin(){
+ input=input.slice(0,-1); updateDots();
+}
+function resetPin(){
+ input=""; updateDots();
+}
+</script>
+
 <div class="hd">
 <div class="hd-inner">
 <div class="hd-logo" title="Zur Übersicht" onclick="goHome()"><img alt="Folio.invest" src="folio-invest-logo.png"/></div>
@@ -153,33 +260,116 @@ td:nth-child(2) { text-align: left; }
 </div>
 <div class="nav">
 <div class="nav-inner">
-<button class="nav-btn active">▣ Übersicht</button>
-<button class="nav-btn" id="transactionsNavBtn" onclick="toggleTransactions()">◈ Transaktionen</button>
+<button class="nav-btn active" id="overviewNavBtn" onclick="switchPage('overview')">▣ Übersicht</button>
+<button class="nav-btn" id="watchlistNavBtn" onclick="switchPage('watchlist')">◉ Watchlist</button>
+<button class="nav-btn" id="transactionsNavBtn" onclick="switchPage('transactions')">◈ Transaktionen</button>
+<button class="nav-btn nav-btn-pflege" id="pflegeNavBtn" onclick="openPflegeModal()">● Pflege</button>
 </div>
 </div>
 <div class="statusbar"><span class="sdot"></span><span id="statusText">Initialisiere Online-Kurse…</span></div>
 <div class="content">
-<div class="sec-t"><span class="sec-n">1 ·</span> Gesamtübersicht — Folio.invest 2026</div>
+<div class="sec-t" id="overviewTitle"><span class="sec-n">1 ·</span> Gesamtübersicht — Folio.invest 2026</div>
 <div class="kpi-grid" id="kpiGrid"></div>
-<div class="sec-t mode-row">
-<span><span class="sec-n">2 ·</span> Positionen — Gesamtdepot</span>
+<div class="sec-t mode-row" id="positionsSection">
+<span id="positionsSectionLabel"><span class="sec-n">2 ·</span> Positionen — Gesamtdepot</span>
 <div class="mode-tools">
 <button class="mode-toggle" id="detailsBtn" onclick="toggleDetails()" type="button">Details</button>
+<button class="mode-toggle" id="historischBtn" onclick="toggleHistoricalMode()" type="button">Historisch</button>
 <button class="icon-btn refresh-btn push-right" id="refreshBtn" onclick="refreshMarketData()" title="Aktualisieren" type="button">↻</button>
 </div>
 </div>
 <div class="muted-note" id="modeNote">Standardansicht mit Referenzwerten und Performance seit 31.12.2025</div>
 <div id="positionsWrap" class="positions-shell"></div>
-<div class="sec-t" id="structureTitle"><span class="sec-n">3 ·</span> Depotstruktur — Kategorien · Länder</div>
+<div class="hidden" id="soldSection">
+<div class="sec-t"><span class="sec-n">3 ·</span> Verkauft — realisierte Positionen</div>
+<div id="soldWrap" class="positions-shell"></div>
+</div>
+<div class="sec-t" id="structureTitle"><span class="sec-n">4 ·</span> Depotstruktur — Kategorien · Länder</div>
 <div class="structure-grid" id="structureGrid"></div>
 <div class="hidden" id="transactionsWrap">
-<div class="sec-t"><span class="sec-n">4 ·</span> Transaktionen</div>
+<div class="sec-t" id="transactionsTitle"><span class="sec-n">1 ·</span> Transaktionen</div>
 <div class="tw"><table id="transactionsTable"></table></div>
 </div>
 </div>
+
+<div class="pflege-backdrop" id="pflegeBackdrop"></div>
+<div class="pflege-modal" id="pflegeModal">
+  <div class="pflege-head">
+    <div class="pflege-title">Pflege</div>
+    <button class="pflege-close" type="button" onclick="closePflegeModal()">×</button>
+  </div>
+  <div class="pflege-grid">
+    <div class="pflege-card">
+      <h4>Kauf</h4>
+      <form class="pflege-form" id="buyForm">
+        <label>WKN
+          <input id="buyWkn" type="text" placeholder="z. B. A0YEDG" required />
+        </label>
+        <label>Stück
+          <input id="buyShares" type="number" min="1" step="1" required />
+        </label>
+        <label>Kurs
+          <input id="buyPrice" type="number" min="0" step="0.01" required />
+        </label>
+        <label>Datum
+          <input id="buyDate" type="date" />
+        </label>
+        <div class="pflege-actions">
+          <button class="pflege-submit" type="submit">Kauf speichern</button>
+        </div>
+      </form>
+    </div>
+    <div class="pflege-card">
+      <h4>Verkauf</h4>
+      <form class="pflege-form" id="sellForm">
+        <label>Aktive Position
+          <select id="sellWkn" required></select>
+        </label>
+        <label>Stück
+          <input id="sellShares" type="number" min="1" step="1" required />
+        </label>
+        <label>Verkaufskurs
+          <input id="sellPrice" type="number" min="0" step="0.01" placeholder="leer = aktueller Kurs" />
+        </label>
+        <label>Datum
+          <input id="sellDate" type="date" />
+        </label>
+        <div class="pflege-actions">
+          <button class="pflege-submit" type="submit">Verkauf speichern</button>
+        </div>
+      </form>
+    </div>
+    <div class="pflege-card">
+      <h4>Watchlist hinzufügen</h4>
+      <form class="pflege-form" id="watchForm">
+        <label>WKN
+          <input id="watchWkn" type="text" placeholder="nur WKN eingeben" required />
+        </label>
+        <div class="pflege-note">Der Basiskurs wird automatisch mit dem Schlusskurs vom 31.12. des Vorjahres belegt, sobald die App dafür Daten hat. Falls für eine neue WKN noch kein Mapping vorhanden ist, bleibt der Titel zunächst neutral.</div>
+        <div class="pflege-actions">
+          <button class="pflege-submit" type="submit">Watchlist ergänzen</button>
+        </div>
+      </form>
+    </div>
+    <div class="pflege-card">
+      <h4>Watchlist löschen</h4>
+      <form class="pflege-form" id="watchDeleteForm">
+        <label>Watchlist-Titel
+          <select id="deleteWatchWkn" required></select>
+        </label>
+        <div class="pflege-actions">
+          <button class="pflege-submit secondary" type="submit">Eintrag löschen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 <script>
 const CF_WORKER = 'https://wax-kurse.calvinjohncamp.workers.dev';
-const portfolio = [
+const CF_HISTORY_WORKER = 'https://jk-invest.calvinjohncamp.workers.dev';
+const STORAGE_KEY = 'folio-invest-state-v3';
+const DEFAULT_META = { category:'Nicht zugeordnet', country:'Nicht zugeordnet', exchange:'–' };
+const BASE_PORTFOLIO = [
   {wkn:'EWG2LD',name:'ETC-Zertifikat auf 100 GR Gold',lots:[{shares:2400,price:122.15,date:'2025-12-31'}],meta:{category:'Precious Metals',country:'Europa',exchange:'Xetra'}},
   {wkn:'A0F5UH',name:'iShares STOXX Global Select Div 100',lots:[{shares:3000,price:35.16,date:'2025-12-31'}],meta:{category:'Broad Market ETFs',country:'Global',exchange:'Xetra'}},
   {wkn:'A1T8FV',name:'Vanguard FTSE All-World UCITS ETF',lots:[{shares:1460,price:72.88,date:'2025-12-31'}],meta:{category:'Broad Market ETFs',country:'Global',exchange:'Xetra'}},
@@ -223,20 +413,25 @@ const TICKER_MAP = {
   'A2JG9Z': { tickers:['AVGO'], fx:'USD' },
   'A0YJQ2': { tickers:['BRK-B'], fx:'USD' }
 };
+const SECURITY_MASTER = Object.fromEntries(BASE_PORTFOLIO.map(p => [p.wkn, {name:p.name, meta:p.meta}]));
+const historicalData = {};
+let historicalMode = false;
 let detailMode = false;
-let transactionsOpen = false;
 let marketRefreshRunning = false;
 let currentSort = { key: 'currentValue', dir: 'desc' };
 let liveKurse = {};
 let prevKurse = {};
 let fxRates = {};
 let lastMarketUpdate = null;
+let currentPage = 'overview';
+let appState = null;
 const groupPalette = ['#2f6cf2','#c8441a','#19b29d','#f59f00','#6f42c1','#111827','#20a25f','#d4af37','#64748b'];
 const barPalette = ['#2f6cf2','#111827','#19b29d','#f59f00','#20a25f','#6f42c1','#c8441a','#64748b'];
-function f(v,d=2){return new Intl.NumberFormat('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d}).format(v)}
-function fc(v){const s=v>=0?'+':''; return s+f(v)+' €'}
-function fp(v){const s=v>=0?'+':''; return s+f(v*100,2)+'%'}
-function cl(v){return v>=0?'pos':'neg'}
+
+function f(v,d=2){return new Intl.NumberFormat('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d}).format(Number(v||0))}
+function fc(v){const n=Number(v||0);const s=n>=0?'+':'';return s+f(n)+' €'}
+function fp(v){const n=Number(v||0);const s=n>=0?'+':''; return s+f(n*100,2)+'%'}
+function cl(v){return Number(v||0)>=0?'pos':'neg'}
 function formatStamp(dateStr){ if(!dateStr) return '–'; const d = new Date(dateStr); return d.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(',', ' ·'); }
 function compactCurrency(v){ return f(v)+' €'; }
 function setStatus(text){ const el=document.getElementById('statusText'); if(el) el.textContent=text; }
@@ -246,6 +441,53 @@ function setRefreshButtonsLoading(isLoading){
   if (!btn) return;
   btn.disabled = isLoading;
   btn.classList.toggle('refreshing', isLoading);
+}
+function getCurrentYear(){ return new Date().getFullYear(); }
+function getPrevYearEndIso(year = getCurrentYear()){ return `${year-1}-12-31`; }
+function todayIso(){ return new Date().toISOString().slice(0,10); }
+function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+function sharesOf(position){ return (position.lots||[]).reduce((s,l)=>s+Number(l.shares||0),0); }
+function refValueOf(position){ return (position.lots||[]).reduce((s,l)=>s+Number(l.shares||0)*Number(l.price||0),0); }
+function avgRefPrice(position){ const shares = sharesOf(position); return shares ? refValueOf(position)/shares : 0; }
+function normalizePosition(p){
+  return { wkn:p.wkn, name:p.name || (SECURITY_MASTER[p.wkn]?.name || `WKN ${p.wkn}`), lots:(p.lots||[]).map(l=>({shares:Number(l.shares||0),price:Number(l.price||0),date:l.date || getPrevYearEndIso()})), meta:p.meta || SECURITY_MASTER[p.wkn]?.meta || DEFAULT_META };
+}
+function normalizeSold(rec){
+  return { wkn:rec.wkn, name:rec.name || SECURITY_MASTER[rec.wkn]?.name || `WKN ${rec.wkn}`, meta:rec.meta || SECURITY_MASTER[rec.wkn]?.meta || DEFAULT_META, shares:Number(rec.shares||0), refPrice:Number(rec.refPrice||0), sellPrice:Number(rec.sellPrice||0), sellDate:rec.sellDate || todayIso() };
+}
+function normalizeWatch(w){
+  return { wkn:w.wkn, name:w.name || SECURITY_MASTER[w.wkn]?.name || `WKN ${w.wkn}`, meta:w.meta || SECURITY_MASTER[w.wkn]?.meta || DEFAULT_META, basePrice:Number(w.basePrice||0), date:w.date || getPrevYearEndIso() };
+}
+function seedTransactionsFromPortfolio(portfolio){
+  const tx = [];
+  portfolio.forEach(p => (p.lots||[]).forEach(l => tx.push({date:l.date, type:'START', name:p.name, wkn:p.wkn, shares:Number(l.shares||0), price:Number(l.price||0), amount:Number(l.shares||0)*Number(l.price||0)})));
+  return tx.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+}
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      appState = {
+        meta: { year:Number(parsed?.meta?.year || getCurrentYear()) },
+        active:(parsed.active||[]).map(normalizePosition),
+        sold:(parsed.sold||[]).map(normalizeSold),
+        watchlist:(parsed.watchlist||[]).map(normalizeWatch),
+        transactions:(parsed.transactions||[]).map(t=>({...t, shares:Number(t.shares||0), price:Number(t.price||0), amount:Number(t.amount||0)}))
+      };
+      return;
+    }
+  } catch(e) { console.warn('State konnte nicht geladen werden', e); }
+  const active = BASE_PORTFOLIO.map(normalizePosition);
+  appState = { meta:{year:getCurrentYear()}, active, sold:[], watchlist:[], transactions: seedTransactionsFromPortfolio(active) };
+}
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+}
+function ensureSecurityMaster(wkn, fallback={}){
+  if(!SECURITY_MASTER[wkn]){
+    SECURITY_MASTER[wkn] = { name:fallback.name || `WKN ${wkn}`, meta:fallback.meta || DEFAULT_META };
+  }
 }
 function parseWorkerQuotePayload(j) {
   if (!j) return null;
@@ -302,20 +544,94 @@ function toEUR(priceLocal, ccy) {
   const rate = fxRates[ccy];
   return rate ? priceLocal / rate : priceLocal;
 }
+function parseWorkerHistoryPayload(j) {
+  if (!j) return [];
+  const prices = Array.isArray(j.prices) ? j.prices : [];
+  return prices
+    .map(p => ({ date: p?.date, close: Number(p?.close) }))
+    .filter(p => p.date && Number.isFinite(p.close));
+}
+async function cfFetchHistory(ticker) {
+  const bust = Math.floor(Date.now() / 3600000);
+  const urls = [
+    `${CF_HISTORY_WORKER}/?ticker=${encodeURIComponent(ticker)}&_=${bust}`,
+    `${CF_HISTORY_WORKER}/?ticker=${ticker}&_=${bust}`
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      if (!r.ok) continue;
+      const j = await r.json();
+      const parsed = parseWorkerHistoryPayload(j);
+      if (parsed.length) return parsed;
+    } catch {}
+  }
+  return [];
+}
+async function fetchHistoryWithFallback(tickers) {
+  for (const t of tickers || []) {
+    const prices = await cfFetchHistory(t);
+    if (prices.length) return { ticker: t, prices };
+  }
+  return null;
+}
+function allRelevantWkns(){
+  return [...new Set([
+    ...appState.active.map(p=>p.wkn),
+    ...appState.watchlist.map(w=>w.wkn)
+  ])];
+}
 async function loadKurse() {
-  await Promise.all(portfolio.map(async p => {
-    const info = TICKER_MAP[p.wkn];
+  const wkns = allRelevantWkns();
+  await Promise.all(wkns.map(async wkn => {
+    const info = TICKER_MAP[wkn];
     if (!info) return;
     const quote = await fetchTickerWithFallback(info.tickers);
-    if (!quote || !quote.price) return;
-    liveKurse[p.wkn] = toEUR(quote.price, info.fx);
-    prevKurse[p.wkn] = toEUR(quote.prev || quote.price, info.fx);
+    if (quote && quote.price) {
+      liveKurse[wkn] = toEUR(quote.price, info.fx);
+      prevKurse[wkn] = toEUR(quote.prev || quote.price, info.fx);
+    }
+    const history = await fetchHistoryWithFallback(info.tickers);
+    if (history && history.prices?.length) {
+      historicalData[wkn] = history.prices.map(row => ({ ...row, close: toEUR(row.close, info.fx) }));
+    }
   }));
 }
-
+function prevYearCloseFromHistory(wkn){
+  const prices = historicalData[wkn] || [];
+  const target = getPrevYearEndIso();
+  const exact = prices.find(p => p.date === target);
+  if (exact) return exact.close;
+  const earlier = prices.filter(p => p.date <= target).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  return earlier?.close ?? null;
+}
+function calcHistoricalMetrics(prices, currentPrice, shares) {
+  if (!Array.isArray(prices) || !prices.length || !Number.isFinite(currentPrice) || !currentPrice) {
+    return { ytdHigh:null, high12m:null, ytdBelowPct:null, below12mPct:null, ytdPotential:null, potential12m:null };
+  }
+  const yearStart = new Date(new Date().getFullYear(), 0, 1);
+  const ytdPrices = prices.filter(p => new Date(p.date) >= yearStart);
+  const ytdHigh = ytdPrices.length ? Math.max(...ytdPrices.map(p => p.close)) : null;
+  const high12m = Math.max(...prices.map(p => p.close));
+  const belowPct = high => (Number.isFinite(high) && high > 0) ? ((currentPrice / high) - 1) * 100 : null;
+  const potential = high => (Number.isFinite(high) && Number.isFinite(shares)) ? (high - currentPrice) * shares : null;
+  return {
+    ytdHigh,
+    high12m,
+    ytdBelowPct: belowPct(ytdHigh),
+    below12mPct: belowPct(high12m),
+    ytdPotential: potential(ytdHigh),
+    potential12m: potential(high12m)
+  };
+}
 function getSortArrow(key){
   if(currentSort.key !== key) return '⇵';
   return currentSort.dir === 'asc' ? '↑' : '↓';
+}
+function renderSortButton(key, label, showArrow = true){
+  const active = currentSort.key === key ? 'active' : '';
+  const arrow = showArrow ? ` <span class="sort-arrow">${getSortArrow(key)}</span>` : '';
+  return `<span class="sort-head"><button class="sort-btn ${active}" type="button" onclick="toggleSort('${key}')">${label}${arrow}</button></span>`;
 }
 function sortRows(rows){
   const sorted = [...rows];
@@ -330,20 +646,19 @@ function sortRows(rows){
         if(av > bv) return 1 * dir;
         return 0;
       case 'currentValue':
-        av = Number(a.currentValue || 0);
-        bv = Number(b.currentValue || 0);
-        break;
+        av = Number(a.currentValue || 0); bv = Number(b.currentValue || 0); break;
       case 'dayAbs':
-        av = Number(a.dayAbs || 0);
-        bv = Number(b.dayAbs || 0);
-        break;
+        av = Number(a.dayAbs || 0); bv = Number(b.dayAbs || 0); break;
       case 'diffAbs':
-        av = Number(a.diffAbs || 0);
-        bv = Number(b.diffAbs || 0);
-        break;
+        av = Number(a.diffAbs || 0); bv = Number(b.diffAbs || 0); break;
+      case 'ytdBelowPct':
+        av = Number(a.ytdBelowPct ?? -999999); bv = Number(b.ytdBelowPct ?? -999999); break;
+      case 'below12mPct':
+        av = Number(a.below12mPct ?? -999999); bv = Number(b.below12mPct ?? -999999); break;
+      case 'ytdPotential':
+        av = Number(a.ytdPotential || 0); bv = Number(b.ytdPotential || 0); break;
       default:
-        av = Number(a.currentValue || 0);
-        bv = Number(b.currentValue || 0);
+        av = Number(a.currentValue || 0); bv = Number(b.currentValue || 0);
     }
     if (av === bv) return 0;
     return (av - bv) * dir;
@@ -360,15 +675,13 @@ function toggleSort(key){
     currentSort.key = key;
     currentSort.dir = key === 'name' ? 'asc' : 'desc';
   }
-  detailMode = false;
+  if(currentPage !== 'overview' && currentPage !== 'watchlist') detailMode = false;
   render();
-  window.scrollTo({top:0, behavior:'smooth'});
 }
-
-function rowsFromPortfolio(){
-  const rows = portfolio.map(p=>{
-    const shares = p.lots.reduce((s,l)=>s+Number(l.shares||0),0);
-    const refValue = p.lots.reduce((s,l)=>s+Number(l.shares||0)*Number(l.price||0),0);
+function rowsFromPortfolio(list){
+  const rows = (list||[]).map(p=>{
+    const shares = sharesOf(p);
+    const refValue = refValueOf(p);
     const refPrice = shares>0 ? refValue/shares : 0;
     const currentPrice = liveKurse[p.wkn] ?? refPrice;
     const prevPrice = prevKurse[p.wkn] ?? currentPrice;
@@ -376,7 +689,42 @@ function rowsFromPortfolio(){
     const prevValue = prevPrice * shares;
     const dayAbs = currentValue - prevValue;
     const dayPct = prevValue ? dayAbs / prevValue : 0;
-    return {...p, shares, refValue, refPrice, currentPrice, currentValue, prevPrice, prevValue, diffAbs: currentValue-refValue, diffPct: refValue ? (currentValue-refValue)/refValue : 0, dayAbs, dayPct, isLive: liveKurse[p.wkn] != null};
+    const hist = calcHistoricalMetrics(historicalData[p.wkn], currentPrice, shares);
+    return {...p, shares, refValue, refPrice, currentPrice, currentValue, prevPrice, prevValue, diffAbs: currentValue-refValue, diffPct: refValue ? (currentValue-refValue)/refValue : 0, dayAbs, dayPct, isLive: liveKurse[p.wkn] != null, ...hist};
+  });
+  const total = rows.reduce((s,r)=>s+r.currentValue,0);
+  let running = 0;
+  rows.forEach(r=>{ r.share = total ? r.currentValue/total : 0; running += r.share; r.cumShare = running; });
+  return rows;
+}
+function rowsFromSold(){
+  const rows = appState.sold.map(s=>{
+    const refValue = s.refPrice * s.shares;
+    const currentValue = s.sellPrice * s.shares;
+    const diffAbs = currentValue - refValue;
+    const diffPct = refValue ? diffAbs / refValue : 0;
+    const soldToday = s.sellDate === todayIso() ? diffAbs : 0;
+    const hist = calcHistoricalMetrics(historicalData[s.wkn], s.sellPrice, s.shares);
+    return { ...s, lots:[{shares:s.shares,price:s.refPrice,date:s.sellDate}], refValue, refPrice:s.refPrice, currentPrice:s.sellPrice, currentValue, prevValue:currentValue, dayAbs:soldToday, dayPct:0, diffAbs, diffPct, ...hist };
+  });
+  const total = rows.reduce((s,r)=>s+r.currentValue,0);
+  let running = 0;
+  rows.forEach(r=>{ r.share = total ? r.currentValue/total : 0; running += r.share; r.cumShare = running; });
+  return rows;
+}
+function rowsFromWatchlist(){
+  const rows = appState.watchlist.map(w=>{
+    const shares = 1;
+    const currentPrice = liveKurse[w.wkn] ?? w.basePrice;
+    const prevPrice = prevKurse[w.wkn] ?? currentPrice;
+    const refPrice = w.basePrice || prevYearCloseFromHistory(w.wkn) || currentPrice;
+    const refValue = refPrice;
+    const currentValue = currentPrice;
+    const prevValue = prevPrice;
+    const dayAbs = currentValue - prevValue;
+    const dayPct = prevValue ? dayAbs / prevValue : 0;
+    const hist = calcHistoricalMetrics(historicalData[w.wkn], currentPrice, shares);
+    return {...w, shares, refValue, refPrice, currentPrice, currentValue, prevPrice, prevValue, diffAbs: currentValue-refValue, diffPct: refValue ? (currentValue-refValue)/refValue : 0, dayAbs, dayPct, isLive: liveKurse[w.wkn] != null, ...hist};
   });
   const total = rows.reduce((s,r)=>s+r.currentValue,0);
   let running = 0;
@@ -384,57 +732,114 @@ function rowsFromPortfolio(){
   return rows;
 }
 function renderDate(){ document.getElementById('hdDate').textContent = new Date().toLocaleDateString('de-DE',{weekday:'short', day:'2-digit', month:'short', year:'numeric'}); }
-function renderKpis(rows){
-  const total = rows.reduce((s,r)=>s+r.currentValue,0);
-  const ref = rows.reduce((s,r)=>s+r.refValue,0);
-  const diff = total-ref;
-  const diffPct = ref?diff/ref:0;
-  const dayAbs = rows.reduce((s,r)=>s+r.dayAbs,0);
-  const prevTotal = rows.reduce((s,r)=>s+r.prevValue,0);
+function renderKpis(activeRows, soldRows){
+  const activeTotal = activeRows.reduce((s,r)=>s+r.currentValue,0);
+  const activeRef = activeRows.reduce((s,r)=>s+r.refValue,0);
+  const soldTotal = soldRows.reduce((s,r)=>s+r.currentValue,0);
+  const soldRef = soldRows.reduce((s,r)=>s+r.refValue,0);
+  const total = activeTotal;
+  const ref = activeRef;
+  const diff = (activeTotal-activeRef) + (soldTotal-soldRef);
+  const diffPct = (activeRef + soldRef) ? diff/(activeRef + soldRef) : 0;
+  const dayAbs = activeRows.reduce((s,r)=>s+r.dayAbs,0) + soldRows.reduce((s,r)=>s+r.dayAbs,0);
+  const prevTotal = activeRows.reduce((s,r)=>s+r.prevValue,0);
   const dayPct = prevTotal ? dayAbs/prevTotal : 0;
+  const yearLabel = getPrevYearEndIso().replace(/-/g,'.');
   const kpis = [
-    ['Aktueller Depotwert', `${f(total)} €`, 'nur Wertpapiere – kein Cash', ''],
-    ['Wert 31.12.25', `${f(ref)} €`, 'eingefrorene Referenzbasis', ''],
-    ['Performance heute', `${fp(dayPct)}`, 'prozentuale Veränderung gegen Vortag', cl(dayPct)],
-    ['Veränderung heute', `${fc(dayAbs)}`, 'absolute Veränderung gegen Vortag', cl(dayAbs)],
-    ['Performance seit 31.12.2025', `${fp(diffPct)}`, 'prozentuale Veränderung YTD', cl(diffPct)],
-    ['Veränderung YTD', `${fc(diff)}`, 'absolute Veränderung YTD', cl(diff)]
+    ['Aktiver Depotwert', `${f(total)} €`, 'nur aktive Positionen', ''],
+    [`Wert ${yearLabel}`, `${f(ref)} €`, 'eingefrorene Referenzbasis aktiv', ''],
+    ['Performance heute', `${fp(dayPct)}`, 'aktive Positionen plus heutige Verkäufe', cl(dayPct)],
+    ['Veränderung heute', `${fc(dayAbs)}`, 'inkl. heute realisierter Verkäufe', cl(dayAbs)],
+    ['Gesamtgewinn YTD', `${fc(diff)}`, 'aktive + verkaufte Positionen', cl(diff)],
+    ['Performance YTD gesamt', `${fp(diffPct)}`, 'bezogen auf aktiv + verkauft', cl(diffPct)]
   ];
   document.getElementById('kpiGrid').innerHTML = kpis.map(([l,v,s,cls])=>`<div class="kpi"><div class="kpi-l">${l}</div><div class="kpi-v ${cls}">${v}</div><div class="kpi-s">${s}</div></div>`).join('');
 }
-function renderPositions(rows){
+function sectionLabelText(){
+  if(currentPage === 'watchlist') return '<span class="sec-n">2 ·</span> Watchlist';
+  if(currentPage === 'transactions') return '<span class="sec-n">2 ·</span> Transaktionen';
+  return '<span class="sec-n">2 ·</span> Positionen — Gesamtdepot';
+}
+function modeNoteText(){
+  if(currentPage === 'watchlist'){
+    return historicalMode
+      ? 'Historisch-Ansicht der Watchlist mit YTD-High und 12-Monats-High – Basis immer Schlusskurs 31.12. des Vorjahres'
+      : 'Watchlist mit derselben Logik wie Übersicht – Basis je Titel ist immer der Schlusskurs vom 31.12. des Vorjahres';
+  }
+  return detailMode
+    ? 'Detailansicht wie im Investments-Bereich von Folio.wax – nur Bezeichnung, WKN, Kategorie, Land und Börse'
+    : (historicalMode
+      ? 'Historisch-Ansicht mit YTD-High und 12-Monats-High – jeweils Abstand zum Hoch in % und Potenzial in €'
+      : 'Aktive Positionen oben, verkaufte Positionen separat darunter – Gesamtgewinn heute und YTD über beide Bereiche');
+}
+function renderPositions(rows, type='overview'){
   const wrap = document.getElementById('positionsWrap');
   document.getElementById('detailsBtn').textContent = detailMode ? 'Home' : 'Details';
+  document.getElementById('historischBtn').classList.toggle('active', historicalMode);
   wrap.classList.toggle('detail-width', detailMode);
-  document.getElementById('structureTitle').classList.toggle('hidden', detailMode);
-  document.getElementById('structureGrid').classList.toggle('hidden', detailMode);
-  document.getElementById('modeNote').textContent = detailMode
-    ? 'Detailansicht wie im Investments-Bereich von Folio.wax – nur Bezeichnung, WKN, Kategorie, Land und Börse'
-    : 'Kachel-Entwurf mit weißem Kartenlook, klarerer Kopfzeile, Positionsnummer links und Anteil/Kumuliert rechts – optimiert für bessere Lesbarkeit und iPhone-Darstellung';
+  document.getElementById('positionsSectionLabel').innerHTML = sectionLabelText();
+  document.getElementById('modeNote').textContent = modeNoteText();
+  document.getElementById('soldSection').classList.toggle('hidden', currentPage !== 'overview');
   if(detailMode){
     wrap.innerHTML = `<div class="tw"><table id="positionsTable"><thead><tr><th>Bezeichnung</th><th>WKN</th><th>Kategorie</th><th>Land</th><th>Börse</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.name}</td><td class="dim">${r.wkn}</td><td class="dim">${r.meta.category}</td><td class="dim">${r.meta.country}</td><td class="dim">${r.meta.exchange}</td></tr>`).join('')}</tbody></table></div>`;
     return;
   }
-  const stamp = lastMarketUpdate ? formatStamp(lastMarketUpdate) : 'Referenzbasis 31.12.25';
-  const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main"><span class="sort-head"><button class="sort-btn ${currentSort.key==='name' ? 'active' : ''}" type="button" onclick="toggleSort('name')">Wertpapier <span class="sort-arrow">${getSortArrow('name')}</span></button></span></div><div class="pos-head-sub">WKN · Anzahl · Datum / Uhrzeit</div></div><div class="pos-col"><div class="pos-head-main"><span class="sort-head"><button class="sort-btn ${currentSort.key==='currentValue' ? 'active' : ''}" type="button" onclick="toggleSort('currentValue')">Wert aktuell <span class="sort-arrow">${getSortArrow('currentValue')}</span></button></span></div><div class="pos-head-sub">Wert 31.12.25</div></div><div class="pos-col"><div class="pos-head-main">Kurs aktuell</div><div class="pos-head-sub">Kurs 31.12.25</div></div><div class="pos-col"><div class="pos-head-main"><span class="sort-head"><button class="sort-btn ${currentSort.key==='dayAbs' ? 'active' : ''}" type="button" onclick="toggleSort('dayAbs')">Veränd. heute <span class="sort-arrow">${getSortArrow('dayAbs')}</span></button></span></div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main"><span class="sort-head"><button class="sort-btn ${currentSort.key==='diffAbs' ? 'active' : ''}" type="button" onclick="toggleSort('diffAbs')">Veränd. YTD <span class="sort-arrow">${getSortArrow('diffAbs')}</span></button></span></div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
+  const yearLabel = getPrevYearEndIso().replace(/-/g,'.');
+  if(historicalMode){
+    const stamp = lastMarketUpdate ? formatStamp(lastMarketUpdate) : 'Historische Daten';
+    const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier', false)}</div><div class="pos-head-sub">${type==='watchlist' ? `WKN · Watchlist · ${stamp}` : `WKN · Anzahl · ${stamp}`}</div></div><div class="pos-col neutral"><div class="pos-head-main">Wert aktuell</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdBelowPct','YTD High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('below12mPct','12M High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdPotential','Potenzial', false)}</div><div class="pos-head-sub">YTD / 12M in €</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
+    const sortedRows = sortRows(rows);
+    const fmtPct = v => v == null ? '–' : fp(v/100);
+    const fmtCur = v => v == null ? '–' : fc(v);
+    const fmtNum = v => v == null ? '–' : f(v,2);
+    const cards = sortedRows.map((r,idx)=>`<article class="position-card ${idx % 2 === 0 ? 'light' : 'dark'}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${type==='watchlist' ? 'Watchlist' : `${f(r.shares,0)} Stck.`}</span><span>${stamp}</span></div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${f(r.currentPrice,2)}</div></div><div class="pos-col ${cl(r.ytdBelowPct || 0)}"><div class="pos-value-top">${fmtNum(r.ytdHigh)}</div><div class="pos-value-sub">${fmtPct(r.ytdBelowPct)}</div></div><div class="pos-col ${cl(r.below12mPct || 0)}"><div class="pos-value-top">${fmtNum(r.high12m)}</div><div class="pos-value-sub">${fmtPct(r.below12mPct)}</div></div><div class="pos-col neutral"><div class="pos-value-top">${fmtCur(r.ytdPotential)}</div><div class="pos-value-sub">${fmtCur(r.potential12m)}</div></div><div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div></div></article>`).join('');
+    const sumYtdPotential = sortedRows.reduce((s,r)=>s+(Number(r.ytdPotential)||0),0);
+    const sum12mPotential = sortedRows.reduce((s,r)=>s+(Number(r.potential12m)||0),0);
+    const summaryText = type === 'watchlist' ? 'Historische Hochs · Watchlist' : 'Historische Hochs · Aktive Positionen';
+    const summary = `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">${summaryText}</div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(sortedRows.reduce((s,r)=>s+r.currentValue,0))}</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">${fc(sumYtdPotential)}</div><div class="pos-value-sub">${fc(sum12mPotential)}</div></div><div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div></div>`;
+    wrap.innerHTML = header + cards + summary;
+    return;
+  }
+  const stamp = lastMarketUpdate ? formatStamp(lastMarketUpdate) : `Referenzbasis ${yearLabel}`;
+  const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier')}</div><div class="pos-head-sub">${type==='watchlist' ? `WKN · Watchlist · Datum / Uhrzeit` : `WKN · Anzahl · Datum / Uhrzeit`}</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('currentValue','Wert aktuell')}</div><div class="pos-head-sub">${type==='watchlist' ? `Kurs ${yearLabel}` : `Wert ${yearLabel}`}</div></div><div class="pos-col"><div class="pos-head-main">Kurs aktuell</div><div class="pos-head-sub">${type==='watchlist' ? `Basis ${yearLabel}` : `Kurs ${yearLabel}`}</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('dayAbs','Veränd. heute')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('diffAbs','Veränd. YTD')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
   const sortedRows = sortRows(rows);
   const cards = sortedRows.map((r,idx)=>{
     const tone = idx % 2 === 0 ? 'light' : 'dark';
-    return `<article class="position-card ${tone}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${f(r.shares,0)} Stck.</span><span>${stamp}</span></div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${compactCurrency(r.refValue)}</div></div><div class="pos-col neutral"><div class="pos-value-top">${f(r.currentPrice,2)}</div><div class="pos-value-sub">${f(r.refPrice,2)}</div></div><div class="pos-col ${cl(r.dayAbs)}"><div class="pos-value-top">${fc(r.dayAbs)}</div><div class="pos-value-sub">${fp(r.dayPct)}</div></div><div class="pos-col ${cl(r.diffAbs)}"><div class="pos-value-top">${fc(r.diffAbs)}</div><div class="pos-value-sub">${fp(r.diffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div></div></article>`;
+    const subLeft = type==='watchlist' ? 'Watchlist' : `${f(r.shares,0)} Stck.`;
+    return `<article class="position-card ${tone}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${subLeft}</span><span>${stamp}</span></div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${compactCurrency(r.refValue)}</div></div><div class="pos-col neutral"><div class="pos-value-top">${f(r.currentPrice,2)}</div><div class="pos-value-sub">${f(r.refPrice,2)}</div></div><div class="pos-col ${cl(r.dayAbs)}"><div class="pos-value-top">${fc(r.dayAbs)}</div><div class="pos-value-sub">${fp(r.dayPct)}</div></div><div class="pos-col ${cl(r.diffAbs)}"><div class="pos-value-top">${fc(r.diffAbs)}</div><div class="pos-value-sub">${fp(r.diffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div></div></article>`;
   }).join('');
   const totalCurrent = sortedRows.reduce((s,r)=>s+r.currentValue,0);
   const totalRef = sortedRows.reduce((s,r)=>s+r.refValue,0);
   const totalDayAbs = sortedRows.reduce((s,r)=>s+r.dayAbs,0);
-  const totalDayPct = totalRef ? totalDayAbs / totalRef : 0;
+  const prevBase = sortedRows.reduce((s,r)=>s+r.prevValue,0);
+  const totalDayPct = prevBase ? totalDayAbs / prevBase : 0;
   const totalDiffAbs = sortedRows.reduce((s,r)=>s+r.diffAbs,0);
   const totalDiffPct = totalRef ? totalDiffAbs / totalRef : 0;
-  const summary = `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">Aktuelle Sortierung · Gesamtdepot</div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(totalCurrent)}</div><div class="pos-value-sub">${compactCurrency(totalRef)}</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col ${cl(totalDayAbs)}"><div class="pos-value-top">${fc(totalDayAbs)}</div><div class="pos-value-sub">${fp(totalDayPct)}</div></div><div class="pos-col ${cl(totalDiffAbs)}"><div class="pos-value-top">${fc(totalDiffAbs)}</div><div class="pos-value-sub">${fp(totalDiffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div></div>`;
+  const summaryText = type === 'watchlist' ? 'Aktuelle Sortierung · Watchlist' : 'Aktuelle Sortierung · Aktive Positionen';
+  const summary = `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">${summaryText}</div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(totalCurrent)}</div><div class="pos-value-sub">${compactCurrency(totalRef)}</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col ${cl(totalDayAbs)}"><div class="pos-value-top">${fc(totalDayAbs)}</div><div class="pos-value-sub">${fp(totalDayPct)}</div></div><div class="pos-col ${cl(totalDiffAbs)}"><div class="pos-value-top">${fc(totalDiffAbs)}</div><div class="pos-value-sub">${fp(totalDiffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div></div>`;
   wrap.innerHTML = header + cards + summary;
+}
+function renderSold(rows){
+  const wrap = document.getElementById('soldWrap');
+  if(!rows.length){
+    wrap.innerHTML = `<div class="page-empty">Noch keine Verkäufe im laufenden Jahr.</div>`;
+    return;
+  }
+  const sortedRows = sortRows(rows);
+  const stamp = 'Realisierte Verkäufe';
+  const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">Wertpapier</div><div class="pos-head-sub">WKN · Stück · Verkaufsdatum</div></div><div class="pos-col"><div class="pos-head-main">Erlös</div><div class="pos-head-sub">Einstand</div></div><div class="pos-col"><div class="pos-head-main">Verkaufskurs</div><div class="pos-head-sub">Einstandskurs</div></div><div class="pos-col"><div class="pos-head-main">Heute</div><div class="pos-head-sub">realisierter Effekt</div></div><div class="pos-col"><div class="pos-head-main">Gewinn YTD</div><div class="pos-head-sub">realisiert</div></div><div class="pos-col"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
+  const cards = sortedRows.map((r,idx)=>`<article class="position-card ${idx % 2 === 0 ? 'light' : 'dark'}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${f(r.shares,0)} Stck.</span><span>${r.sellDate}</span></div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${compactCurrency(r.refValue)}</div></div><div class="pos-col neutral"><div class="pos-value-top">${f(r.currentPrice,2)}</div><div class="pos-value-sub">${f(r.refPrice,2)}</div></div><div class="pos-col ${cl(r.dayAbs)}"><div class="pos-value-top">${fc(r.dayAbs)}</div><div class="pos-value-sub">${stamp}</div></div><div class="pos-col ${cl(r.diffAbs)}"><div class="pos-value-top">${fc(r.diffAbs)}</div><div class="pos-value-sub">${fp(r.diffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div></div></article>`).join('');
+  const totalCurrent = sortedRows.reduce((s,r)=>s+r.currentValue,0);
+  const totalRef = sortedRows.reduce((s,r)=>s+r.refValue,0);
+  const totalDayAbs = sortedRows.reduce((s,r)=>s+r.dayAbs,0);
+  const totalDiffAbs = sortedRows.reduce((s,r)=>s+r.diffAbs,0);
+  const totalDiffPct = totalRef ? totalDiffAbs/totalRef : 0;
+  wrap.innerHTML = header + cards + `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">Verkaufte Positionen laufendes Jahr</div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(totalCurrent)}</div><div class="pos-value-sub">${compactCurrency(totalRef)}</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col ${cl(totalDayAbs)}"><div class="pos-value-top">${fc(totalDayAbs)}</div><div class="pos-value-sub">–</div></div><div class="pos-col ${cl(totalDiffAbs)}"><div class="pos-value-top">${fc(totalDiffAbs)}</div><div class="pos-value-sub">${fp(totalDiffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div></div>`;
 }
 function group(rows,key,topN=8){
   const total = rows.reduce((s,r)=>s+r.currentValue,0);
   const map = new Map();
-  rows.forEach(r=>{ const label = r.meta[key] || 'Nicht zugeordnet'; map.set(label, (map.get(label)||0)+r.currentValue); });
+  rows.forEach(r=>{ const label = r.meta?.[key] || 'Nicht zugeordnet'; map.set(label, (map.get(label)||0)+r.currentValue); });
   let items = [...map.entries()].map(([label,value])=>({label,value,share:total?value/total:0})).sort((a,b)=>b.value-a.value);
   if(items.length>topN){ const head=items.slice(0,topN); const restValue=items.slice(topN).reduce((s,i)=>s+i.value,0); if(restValue>0) head.push({label:'Sonstige', value:restValue, share: total?restValue/total:0}); items=head; }
   return items;
@@ -449,37 +854,183 @@ function barsCard(title, sub, items){
   return `<div class="structure-card"><div class="structure-head"><div><div class="structure-title">${title}</div><div class="structure-sub">${sub}</div></div><div class="structure-total">${items.length}</div></div><div class="bar-list">${items.map((it,idx)=>`<div class="bar-item"><div class="bar-label">${it.label}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(it.share*100,3)}%;background:${barPalette[idx % barPalette.length]}"></div></div><div class="bar-value">${f(it.share*100,1)}%</div></div>`).join('')}</div><div class="structure-footer bars">100%</div></div>`;
 }
 function renderStructure(rows){
+  const title = document.getElementById('structureTitle');
+  if(currentPage === 'transactions'){
+    title.classList.add('hidden');
+    document.getElementById('structureGrid').classList.add('hidden');
+    return;
+  }
+  title.classList.toggle('hidden', detailMode);
+  document.getElementById('structureGrid').classList.toggle('hidden', detailMode);
+  if(detailMode) return;
+  title.innerHTML = currentPage === 'watchlist'
+    ? '<span class="sec-n">3 ·</span> Watchlist-Struktur — Kategorien · Länder'
+    : '<span class="sec-n">4 ·</span> Depotstruktur — Kategorien · Länder';
   const categories = group(rows,'category',8);
   const countries = group(rows,'country',8);
   document.getElementById('structureGrid').innerHTML = [
-    donutCard('Kategorien','Gesamtdepot nach aktuellem Marktwert',categories,'Kategorien','share'),
+    donutCard('Kategorien',currentPage === 'watchlist' ? 'Watchlist nach aktuellem Marktwert' : 'Aktives Depot nach aktuellem Marktwert',categories,'Kategorien','share'),
     barsCard('Länder','Gewichtung nach aktuellem Marktwert',countries)
   ].join('');
 }
 function renderTransactions(){
+  const wrap = document.getElementById('transactionsWrap');
+  if(currentPage !== 'transactions'){
+    wrap.classList.add('hidden');
+    return;
+  }
+  wrap.classList.remove('hidden');
+  const tx = [...appState.transactions].sort((a,b)=>{ const da=(b.date||'').localeCompare(a.date||''); if(da!==0) return da; return String(b.type||'').localeCompare(String(a.type||'')); });
   let html = `<thead><tr><th>Datum</th><th>Typ</th><th>Bezeichnung</th><th>WKN</th><th>Stück</th><th>Kurs</th><th>Betrag</th></tr></thead><tbody>`;
-  portfolio.forEach(p=>p.lots.forEach(l=>{ html += `<tr><td>${l.date}</td><td class="dim">START</td><td>${p.name}</td><td class="dim">${p.wkn}</td><td>${f(l.shares,0)}</td><td>${f(l.price,2)} €</td><td>${f(l.shares*l.price)} €</td></tr>`; }));
+  tx.forEach(t=>{ html += `<tr><td>${t.date}</td><td class="dim">${t.type}</td><td>${t.name}</td><td class="dim">${t.wkn}</td><td>${t.shares ? f(t.shares,0) : '–'}</td><td>${Number.isFinite(Number(t.price)) ? f(t.price,2)+' €' : '–'}</td><td>${Number.isFinite(Number(t.amount)) ? f(t.amount)+' €' : '–'}</td></tr>`; });
   html += '</tbody>';
   document.getElementById('transactionsTable').innerHTML = html;
 }
-function toggleDetails(){ detailMode = !detailMode; render(); }
-function toggleTransactions(){
-  transactionsOpen = !transactionsOpen;
-  document.getElementById('transactionsWrap').classList.toggle('hidden', !transactionsOpen);
-  document.getElementById('transactionsNavBtn').classList.toggle('active', transactionsOpen);
+function setNavState(){
+  ['overview','watchlist','transactions'].forEach(page => {
+    const btn = document.getElementById(`${page}NavBtn`);
+    if(btn) btn.classList.toggle('active', currentPage === page);
+  });
+  const pflegeBtn = document.getElementById('pflegeNavBtn');
+  if(pflegeBtn) pflegeBtn.classList.remove('active');
 }
-function goHome(){
-  detailMode = false;
-  currentSort = { key: 'currentValue', dir: 'desc' };
-  if (transactionsOpen) {
-    transactionsOpen = false;
-    document.getElementById('transactionsWrap').classList.add('hidden');
-    document.getElementById('transactionsNavBtn').classList.remove('active');
+function switchPage(page){
+  currentPage = page;
+  if(page === 'transactions'){
+    detailMode = false;
+    historicalMode = false;
+  } else {
+    currentSort = historicalMode ? { key: 'ytdPotential', dir: 'desc' } : currentSort;
   }
+  render();
+}
+function toggleDetails(){ if(currentPage === 'transactions') return; detailMode = !detailMode; if(detailMode) historicalMode = false; render(); }
+function toggleHistoricalMode(){ if(currentPage === 'transactions') return; historicalMode = !historicalMode; if(historicalMode) detailMode = false; currentSort = historicalMode ? { key: 'ytdPotential', dir: 'desc' } : { key: 'currentValue', dir: 'desc' }; render(); }
+function goHome(){
+  currentPage = 'overview';
+  detailMode = false;
+  historicalMode = false;
+  currentSort = { key: 'currentValue', dir: 'desc' };
   render();
   window.scrollTo({top:0, behavior:'smooth'});
 }
-function scrollToTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
+function fillSelectOptions(selectId, items, emptyLabel){
+  const select = document.getElementById(selectId);
+  if(!select) return;
+  select.innerHTML = `<option value="">${emptyLabel}</option>` + items.map(item => `<option value="${item.wkn}">${item.name} · ${item.wkn}</option>`).join('');
+}
+function populatePflegeSelects(){
+  const activeItems = appState.active.map(p=>({wkn:p.wkn,name:p.name}));
+  const watchItems = appState.watchlist.map(w=>({wkn:w.wkn,name:w.name}));
+  fillSelectOptions('sellWkn', activeItems, 'Position wählen');
+  fillSelectOptions('deleteWatchWkn', watchItems, 'Watchlist-Titel wählen');
+}
+function openPflegeModal(){
+  populatePflegeSelects();
+  document.getElementById('pflegeBackdrop').classList.add('open');
+  document.getElementById('pflegeModal').classList.add('open');
+}
+function closePflegeModal(){
+  document.getElementById('pflegeBackdrop').classList.remove('open');
+  document.getElementById('pflegeModal').classList.remove('open');
+}
+function findOrCreateSecurity(wkn){
+  const key = String(wkn||'').trim().toUpperCase();
+  const master = SECURITY_MASTER[key];
+  ensureSecurityMaster(key, master || {});
+  return { wkn:key, name:SECURITY_MASTER[key].name, meta:SECURITY_MASTER[key].meta };
+}
+function addTransaction(entry){
+  appState.transactions.unshift(entry);
+}
+function afterMaintenance(status){
+  saveState();
+  populatePflegeSelects();
+  setStatus(status);
+  render();
+  refreshMarketData();
+}
+function handleBuy(event){
+  event.preventDefault();
+  const wkn = document.getElementById('buyWkn').value.trim().toUpperCase();
+  const shares = Number(document.getElementById('buyShares').value);
+  const price = Number(document.getElementById('buyPrice').value);
+  const date = document.getElementById('buyDate').value || todayIso();
+  if(!wkn || !shares || !price) return;
+  const sec = findOrCreateSecurity(wkn);
+  let pos = appState.active.find(p=>p.wkn===wkn);
+  if(!pos){
+    pos = normalizePosition({wkn,name:sec.name,meta:sec.meta,lots:[]});
+    appState.active.push(pos);
+  }
+  pos.lots.push({shares, price, date});
+  addTransaction({date, type:'KAUF', name:pos.name, wkn, shares, price, amount:shares*price});
+  event.target.reset();
+  document.getElementById('buyDate').value = todayIso();
+  afterMaintenance(`Kauf erfasst · ${sec.name} · ${f(shares,0)} Stück`);
+}
+function handleSell(event){
+  event.preventDefault();
+  const wkn = document.getElementById('sellWkn').value;
+  const shares = Number(document.getElementById('sellShares').value);
+  const priceInput = document.getElementById('sellPrice').value;
+  const date = document.getElementById('sellDate').value || todayIso();
+  const pos = appState.active.find(p=>p.wkn===wkn);
+  if(!pos || !shares) return;
+  const totalShares = sharesOf(pos);
+  if(shares > totalShares) return;
+  const refPrice = avgRefPrice(pos);
+  const sellPrice = Number(priceInput || liveKurse[wkn] || refPrice);
+  appState.sold.push(normalizeSold({wkn, name:pos.name, meta:pos.meta, shares, refPrice, sellPrice, sellDate:date}));
+  const remaining = totalShares - shares;
+  if(remaining > 0){
+    pos.lots = [{shares:remaining, price:refPrice, date:getPrevYearEndIso()}];
+  } else {
+    appState.active = appState.active.filter(p=>p.wkn!==wkn);
+  }
+  addTransaction({date, type:'VERKAUF', name:pos.name, wkn, shares, price:sellPrice, amount:shares*sellPrice});
+  event.target.reset();
+  document.getElementById('sellDate').value = todayIso();
+  afterMaintenance(`Verkauf erfasst · ${pos.name} · ${f(shares,0)} Stück`);
+}
+function handleAddWatch(event){
+  event.preventDefault();
+  const wkn = document.getElementById('watchWkn').value.trim().toUpperCase();
+  if(!wkn) return;
+  if(appState.watchlist.some(w=>w.wkn===wkn)) return;
+  const sec = findOrCreateSecurity(wkn);
+  const basePrice = prevYearCloseFromHistory(wkn) || liveKurse[wkn] || 0;
+  appState.watchlist.push(normalizeWatch({wkn,name:sec.name,meta:sec.meta,basePrice,date:getPrevYearEndIso()}));
+  addTransaction({date:todayIso(), type:'WATCH+', name:sec.name, wkn, shares:null, price:basePrice, amount:basePrice});
+  event.target.reset();
+  afterMaintenance(`Watchlist ergänzt · ${sec.name}`);
+}
+function handleDeleteWatch(event){
+  event.preventDefault();
+  const wkn = document.getElementById('deleteWatchWkn').value;
+  const idx = appState.watchlist.findIndex(w=>w.wkn===wkn);
+  if(idx < 0) return;
+  const item = appState.watchlist[idx];
+  appState.watchlist.splice(idx,1);
+  addTransaction({date:todayIso(), type:'WATCH-', name:item.name, wkn:item.wkn, shares:null, price:null, amount:null});
+  event.target.reset();
+  afterMaintenance(`Watchlist bereinigt · ${item.name}`);
+}
+function applyYearRolloverIfNeeded(){
+  const currentYear = getCurrentYear();
+  if(appState.meta.year === currentYear) return false;
+  appState.active = appState.active.map(p => {
+    const shares = sharesOf(p);
+    const price = prevYearCloseFromHistory(p.wkn) || liveKurse[p.wkn] || avgRefPrice(p);
+    return normalizePosition({ wkn:p.wkn, name:p.name, meta:p.meta, lots:[{shares, price, date:getPrevYearEndIso(currentYear)}] });
+  });
+  appState.watchlist = appState.watchlist.map(w => normalizeWatch({ wkn:w.wkn, name:w.name, meta:w.meta, basePrice:prevYearCloseFromHistory(w.wkn) || liveKurse[w.wkn] || w.basePrice, date:getPrevYearEndIso(currentYear) }));
+  appState.sold = [];
+  appState.transactions = [];
+  appState.meta.year = currentYear;
+  saveState();
+  return true;
+}
 async function refreshMarketData() {
   if (marketRefreshRunning) return;
   setRefreshButtonsLoading(true);
@@ -487,13 +1038,21 @@ async function refreshMarketData() {
   try {
     await loadFX();
     await loadKurse();
+    const rolled = applyYearRolloverIfNeeded();
+    if(rolled){
+      liveKurse = {};
+      prevKurse = {};
+      Object.keys(historicalData).forEach(k=>delete historicalData[k]);
+      await loadKurse();
+    }
     const loaded = Object.keys(liveKurse).length;
-    const total = portfolio.length;
+    const total = allRelevantWkns().length;
+    const historyLoaded = Object.keys(historicalData).length;
     const fxLoaded = Object.keys(fxRates).length;
     lastMarketUpdate = new Date();
-    currentSort = { key: 'currentValue', dir: 'desc' };
+    currentSort = historicalMode ? { key: 'ytdPotential', dir: 'desc' } : { key: 'currentValue', dir: 'desc' };
     const now = formatStamp(lastMarketUpdate);
-    setStatus(`Online · ${loaded}/${total} Kurse geladen · ${fxLoaded} Währungen · Stand ${now}`);
+    setStatus(`Online · ${loaded}/${total} Kurse · ${historyLoaded}/${total} Historien · ${fxLoaded} Währungen · Stand ${now}`);
     render();
   } catch (e) {
     console.error('Refresh fehlgeschlagen', e);
@@ -503,9 +1062,76 @@ async function refreshMarketData() {
     setRefreshButtonsLoading(false);
   }
 }
-function render(){ const rows=rowsFromPortfolio(); renderDate(); renderKpis(rows); renderPositions(rows); renderStructure(rows); renderTransactions(); }
+function render(){
+  renderDate();
+  setNavState();
+  document.body.classList.toggle('page-watchlist', currentPage === 'watchlist');
+  document.body.classList.toggle('page-overview', currentPage === 'overview');
+  document.body.classList.toggle('page-transactions', currentPage === 'transactions');
+  const activeRows = rowsFromPortfolio(appState.active);
+  const soldRows = rowsFromSold();
+  const watchRows = rowsFromWatchlist();
+  const positionsSection = document.getElementById('positionsSection');
+  const modeNote = document.getElementById('modeNote');
+  const positionsWrap = document.getElementById('positionsWrap');
+  const soldSection = document.getElementById('soldSection');
+  const transactionsWrap = document.getElementById('transactionsWrap');
+  const overviewTitle = document.getElementById('overviewTitle');
+  const kpiGrid = document.getElementById('kpiGrid');
+  const structureTitle = document.getElementById('structureTitle');
+  const structureGrid = document.getElementById('structureGrid');
+  document.getElementById('positionsSectionLabel').innerHTML = '<span class="sec-n">2 ·</span> Positionen — Gesamtdepot';
+  if(currentPage === 'transactions'){
+    overviewTitle.classList.add('hidden');
+    kpiGrid.classList.add('hidden');
+    positionsSection.classList.add('hidden');
+    modeNote.classList.add('hidden');
+    positionsWrap.classList.add('hidden');
+    soldSection.classList.add('hidden');
+    structureTitle.classList.add('hidden');
+    structureGrid.classList.add('hidden');
+    renderTransactions();
+    return;
+  }
+  overviewTitle.classList.remove('hidden');
+  kpiGrid.classList.remove('hidden');
+  positionsSection.classList.remove('hidden');
+  modeNote.classList.remove('hidden');
+  positionsWrap.classList.remove('hidden');
+  structureTitle.classList.remove('hidden');
+  structureGrid.classList.remove('hidden');
+  transactionsWrap.classList.add('hidden');
+  if(currentPage === 'watchlist'){
+    overviewTitle.classList.add('hidden');
+    kpiGrid.classList.add('hidden');
+    positionsSection.classList.remove('hidden');
+    document.getElementById('positionsSectionLabel').innerHTML = '<span class="sec-n">1 ·</span> Watchlist';
+    modeNote.classList.remove('hidden');
+    modeNote.textContent = historicalMode
+      ? 'Historische Watchlist mit YTD-High und 12-Monats-High – ohne Anteilslogik'
+      : 'Watchlist fokussiert auf Titel, Kurse und Veränderungen – ohne Anteilslogik';
+    renderPositions(watchRows, 'watchlist');
+    document.getElementById('soldSection').classList.add('hidden');
+    structureTitle.classList.add('hidden');
+    structureGrid.classList.add('hidden');
+    return;
+  }
+  renderKpis(activeRows, soldRows);
+  renderPositions(activeRows, 'overview');
+  renderSold(soldRows);
+  renderStructure(activeRows);
+}
+loadState();
 render();
 refreshMarketData();
+document.getElementById('buyDate').value = todayIso();
+document.getElementById('sellDate').value = todayIso();
+document.getElementById('buyForm').addEventListener('submit', handleBuy);
+document.getElementById('sellForm').addEventListener('submit', handleSell);
+document.getElementById('watchForm').addEventListener('submit', handleAddWatch);
+document.getElementById('watchDeleteForm').addEventListener('submit', handleDeleteWatch);
+document.getElementById('pflegeBackdrop').addEventListener('click', closePflegeModal);
 </script>
+
 </body>
 </html>
