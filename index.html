@@ -364,10 +364,21 @@ function resetPin(){
     </div>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const CF_WORKER = 'https://wax-kurse.calvinjohncamp.workers.dev';
 const CF_HISTORY_WORKER = 'https://jk-invest.calvinjohncamp.workers.dev';
 const STORAGE_KEY = 'folio-invest-state-v3';
+const SUPABASE_URL = 'https://ywfpzdniicfrhnrvfqfe.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_P5e_bUSC5yG06QnucNn1BA_ss_uVrzS';
+const SUPABASE_TABLE_CANDIDATES = ['invest_app_state','app_state'];
+const SUPABASE_CLIENT = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+if (!window.supabase) {
+  console.warn('Supabase-Bibliothek nicht geladen – App speichert nur lokal.');
+}
+let activeStateTable = null;
 const DEFAULT_META = { category:'Nicht zugeordnet', country:'Nicht zugeordnet', exchange:'–' };
 const BASE_PORTFOLIO = [
   {wkn:'EWG2LD',name:'ETC-Zertifikat auf 100 GR Gold',lots:[{shares:2400,price:122.15,date:'2025-12-31'}],meta:{category:'Precious Metals',country:'Europa',exchange:'Xetra'}},
@@ -463,26 +474,121 @@ function seedTransactionsFromPortfolio(portfolio){
   portfolio.forEach(p => (p.lots||[]).forEach(l => tx.push({date:l.date, type:'START', name:p.name, wkn:p.wkn, shares:Number(l.shares||0), price:Number(l.price||0), amount:Number(l.shares||0)*Number(l.price||0)})));
   return tx.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 }
-function loadState(){
+function createDefaultState(){
+  const active = BASE_PORTFOLIO.map(normalizePosition);
+  return { meta:{year:getCurrentYear()}, active, sold:[], watchlist:[], transactions: seedTransactionsFromPortfolio(active) };
+}
+function normalizeLoadedState(parsed){
+  return {
+    meta: { year:Number(parsed?.meta?.year || getCurrentYear()) },
+    active:(parsed?.active||[]).map(normalizePosition),
+    sold:(parsed?.sold||[]).map(normalizeSold),
+    watchlist:(parsed?.watchlist||[]).map(normalizeWatch),
+    transactions:(parsed?.transactions||[]).map(t=>({...t, shares:Number(t.shares||0), price:Number(t.price||0), amount:Number(t.amount||0)}))
+  };
+}
+function loadLocalState(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){
-      const parsed = JSON.parse(raw);
-      appState = {
-        meta: { year:Number(parsed?.meta?.year || getCurrentYear()) },
-        active:(parsed.active||[]).map(normalizePosition),
-        sold:(parsed.sold||[]).map(normalizeSold),
-        watchlist:(parsed.watchlist||[]).map(normalizeWatch),
-        transactions:(parsed.transactions||[]).map(t=>({...t, shares:Number(t.shares||0), price:Number(t.price||0), amount:Number(t.amount||0)}))
-      };
+    if(raw) return normalizeLoadedState(JSON.parse(raw));
+  } catch(e) {
+    console.warn('Lokaler State konnte nicht geladen werden', e);
+  }
+  return null;
+}
+function saveLocalState(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+  } catch(e) {
+    console.warn('Lokaler State konnte nicht gespeichert werden', e);
+  }
+}
+function buildSupabaseRow(tableName){
+  const year = Number(appState?.meta?.year || getCurrentYear());
+  if(tableName === 'app_state') return { app:'invest', year, state_json: appState };
+  return { year, state_json: appState };
+}
+async function loadCloudState(){
+  if(!SUPABASE_CLIENT) return null;
+  const year = getCurrentYear();
+  for (const tableName of SUPABASE_TABLE_CANDIDATES){
+    try {
+      let query = SUPABASE_CLIENT.from(tableName).select('*').eq('year', year).limit(1);
+      if(tableName === 'app_state') query = query.eq('app', 'invest');
+      const { data, error } = await query.maybeSingle();
+      if(error){
+        const msg = String(error.message || '');
+        if(msg.includes('relation') || msg.includes('schema cache') || msg.includes('Could not find')) continue;
+        console.warn(`Supabase-Lesen fehlgeschlagen (${tableName})`, error);
+        continue;
+      }
+      activeStateTable = tableName;
+      if(data?.state_json) return normalizeLoadedState(data.state_json);
+      return null;
+    } catch(e){
+      console.warn(`Supabase-Lesen fehlgeschlagen (${tableName})`, e);
+    }
+  }
+  return null;
+}
+async function saveCloudState(){
+  if(!SUPABASE_CLIENT) return false;
+  const candidates = activeStateTable ? [activeStateTable, ...SUPABASE_TABLE_CANDIDATES.filter(t=>t!==activeStateTable)] : SUPABASE_TABLE_CANDIDATES;
+  for (const tableName of candidates){
+    try {
+      const row = buildSupabaseRow(tableName);
+      const options = tableName === 'app_state' ? { onConflict:'app,year' } : { onConflict:'year' };
+      const { error } = await SUPABASE_CLIENT.from(tableName).upsert(row, options);
+      if(error){
+        const msg = String(error.message || '');
+        if(msg.includes('relation') || msg.includes('schema cache') || msg.includes('Could not find')) continue;
+        console.warn(`Supabase-Speichern fehlgeschlagen (${tableName})`, error);
+        continue;
+      }
+      activeStateTable = tableName;
+      return true;
+    } catch(e){
+      console.warn(`Supabase-Speichern fehlgeschlagen (${tableName})`, e);
+    }
+  }
+  return false;
+}
+async function loadState(){
+  if(!SUPABASE_CLIENT){
+    const localState = loadLocalState();
+    if(localState){
+      appState = localState;
+      setStatus('Nur lokal geladen · Supabase-Bibliothek fehlt');
       return;
     }
-  } catch(e) { console.warn('State konnte nicht geladen werden', e); }
-  const active = BASE_PORTFOLIO.map(normalizePosition);
-  appState = { meta:{year:getCurrentYear()}, active, sold:[], watchlist:[], transactions: seedTransactionsFromPortfolio(active) };
+    appState = createDefaultState();
+    saveLocalState();
+    setStatus('Nur lokal gestartet · Supabase-Bibliothek fehlt');
+    return;
+  }
+  const cloudState = await loadCloudState();
+  if(cloudState){
+    appState = cloudState;
+    saveLocalState();
+    setStatus(`Cloud-Stand geladen · ${appState.meta.year}`);
+    return;
+  }
+  const localState = loadLocalState();
+  if(localState){
+    appState = localState;
+    setStatus(`Lokaler Stand geladen · ${appState.meta.year}`);
+    return;
+  }
+  appState = createDefaultState();
+  saveLocalState();
+  await saveCloudState();
+  setStatus(`Neuer Startbestand angelegt · ${appState.meta.year}`);
 }
-function saveState(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+async function saveState(){
+  saveLocalState();
+  const ok = await saveCloudState();
+  if(ok) setStatus(`Gespeichert · Cloud + Gerät · ${formatStamp(new Date().toISOString())}`);
+  else setStatus('Nur lokal gespeichert · Cloud derzeit nicht erreichbar');
 }
 function ensureSecurityMaster(wkn, fallback={}){
   if(!SECURITY_MASTER[wkn]){
@@ -943,14 +1049,14 @@ function findOrCreateSecurity(wkn){
 function addTransaction(entry){
   appState.transactions.unshift(entry);
 }
-function afterMaintenance(status){
-  saveState();
+async function afterMaintenance(status){
+  await saveState();
   populatePflegeSelects();
   setStatus(status);
   render();
   refreshMarketData();
 }
-function handleBuy(event){
+async function handleBuy(event){
   event.preventDefault();
   const wkn = document.getElementById('buyWkn').value.trim().toUpperCase();
   const shares = Number(document.getElementById('buyShares').value);
@@ -967,9 +1073,9 @@ function handleBuy(event){
   addTransaction({date, type:'KAUF', name:pos.name, wkn, shares, price, amount:shares*price});
   event.target.reset();
   document.getElementById('buyDate').value = todayIso();
-  afterMaintenance(`Kauf erfasst · ${sec.name} · ${f(shares,0)} Stück`);
+  await afterMaintenance(`Kauf erfasst · ${sec.name} · ${f(shares,0)} Stück`);
 }
-function handleSell(event){
+async function handleSell(event){
   event.preventDefault();
   const wkn = document.getElementById('sellWkn').value;
   const shares = Number(document.getElementById('sellShares').value);
@@ -991,9 +1097,9 @@ function handleSell(event){
   addTransaction({date, type:'VERKAUF', name:pos.name, wkn, shares, price:sellPrice, amount:shares*sellPrice});
   event.target.reset();
   document.getElementById('sellDate').value = todayIso();
-  afterMaintenance(`Verkauf erfasst · ${pos.name} · ${f(shares,0)} Stück`);
+  await afterMaintenance(`Verkauf erfasst · ${pos.name} · ${f(shares,0)} Stück`);
 }
-function handleAddWatch(event){
+async function handleAddWatch(event){
   event.preventDefault();
   const wkn = document.getElementById('watchWkn').value.trim().toUpperCase();
   if(!wkn) return;
@@ -1003,9 +1109,9 @@ function handleAddWatch(event){
   appState.watchlist.push(normalizeWatch({wkn,name:sec.name,meta:sec.meta,basePrice,date:getPrevYearEndIso()}));
   addTransaction({date:todayIso(), type:'WATCH+', name:sec.name, wkn, shares:null, price:basePrice, amount:basePrice});
   event.target.reset();
-  afterMaintenance(`Watchlist ergänzt · ${sec.name}`);
+  await afterMaintenance(`Watchlist ergänzt · ${sec.name}`);
 }
-function handleDeleteWatch(event){
+async function handleDeleteWatch(event){
   event.preventDefault();
   const wkn = document.getElementById('deleteWatchWkn').value;
   const idx = appState.watchlist.findIndex(w=>w.wkn===wkn);
@@ -1121,16 +1227,19 @@ function render(){
   renderSold(soldRows);
   renderStructure(activeRows);
 }
-loadState();
-render();
-refreshMarketData();
-document.getElementById('buyDate').value = todayIso();
-document.getElementById('sellDate').value = todayIso();
-document.getElementById('buyForm').addEventListener('submit', handleBuy);
-document.getElementById('sellForm').addEventListener('submit', handleSell);
-document.getElementById('watchForm').addEventListener('submit', handleAddWatch);
-document.getElementById('watchDeleteForm').addEventListener('submit', handleDeleteWatch);
-document.getElementById('pflegeBackdrop').addEventListener('click', closePflegeModal);
+async function bootstrapApp(){
+  await loadState();
+  render();
+  refreshMarketData();
+  document.getElementById('buyDate').value = todayIso();
+  document.getElementById('sellDate').value = todayIso();
+  document.getElementById('buyForm').addEventListener('submit', handleBuy);
+  document.getElementById('sellForm').addEventListener('submit', handleSell);
+  document.getElementById('watchForm').addEventListener('submit', handleAddWatch);
+  document.getElementById('watchDeleteForm').addEventListener('submit', handleDeleteWatch);
+  document.getElementById('pflegeBackdrop').addEventListener('click', closePflegeModal);
+}
+bootstrapApp();
 </script>
 
 </body>
