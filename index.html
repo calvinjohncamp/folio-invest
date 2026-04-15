@@ -480,12 +480,21 @@ function supabaseHeaders(){
 }
 function initSupabase(){ /* REST-basiert, kein Client nötig */ }
 function serializeState(){
-  return clone(appState);
+  if(!appState) return null;
+  // null-Einträge aus Arrays bereinigen bevor wir serialisieren
+  const clean = {
+    meta: appState.meta,
+    active: (appState.active||[]).filter(Boolean),
+    sold: (appState.sold||[]).filter(Boolean),
+    watchlist: (appState.watchlist||[]).filter(Boolean),
+    transactions: (appState.transactions||[]).filter(Boolean)
+  };
+  return clone(clean);
 }
 function normalizeLoadedState(parsed){
   return {
     meta: { year:Number(parsed?.meta?.year || getCurrentYear()) },
-    active:(parsed?.active||[]).map(normalizePosition),
+    active:(parsed?.active||[]).filter(Boolean).map(normalizePosition),
     sold:(parsed?.sold||[]).map(normalizeSold),
     watchlist:(parsed?.watchlist||[]).map(normalizeWatch),
     transactions:(parsed?.transactions||[]).map(t=>({...t, shares:Number(t?.shares||0), price:Number(t?.price||0), amount:Number(t?.amount||0)}))
