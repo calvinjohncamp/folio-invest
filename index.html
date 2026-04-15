@@ -343,9 +343,24 @@ function resetPin(){
       <h4>Watchlist hinzufügen</h4>
       <form class="pflege-form" id="watchForm">
         <label>WKN
-          <input id="watchWkn" type="text" placeholder="nur WKN eingeben" required />
+          <input id="watchWkn" type="text" placeholder="z.B. 865985" required />
         </label>
-        <div class="pflege-note">Der Basiskurs wird automatisch mit dem Schlusskurs vom 31.12. des Vorjahres belegt, sobald die App dafür Daten hat. Falls für eine neue WKN noch kein Mapping vorhanden ist, bleibt der Titel zunächst neutral.</div>
+        <label>Name (optional)
+          <input id="watchName" type="text" placeholder="z.B. Apple Inc." />
+        </label>
+        <label>Yahoo Ticker
+          <input id="watchTicker" type="text" placeholder="z.B. AAPL oder VGWD.DE" required />
+        </label>
+        <label>Währung
+          <select id="watchFx">
+            <option value="EUR">EUR (€)</option>
+            <option value="USD">USD ($)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="CHF">CHF</option>
+            <option value="JPY">JPY</option>
+          </select>
+        </label>
+        <div class="pflege-note">Der Basiskurs wird automatisch mit dem Schlusskurs vom 31.12. des Vorjahres belegt. Das Ticker-Mapping wird gespeichert und bleibt beim nächsten Laden erhalten.</div>
         <div class="pflege-actions">
           <button class="pflege-submit" type="submit">Watchlist ergänzen</button>
         </div>
@@ -487,7 +502,8 @@ function serializeState(){
     active: (appState.active||[]).filter(Boolean),
     sold: (appState.sold||[]).filter(Boolean),
     watchlist: (appState.watchlist||[]).filter(Boolean),
-    transactions: (appState.transactions||[]).filter(Boolean)
+    transactions: (appState.transactions||[]).filter(Boolean),
+    customTickers: appState.customTickers || {}
   };
   return clone(clean);
 }
@@ -497,12 +513,13 @@ function normalizeLoadedState(parsed){
     active:(parsed?.active||[]).filter(Boolean).map(normalizePosition),
     sold:(parsed?.sold||[]).map(normalizeSold),
     watchlist:(parsed?.watchlist||[]).map(normalizeWatch),
-    transactions:(parsed?.transactions||[]).map(t=>({...t, shares:Number(t?.shares||0), price:Number(t?.price||0), amount:Number(t?.amount||0)}))
+    transactions:(parsed?.transactions||[]).map(t=>({...t, shares:Number(t?.shares||0), price:Number(t?.price||0), amount:Number(t?.amount||0)})),
+    customTickers: parsed?.customTickers || {}
   };
 }
 function defaultState(){
   const active = BASE_PORTFOLIO.map(normalizePosition);
-  return { meta:{year:getCurrentYear()}, active, sold:[], watchlist:[], transactions: seedTransactionsFromPortfolio(active) };
+  return { meta:{year:getCurrentYear()}, active, sold:[], watchlist:[], transactions: seedTransactionsFromPortfolio(active), customTickers:{} };
 }
 function loadLocalState(){
   try {
@@ -545,7 +562,6 @@ async function saveCloudState(){
     console.error('saveCloudState: state_json ist leer, Abbruch');
     return false;
   }
-  console.log('saveCloudState: state_json Länge =', stateJsonStr.length);
   // state_json als String senden – PostgREST castet automatisch zu json/jsonb
   const row = {
     app: SUPABASE_APP,
@@ -569,7 +585,6 @@ async function saveCloudState(){
   const checkR = await fetch(checkUrl, { headers: checkHeaders });
   const existing = checkR.ok ? await checkR.json() : [];
   const exists = existing?.length > 0;
-  console.log('saveCloudState: Row existiert =', exists);
 
   let r;
   if(exists){
@@ -592,8 +607,13 @@ async function saveCloudState(){
     const txt = await r.text();
     throw new Error(`Supabase ${exists?'PATCH':'INSERT'} ${r.status}: ${txt}`);
   }
-  console.log('saveCloudState: erfolgreich gespeichert');
   return true;
+}
+function applyCustomTickers(){
+  const custom = appState?.customTickers || {};
+  Object.entries(custom).forEach(([wkn, mapping]) => {
+    TICKER_MAP[wkn] = mapping;
+  });
 }
 async function loadState(){
   initSupabase();
@@ -602,6 +622,7 @@ async function loadState(){
     if(cloud){
       appState = cloud;
       appState.meta.year = getCurrentYear();
+      applyCustomTickers();
       currentStorageMode = 'Cloud + Gerät';
       localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
       return;
@@ -613,6 +634,7 @@ async function loadState(){
   if(local){
     appState = local;
     appState.meta.year = getCurrentYear();
+    applyCustomTickers();
     currentStorageMode = 'Gerät';
     try {
       const saved = await saveCloudState();
@@ -1104,6 +1126,7 @@ function addTransaction(entry){
 }
 async function afterMaintenance(status){
   await saveState();
+  closePflegeModal();
   populatePflegeSelects();
   setStatus(`${status} · ${currentStorageMode}`);
   render();
@@ -1155,14 +1178,38 @@ async function handleSell(event){
 async function handleAddWatch(event){
   event.preventDefault();
   const wkn = document.getElementById('watchWkn').value.trim().toUpperCase();
-  if(!wkn) return;
+  const ticker = document.getElementById('watchTicker').value.trim();
+  const nameInput = document.getElementById('watchName').value.trim();
+  const fx = document.getElementById('watchFx').value || 'EUR';
+  if(!wkn || !ticker) return;
   if(appState.watchlist.some(w=>w.wkn===wkn)) return;
+  // Ticker-Mapping speichern
+  if(!appState.customTickers) appState.customTickers = {};
+  appState.customTickers[wkn] = { tickers:[ticker], fx };
+  TICKER_MAP[wkn] = { tickers:[ticker], fx };
+  // Name übernehmen falls angegeben
+  if(nameInput && !SECURITY_MASTER[wkn]){
+    SECURITY_MASTER[wkn] = { name:nameInput, meta: DEFAULT_META };
+  }
   const sec = findOrCreateSecurity(wkn);
+  if(nameInput) sec.name = nameInput;
+  // Kurs sofort laden
+  try {
+    const quote = await fetchTickerWithFallback([ticker]);
+    if(quote?.price) {
+      liveKurse[wkn] = toEUR(quote.price, fx);
+      prevKurse[wkn] = toEUR(quote.prev || quote.price, fx);
+    }
+    const history = await fetchHistoryWithFallback([ticker]);
+    if(history?.prices?.length){
+      historicalData[wkn] = history.prices.map(row => ({ ...row, close: toEUR(row.close, fx) }));
+    }
+  } catch(e) { console.warn('Kurs für neue Watchlist-WKN konnte nicht geladen werden', e); }
   const basePrice = prevYearCloseFromHistory(wkn) || liveKurse[wkn] || 0;
-  appState.watchlist.push(normalizeWatch({wkn,name:sec.name,meta:sec.meta,basePrice,date:getPrevYearEndIso()}));
-  addTransaction({date:todayIso(), type:'WATCH+', name:sec.name, wkn, shares:null, price:basePrice, amount:basePrice});
+  appState.watchlist.push(normalizeWatch({wkn,name:nameInput||sec.name,meta:sec.meta,basePrice,date:getPrevYearEndIso()}));
+  addTransaction({date:todayIso(), type:'WATCH+', name:nameInput||sec.name, wkn, shares:null, price:basePrice, amount:basePrice});
   event.target.reset();
-  await afterMaintenance(`Watchlist ergänzt · ${sec.name}`);
+  await afterMaintenance(`Watchlist ergänzt · ${nameInput||sec.name}`);
 }
 async function handleDeleteWatch(event){
   event.preventDefault();
@@ -1289,7 +1336,6 @@ async function testSupabaseConnection(){
       console.warn(`⚠️ Supabase-Verbindungstest fehlgeschlagen: HTTP ${r.status}`, txt);
       return false;
     }
-    console.info('✅ Supabase-Verbindung OK');
     return true;
   } catch(e) {
     console.warn('⚠️ Supabase nicht erreichbar', e);
