@@ -385,7 +385,7 @@ function resetPin(){
           <div style="font-size:11px;color:#777;margin:4px 0 6px;line-height:1.4">Ticker unbekannt? → <a href="https://finance.yahoo.com/lookup/" target="_blank" style="color:#2f6cf2;text-decoration:none;font-weight:600">Yahoo Finance Suche ↗</a> — WKN oder Name eingeben, Ticker kopieren.</div>
           <input id="watchTicker" type="text" placeholder="z.B. AAPL oder VGWD.DE" />
           <button type="button" class="ticker-search-btn" id="tickerSearchBtn" onclick="searchTicker()">
-            🔍 Ticker suchen
+            🔍 Nach Name suchen
           </button>
           <div class="ticker-results" id="tickerResults"></div>
         </label>
@@ -1451,8 +1451,14 @@ async function bootstrapApp(){
 async function searchTicker(){
   const wkn = document.getElementById('watchWkn').value.trim().toUpperCase();
   const name = document.getElementById('watchName').value.trim();
-  const q = wkn || name;
+  // Name hat Vorrang – Yahoo kennt keine deutschen WKN
+  const q = name || wkn;
   if(!q){ document.getElementById('watchWkn').focus(); return; }
+  if(!name && wkn){
+    // Nur WKN eingegeben – Hinweis zeigen aber trotzdem versuchen
+    document.getElementById('tickerResults').innerHTML =
+      '<div style="font-size:11px;color:#888;padding:4px 2px">Tipp: Yahoo findet Titel besser über den <strong>Namen</strong> (z.B. "Palantir") als über die WKN.</div>';
+  }
   const btn = document.getElementById('tickerSearchBtn');
   const resultsDiv = document.getElementById('tickerResults');
   btn.classList.add('loading');
@@ -1465,7 +1471,7 @@ async function searchTicker(){
     const data = await r.json();
     const quotes = data.quotes || [];
     if(!quotes.length){
-      resultsDiv.innerHTML = '<div style="font-size:11px;color:#888;padding:6px 2px">Keine Treffer — bitte WKN oder Name prüfen</div>';
+      resultsDiv.innerHTML = '<div style="font-size:11px;color:#888;padding:6px 2px">Keine Treffer — gib den <strong>Namen</strong> des Wertpapiers ins Name-Feld ein (z.B. "Palantir", "NVIDIA") und such erneut.</div>';
       return;
     }
     resultsDiv.innerHTML = quotes.map((q, i) => {
