@@ -464,7 +464,7 @@ function seedTransactionsFromPortfolio(portfolio){
   return tx.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 }
 const SUPABASE_URL = 'https://ywfpzdniicfrhnrvfqfe.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_P5e_bUSC5yG06QnucNn1BA_ss_uVrzS';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3ZnB6ZG5paWNmcmhucnZmcWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Mjc4ODcsImV4cCI6MjA5MTAwMzg4N30.St-f48-kfbmlN_QlAKtv-JbbLQYu5IaPmiPO7pyYQ9A';
 const SUPABASE_TABLE = 'app_state';
 const SUPABASE_APP = 'invest';
 let currentStorageMode = 'Gerät';
@@ -527,10 +527,17 @@ async function saveCloudState(){
     return false;
   }
   if(!stateSnapshot) return false;
+  // JSON-String validieren bevor wir senden
+  const stateJsonStr = JSON.stringify(stateSnapshot);
+  if(!stateJsonStr || stateJsonStr === 'null') {
+    console.error('saveCloudState: state_json ist leer, Abbruch');
+    return false;
+  }
+  console.log('saveCloudState: state_json Länge =', stateJsonStr.length);
   const row = {
     app: SUPABASE_APP,
     year: Number(getCurrentYear()),
-    state_json: stateSnapshot,
+    state_json: JSON.parse(stateJsonStr),
     updated_at: new Date().toISOString()
   };
   const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`;
@@ -540,15 +547,39 @@ async function saveCloudState(){
     'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
     'Prefer': 'resolution=merge-duplicates,return=minimal'
   };
-  const r = await fetch(url, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(row)
-  });
+  // Erst prüfen ob Row existiert (SELECT), dann gezielt INSERT oder UPDATE
+  const checkUrl = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?app=eq.${encodeURIComponent(SUPABASE_APP)}&year=eq.${row.year}&select=id&limit=1`;
+  const checkHeaders = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+  };
+  const checkR = await fetch(checkUrl, { headers: checkHeaders });
+  const existing = checkR.ok ? await checkR.json() : [];
+  const exists = existing?.length > 0;
+  console.log('saveCloudState: Row existiert =', exists);
+
+  let r;
+  if(exists){
+    // UPDATE via PATCH
+    const patchUrl = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?app=eq.${encodeURIComponent(SUPABASE_APP)}&year=eq.${row.year}`;
+    r = await fetch(patchUrl, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ state_json: row.state_json, updated_at: row.updated_at })
+    });
+  } else {
+    // INSERT
+    r = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(row)
+    });
+  }
   if(!r.ok){
     const txt = await r.text();
-    throw new Error(`Supabase upsert ${r.status}: ${txt}`);
+    throw new Error(`Supabase ${exists?'PATCH':'INSERT'} ${r.status}: ${txt}`);
   }
+  console.log('saveCloudState: erfolgreich gespeichert');
   return true;
 }
 async function loadState(){
