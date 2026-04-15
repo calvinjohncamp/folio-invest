@@ -177,6 +177,23 @@ body.page-watchlist .positions-header-card .pos-col:nth-child(7),body.page-watch
 .ticker-result-meta{font-size:10px;color:#888;white-space:nowrap}
 @media (max-width: 720px){.pflege-grid{grid-template-columns:1fr}.pflege-modal{padding:14px}}
 
+/* Upside highlighting */
+.pos-pctnote.upside-high{color:#b85d00;font-weight:700}
+.pos-pctnote.upside-very-high{color:#c8441a;font-weight:700}
+
+/* Jahreswechsel-Bestätigungsdialog */
+.rollover-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center}
+.rollover-modal{background:#faf9f6;border:1px solid #d8d4ce;border-radius:22px;box-shadow:0 18px 60px rgba(0,0,0,.22);padding:28px;max-width:480px;width:calc(100vw - 32px);text-align:center}
+.rollover-modal h2{font-size:22px;font-weight:700;color:#111;margin-bottom:10px}
+.rollover-modal p{font-size:13px;color:#555;line-height:1.6;margin-bottom:8px}
+.rollover-modal ul{text-align:left;font-size:12px;color:#444;line-height:1.8;margin:10px 0 20px 16px}
+.rollover-modal ul li::marker{color:#c8441a}
+.rollover-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.rollover-btn-confirm{border:1px solid #1a1814;background:#1a1814;color:#faf9f6;border-radius:999px;padding:11px 22px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.rollover-btn-confirm:hover{background:#2e2924}
+.rollover-btn-cancel{border:1px solid #d8d4ce;background:#fff;color:#444;border-radius:999px;padding:11px 22px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.rollover-btn-cancel:hover{background:#f0ede8}
+
 </style>
 </head>
 <body>
@@ -305,6 +322,27 @@ function resetPin(){
 </div>
 
 <div class="pflege-backdrop" id="pflegeBackdrop"></div>
+
+<!-- Jahreswechsel-Bestätigungsdialog -->
+<div class="rollover-backdrop" id="rolloverBackdrop" style="display:none">
+  <div class="rollover-modal">
+    <h2>🗓️ Jahreswechsel erkannt</h2>
+    <p>Die App wurde zuletzt im Jahr <strong id="rolloverOldYear">–</strong> gespeichert. Es ist jetzt <strong id="rolloverNewYear">–</strong>.</p>
+    <p>Der automatische Jahresabschluss führt folgende Aktionen durch:</p>
+    <ul>
+      <li>Alle aktiven Positionen: Einstandskurs wird auf den <strong>31.12.-Schlusskurs</strong> eingefroren</li>
+      <li>Watchlist: <code>basePrice</code> wird aktualisiert</li>
+      <li>Verkaufte Positionen werden geleert</li>
+      <li>Transaktionslog wird geleert</li>
+      <li><code>meta.year</code> wird auf <strong id="rolloverNewYear2">–</strong> gesetzt</li>
+    </ul>
+    <p style="color:#c8441a;font-weight:600">⚠️ Diese Aktion ist nicht rückgängig zu machen.</p>
+    <div class="rollover-actions">
+      <button class="rollover-btn-cancel" onclick="cancelRollover()">Abbrechen</button>
+      <button class="rollover-btn-confirm" onclick="confirmRollover()">Jahreswechsel durchführen</button>
+    </div>
+  </div>
+</div>
 <div class="pflege-modal" id="pflegeModal">
   <div class="pflege-head">
     <div class="pflege-title">Pflege</div>
@@ -421,6 +459,44 @@ function resetPin(){
       </form>
     </div>
 
+    <!-- Jahresabschluss volle Breite -->
+    <div class="pflege-card" style="grid-column:1 / -1">
+      <h4>Depot-Export &amp; Jahresabschluss</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:6px">Snapshot</div>
+          <div class="pflege-note" style="margin-bottom:10px">Friert den aktuellen Stand als PDF ein — jederzeit nutzbar, z.B. für Beratungsgespräche. Kein Einfluss auf die App-Daten.</div>
+          <button class="pflege-submit secondary" type="button" onclick="generateSnapshotPDF()">📄 Snapshot exportieren</button>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:6px">Jahresabschluss</div>
+          <div class="pflege-note" style="margin-bottom:10px">Berechnet die neue Jahresbasis und erstellt eine PDF-Vorschau. Erst nach Prüfung und Freigabe wird der Rollover tatsächlich durchgeführt.</div>
+          <button class="pflege-submit" type="button" onclick="startJahresabschluss()" style="background:#8b4513;border-color:#8b4513">🗓️ Jahresabschluss starten</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Jahresabschluss-Freigabe-Dialog -->
+<div class="rollover-backdrop" id="jahresabschlussBackdrop" style="display:none">
+  <div class="rollover-modal" style="max-width:540px">
+    <h2>🗓️ Jahresabschluss <span id="jaOldYear">–</span></h2>
+    <p style="margin-bottom:14px">Die PDF-Vorschau wurde heruntergeladen. Bitte prüfe sie sorgfältig und vergleiche sie mit deinem Snapshot vom 31.12.</p>
+    <div style="background:#fef3cd;border:1px solid #f59f00;border-radius:12px;padding:12px 14px;margin-bottom:16px;text-align:left;font-size:12px;color:#7a5800;line-height:1.6">
+      <strong>Mit der Freigabe wird unwiderruflich:</strong><br>
+      · Alle Positionen auf 31.12.-Schlusskurs eingefroren<br>
+      · Watchlist-Basis aktualisiert<br>
+      · Alle Transaktionen des Vorjahres gelöscht<br>
+      · Verkaufte Positionen geleert<br>
+      · Jahr auf <strong id="jaNewYear">–</strong> gesetzt
+    </div>
+    <p style="color:#c8441a;font-weight:600;margin-bottom:20px">⚠️ Diese Aktion ist nicht rückgängig zu machen.</p>
+    <div class="rollover-actions">
+      <button class="rollover-btn-cancel" onclick="cancelJahresabschluss()">Abbrechen</button>
+      <button class="rollover-btn-confirm" onclick="confirmJahresabschluss()" style="background:#8b4513;border-color:#8b4513">✓ Freigabe erteilen</button>
+    </div>
   </div>
 </div>
 <script>
@@ -1141,8 +1217,14 @@ function renderUpsideCol(r) {
     // Bold the larger; on tie always bold 12m
     const boldYtd = (ytdU != null && m12U != null && ytdU > m12U);
     const boldM12 = !boldYtd;
+    const upsideClass = (v, bold) => {
+      if (v == null) return 'pos-pctnote';
+      if (v >= 50) return 'pos-pctnote upside-very-high';
+      if (v >= 25) return 'pos-pctnote upside-high';
+      return 'pos-pctnote' + (bold ? ' bold' : '');
+    };
     const fmtU = (v, bold) => v != null
-      ? '<span class="pos-pctnote' + (bold ? ' bold' : '') + '">' + (v >= 0 ? '+' : '') + f(v,2) + '%</span>'
+      ? '<span class="' + upsideClass(v, bold) + '">' + (v >= 0 ? '+' : '') + f(v,2) + '%</span>'
       : '<span class="pos-pctnote">–</span>';
     const fmtCur = v => (v != null && v !== undefined) ? fc(v) : '–';
     return '<div class="pos-value-top">' + fmtCur(r.ytdPotential) + fmtU(ytdU, boldYtd) + '</div>'
@@ -1333,9 +1415,339 @@ async function handleDeleteTransaction(event){
   event.target.reset();
   await afterMaintenance(`Buchung gelöscht · ${tx.type} · ${tx.name}`);
 }
+// ─── PDF Export ────────────────────────────────────────────────────────────
+function loadJsPDF() {
+  return new Promise((resolve, reject) => {
+    if (window.jspdf) return resolve(window.jspdf.jsPDF);
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.onload = () => resolve(window.jspdf.jsPDF);
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+function buildPDFData(stateSnapshot) {
+  // Aktive Positionen aus Snapshot berechnen
+  const activeRows = (stateSnapshot.active || []).map(p => {
+    const shares = (p.lots||[]).reduce((s,l)=>s+Number(l.shares||0),0);
+    const refPrice = shares > 0 ? (p.lots||[]).reduce((s,l)=>s+Number(l.shares||0)*Number(l.price||0),0) / shares : 0;
+    const currentPrice = liveKurse[p.wkn] ?? refPrice;
+    const currentValue = currentPrice * shares;
+    const refValue = refPrice * shares;
+    const diffPct = refValue ? (currentValue - refValue) / refValue * 100 : 0;
+    const diffAbs = currentValue - refValue;
+    return { name: p.name, wkn: p.wkn, shares, refPrice, currentPrice, currentValue, refValue, diffPct, diffAbs };
+  }).sort((a,b) => b.currentValue - a.currentValue);
+
+  const watchRows = (stateSnapshot.watchlist || []).map(w => {
+    const currentPrice = liveKurse[w.wkn] ?? w.basePrice;
+    const diffPct = w.basePrice ? (currentPrice - w.basePrice) / w.basePrice * 100 : 0;
+    const diffAbs = currentPrice - w.basePrice;
+    return { name: w.name, wkn: w.wkn, basePrice: w.basePrice, currentPrice, diffPct, diffAbs };
+  }).sort((a,b) => a.name.localeCompare(b.name));
+
+  return { activeRows, watchRows };
+}
+
+function renderPDFTable(doc, rows, columns, startY, pageH, margin, lineH) {
+  let y = startY;
+
+  // Prüfen ob irgendeine Spalte zweizeilig ist
+  const twoLine = columns.some(c => c.label2);
+  const headerH = twoLine ? lineH + 6 : lineH + 2;
+
+  // Header-Hintergrund
+  doc.setFillColor(26, 24, 20);
+  doc.rect(margin, y - 5, doc.internal.pageSize.getWidth() - margin * 2, headerH, 'F');
+  doc.setTextColor(250, 249, 246);
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'bold');
+
+  if (twoLine) {
+    columns.forEach(c => {
+      doc.text(c.label, c.x, y, { align: c.align || 'left' });
+      if (c.label2) doc.text(c.label2, c.x, y + 4.5, { align: c.align || 'left' });
+    });
+    y += headerH;
+  } else {
+    columns.forEach(c => doc.text(c.label, c.x, y, { align: c.align || 'left' }));
+    y += headerH;
+  }
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  let shade = false;
+  for (const row of rows) {
+    if (y > pageH - margin - 10) {
+      doc.addPage();
+      y = margin + 10;
+    }
+    if (shade) {
+      doc.setFillColor(245, 243, 240);
+      doc.rect(margin, y - 5, doc.internal.pageSize.getWidth() - margin * 2, lineH, 'F');
+    }
+    shade = !shade;
+    doc.setTextColor(30, 30, 30);
+    row.cells.forEach((cell, i) => {
+      const col = columns[i];
+      if (cell.color) doc.setTextColor(...cell.color);
+      else doc.setTextColor(30, 30, 30);
+      if (cell.bold) doc.setFont('helvetica', 'bold');
+      else doc.setFont('helvetica', 'normal');
+      doc.text(cell.text, col.x, y, { align: col.align || 'left' });
+    });
+    y += lineH;
+  }
+  return y;
+}
+
+function addPDFHeader(doc, title, subtitle, dateStr) {
+  const pw = doc.internal.pageSize.getWidth();
+  const margin = 14;
+  // Logo-Bereich
+  doc.setFillColor(26, 24, 20);
+  doc.rect(0, 0, pw, 22, 'F');
+  doc.setTextColor(250, 249, 246);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Folio.invest', margin, 14);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(180, 170, 160);
+  doc.text(subtitle, margin + 62, 14);
+  // Datum rechts oben
+  doc.setTextColor(200, 190, 180);
+  doc.setFontSize(8);
+  doc.text(dateStr, pw - margin, 14, { align: 'right' });
+  // Titel
+  doc.setTextColor(30, 30, 30);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text(title, margin, 32);
+  return 40; // startY
+}
+
+async function generatePDF(title, subtitle, filenameDate, stateSnapshot, refYearOverride) {
+  const jsPDF = await loadJsPDF();
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const pw = doc.internal.pageSize.getWidth();
+  const ph = doc.internal.pageSize.getHeight();
+  const margin = 14;
+  const lineH = 8;
+  const now = new Date();
+  const dateStr = now.toLocaleString('de-DE', {
+    day:'2-digit', month:'2-digit', year:'numeric',
+    hour:'2-digit', minute:'2-digit'
+  });
+
+  const { activeRows, watchRows } = buildPDFData(stateSnapshot);
+  const totalValue = activeRows.reduce((s,r) => s + r.currentValue, 0);
+  const totalRef   = activeRows.reduce((s,r) => s + r.refValue, 0);
+  const totalDiff  = totalValue - totalRef;
+  const totalDiffPct = totalRef ? totalDiff / totalRef * 100 : 0;
+
+  const fde = (v, d=2) => new Intl.NumberFormat('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d}).format(v);
+  const feur = v => fde(v) + ' €';
+  const fpct = v => (v >= 0 ? '+' : '') + fde(v) + ' %';
+  const green = [26, 110, 58];
+  const red   = [200, 68, 26];
+
+  // ── Seite 1: Aktive Positionen ──
+  let y = addPDFHeader(doc, title + ' · Aktive Positionen', subtitle, dateStr);
+
+  const refYear = String(refYearOverride || (stateSnapshot.meta?.year ? stateSnapshot.meta.year - 1 : new Date().getFullYear() - 1)).slice(2);
+
+  const activeCols = [
+    { label: '#',         label2: '',              x: margin + 4,   align: 'left'  },
+    { label: 'Wertpapier',label2: '',              x: margin + 12,  align: 'left'  },
+    { label: 'WKN',       label2: '',              x: margin + 98,  align: 'left'  },
+    { label: 'Stück',     label2: '',              x: margin + 119, align: 'right' },
+    { label: 'Kurs',      label2:`31.12.${refYear}`,x: margin + 140, align: 'right' },
+    { label: 'Wert',      label2:`31.12.${refYear}`,x: margin + 168, align: 'right' },
+    { label: 'Kurs',      label2: 'aktuell',       x: margin + 196, align: 'right' },
+    { label: 'Wert',      label2: 'aktuell',       x: margin + 222, align: 'right' },
+    { label: 'Veränd.',   label2: 'abs.',          x: margin + 249, align: 'right' },
+    { label: 'Veränd.',   label2: '%',             x: pw - margin - 4, align: 'right' },
+  ];
+
+  const activeTableRows = activeRows.map((r, i) => ({
+    cells: [
+      { text: String(i + 1) },
+      { text: r.name.length > 36 ? r.name.slice(0,35)+'…' : r.name, bold: true },
+      { text: r.wkn },
+      { text: fde(r.shares, 0) },
+      { text: fde(r.refPrice) },
+      { text: feur(r.refValue) },
+      { text: fde(r.currentPrice) },
+      { text: feur(r.currentValue), bold: true },
+      { text: (r.diffAbs >= 0 ? '+' : '') + feur(r.diffAbs), color: r.diffAbs >= 0 ? green : red },
+      { text: fpct(r.diffPct), color: [30, 30, 30] },
+    ]
+  }));
+
+  y = renderPDFTable(doc, activeTableRows, activeCols, y, ph, margin, lineH);
+
+  // Summenzeile
+  y += 2;
+  doc.setDrawColor(200, 190, 180);
+  doc.line(margin, y - 1, pw - margin, y - 1);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(30,30,30);
+  doc.text('Gesamt', margin + 12, y + 5);
+  doc.text(feur(totalRef), margin + 168, y + 5, { align: 'right' });
+  doc.text(feur(totalValue), margin + 222, y + 5, { align: 'right' });
+  const diffColor = totalDiff >= 0 ? green : red;
+  doc.setTextColor(...diffColor);
+  doc.text((totalDiff >= 0 ? '+' : '') + feur(totalDiff), margin + 249, y + 5, { align: 'right' });
+  doc.setTextColor(30,30,30);
+  doc.text(fpct(totalDiffPct), pw - margin - 4, y + 5, { align: 'right' });
+
+  // ── Seite 2: Watchlist ──
+  if (watchRows.length > 0) {
+    doc.addPage();
+    y = addPDFHeader(doc, title + ' · Watchlist', subtitle, dateStr);
+
+    const watchCols = [
+      { label: '#',            x: margin + 4,   align: 'left'  },
+      { label: 'Wertpapier',   x: margin + 14,  align: 'left'  },
+      { label: 'WKN',          x: margin + 130, align: 'left'  },
+      { label: 'Basis 31.12.', x: margin + 180, align: 'right' },
+      { label: 'Kurs aktuell', x: margin + 215, align: 'right' },
+      { label: 'Veränd. YTD',  x: pw - margin,  align: 'right' },
+    ];
+
+    const watchTableRows = watchRows.map((r, i) => ({
+      cells: [
+        { text: String(i + 1) },
+        { text: r.name.length > 38 ? r.name.slice(0,37)+'…' : r.name, bold: true },
+        { text: r.wkn },
+        { text: fde(r.basePrice) },
+        { text: fde(r.currentPrice) },
+        { text: fpct(r.diffPct), color: r.diffPct >= 0 ? green : red },
+      ]
+    }));
+
+    renderPDFTable(doc, watchTableRows, watchCols, y, ph, margin, lineH);
+  }
+
+  // Fußzeile auf allen Seiten
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(150,140,130);
+    doc.text(`Seite ${i} / ${pageCount}`, pw - margin, ph - 6, { align: 'right' });
+    doc.text('Folio.invest · Jörn Kämper', margin, ph - 6);
+  }
+
+  const filename = `folio-invest-${filenameDate}.pdf`;
+  doc.save(filename);
+}
+
+async function generateSnapshotPDF() {
+  const today = new Date().toISOString().slice(0,10);
+  const label = new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  await generatePDF(
+    `Depot-Snapshot · ${label}`,
+    'Aktueller Stand',
+    `snapshot-${today}`,
+    clone(appState)
+  );
+}
+
+// Jahresabschluss: berechnet neuen State theoretisch, zeigt PDF, wartet auf Freigabe
+let _jahresabschlussResolve = null;
+let _pendingRolloverState = null;
+
+async function startJahresabschluss() {
+  const currentYear = getCurrentYear();
+  const oldYear = appState.meta.year;
+
+  // Theoretischen neuen State berechnen (ohne zu speichern)
+  // Priorität: aktueller Livekurs → 31.12.-Schlusskurs aus History → bisheriger Einstandskurs
+  const newState = clone(appState);
+  newState.active = newState.active.map(p => {
+    const shares = (p.lots||[]).reduce((s,l)=>s+Number(l.shares||0),0);
+    const price = liveKurse[p.wkn] || prevYearCloseFromHistory(p.wkn) || ((p.lots||[]).reduce((s,l)=>s+Number(l.shares||0)*Number(l.price||0),0) / (shares||1));
+    return normalizePosition({ wkn:p.wkn, name:p.name, meta:p.meta, lots:[{shares, price, date:getPrevYearEndIso(currentYear)}] });
+  });
+  newState.watchlist = newState.watchlist.map(w =>
+    normalizeWatch({ wkn:w.wkn, name:w.name, meta:w.meta,
+      basePrice: liveKurse[w.wkn] || prevYearCloseFromHistory(w.wkn) || w.basePrice,
+      date: w.date })
+  );
+  newState.sold = [];
+  newState.transactions = [];
+  newState.meta.year = currentYear;
+
+  _pendingRolloverState = newState;
+
+  // PDF mit neuem State generieren (zeigt bereits neue Basis)
+  const dateLabel = new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  await generatePDF(
+    `Jahresabschluss ${oldYear} · Neue Basis ${currentYear}`,
+    `Rollover-Vorschau · Stand ${dateLabel}`,
+    `jahresabschluss-${oldYear}-12-31`,
+    newState,
+    oldYear  // refYear = altes Jahr, z.B. 2026
+  );
+
+  // Dialog anzeigen
+  document.getElementById('jaOldYear').textContent = oldYear;
+  document.getElementById('jaNewYear').textContent = currentYear;
+  document.getElementById('jahresabschlussBackdrop').style.display = 'flex';
+}
+
+function cancelJahresabschluss() {
+  document.getElementById('jahresabschlussBackdrop').style.display = 'none';
+  _pendingRolloverState = null;
+  setStatus('Jahresabschluss abgebrochen – keine Änderungen vorgenommen');
+}
+
+async function confirmJahresabschluss() {
+  document.getElementById('jahresabschlussBackdrop').style.display = 'none';
+  if (!_pendingRolloverState) return;
+  appState = _pendingRolloverState;
+  _pendingRolloverState = null;
+  await saveState();
+  closePflegeModal();
+  liveKurse = {};
+  prevKurse = {};
+  Object.keys(historicalData).forEach(k => delete historicalData[k]);
+  setStatus('✓ Jahresabschluss durchgeführt – Kurse werden neu geladen…');
+  render();
+  await refreshMarketData();
+}
+
+// Jahreswechsel – Promise-basierter Bestätigungsdialog
+let _rolloverResolve = null;
+function showRolloverDialog(oldYear, newYear) {
+  document.getElementById('rolloverOldYear').textContent = oldYear;
+  document.getElementById('rolloverNewYear').textContent = newYear;
+  document.getElementById('rolloverNewYear2').textContent = newYear;
+  document.getElementById('rolloverBackdrop').style.display = 'flex';
+  return new Promise(resolve => { _rolloverResolve = resolve; });
+}
+function confirmRollover() {
+  document.getElementById('rolloverBackdrop').style.display = 'none';
+  if (_rolloverResolve) { _rolloverResolve(true); _rolloverResolve = null; }
+}
+function cancelRollover() {
+  document.getElementById('rolloverBackdrop').style.display = 'none';
+  if (_rolloverResolve) { _rolloverResolve(false); _rolloverResolve = null; }
+}
 async function applyYearRolloverIfNeeded(){
   const currentYear = getCurrentYear();
   if(appState.meta.year === currentYear) return false;
+  // Bestätigung einholen
+  const confirmed = await showRolloverDialog(appState.meta.year, currentYear);
+  if (!confirmed) {
+    setStatus(`⚠️ Jahreswechsel abgebrochen – App läuft noch im Jahr ${appState.meta.year}`);
+    return false;
+  }
   appState.active = appState.active.map(p => {
     const shares = sharesOf(p);
     const price = prevYearCloseFromHistory(p.wkn) || liveKurse[p.wkn] || avgRefPrice(p);
@@ -1355,8 +1767,12 @@ async function refreshMarketData() {
   try {
     await loadFX();
     await loadKurse();
+    // Spinner pausieren während Dialog wartet, aber Lock behalten
+    setRefreshButtonsLoading(false);
+    marketRefreshRunning = true;
     const rolled = await applyYearRolloverIfNeeded();
     if(rolled){
+      setRefreshButtonsLoading(true);
       liveKurse = {};
       prevKurse = {};
       Object.keys(historicalData).forEach(k=>delete historicalData[k]);
