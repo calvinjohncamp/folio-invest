@@ -371,14 +371,14 @@ const CF_HISTORY_WORKER = 'https://jk-invest.calvinjohncamp.workers.dev';
 const STORAGE_KEY = 'folio-invest-state-v3';
 const SUPABASE_URL = 'https://ywfpzdniicfrhnrvfqfe.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_P5e_bUSC5yG06QnucNn1BA_ss_uVrzS';
-const SUPABASE_TABLE_CANDIDATES = ['invest_app_state','app_state'];
+const SUPABASE_TABLE_CANDIDATES = ['app_state'];
 const SUPABASE_CLIENT = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 if (!window.supabase) {
   console.warn('Supabase-Bibliothek nicht geladen – App speichert nur lokal.');
 }
-let activeStateTable = null;
+let activeStateTable = 'app_state';
 const DEFAULT_META = { category:'Nicht zugeordnet', country:'Nicht zugeordnet', exchange:'–' };
 const BASE_PORTFOLIO = [
   {wkn:'EWG2LD',name:'ETC-Zertifikat auf 100 GR Gold',lots:[{shares:2400,price:122.15,date:'2025-12-31'}],meta:{category:'Precious Metals',country:'Europa',exchange:'Xetra'}},
@@ -505,8 +505,9 @@ function saveLocalState(){
 }
 function buildSupabaseRow(tableName){
   const year = Number(appState?.meta?.year || getCurrentYear());
-  if(tableName === 'app_state') return { app:'invest', year, state_json: appState };
-  return { year, state_json: appState };
+  const updated_at = new Date().toISOString();
+  if(tableName === 'app_state') return { app:'invest', year, state_json: appState, updated_at };
+  return { year, state_json: appState, updated_at };
 }
 async function loadCloudState(){
   if(!SUPABASE_CLIENT) return null;
@@ -518,7 +519,7 @@ async function loadCloudState(){
       const { data, error } = await query.maybeSingle();
       if(error){
         const msg = String(error.message || '');
-        if(msg.includes('relation') || msg.includes('schema cache') || msg.includes('Could not find')) continue;
+        if(msg.includes('relation') || msg.includes('schema cache') || msg.includes('Could not find') || msg.includes('PGRST205') || msg.includes('404')) continue;
         console.warn(`Supabase-Lesen fehlgeschlagen (${tableName})`, error);
         continue;
       }
@@ -541,7 +542,7 @@ async function saveCloudState(){
       const { error } = await SUPABASE_CLIENT.from(tableName).upsert(row, options);
       if(error){
         const msg = String(error.message || '');
-        if(msg.includes('relation') || msg.includes('schema cache') || msg.includes('Could not find')) continue;
+        if(msg.includes('relation') || msg.includes('schema cache') || msg.includes('Could not find') || msg.includes('PGRST205') || msg.includes('404')) continue;
         console.warn(`Supabase-Speichern fehlgeschlagen (${tableName})`, error);
         continue;
       }
