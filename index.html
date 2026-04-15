@@ -375,6 +375,7 @@ function resetPin(){
         <label>Yahoo Ticker
           <input id="watchTicker" type="text" placeholder="z.B. AAPL oder VGWD.DE" required />
         </label>
+        <div class="pflege-note">Ticker unbekannt? → <a href="https://finance.yahoo.com/lookup/" target="_blank" style="color:#2f6cf2;text-decoration:none">Yahoo Finance Suche ↗</a> — WKN oder Name eingeben, Ticker aus der Ergebnisliste kopieren.</div>
         <label>Währung
           <select id="watchFx">
             <option value="EUR">EUR (€)</option>
@@ -1135,7 +1136,7 @@ function populatePflegeSelects(){
   if(buyTxSelect){
     const buyTx = (appState.transactions||[])
       .map((t,i) => ({t,i}))
-      .filter(({t}) => t.type === 'KAUF' || t.type === 'START')
+      .filter(({t}) => t.type === 'KAUF')
       .sort((a,b) => (b.t.date||'').localeCompare(a.t.date||''));
     buyTxSelect.innerHTML = '<option value="">Buchung wählen</option>' +
       buyTx.map(({t,i}) => {
