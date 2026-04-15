@@ -318,6 +318,18 @@ function resetPin(){
           <button class="pflege-submit" type="submit">Kauf speichern</button>
         </div>
       </form>
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid #ece7df">
+        <h4 style="margin-bottom:10px">Kauf-Buchung löschen</h4>
+        <form class="pflege-form" id="deleteBuyTxForm">
+          <label>Transaktion
+            <select id="deleteBuyTxSelect" required></select>
+          </label>
+          <div class="pflege-note">Löscht nur den Log-Eintrag. Position bleibt unverändert.</div>
+          <div class="pflege-actions">
+            <button class="pflege-submit secondary" type="submit">Buchung löschen</button>
+          </div>
+        </form>
+      </div>
     </div>
     <div class="pflege-card">
       <h4>Verkauf</h4>
@@ -338,6 +350,18 @@ function resetPin(){
           <button class="pflege-submit" type="submit">Verkauf speichern</button>
         </div>
       </form>
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid #ece7df">
+        <h4 style="margin-bottom:10px">Verkauf-Buchung löschen</h4>
+        <form class="pflege-form" id="deleteSellTxForm">
+          <label>Transaktion
+            <select id="deleteSellTxSelect" required></select>
+          </label>
+          <div class="pflege-note">Löscht nur den Log-Eintrag. Position bleibt unverändert.</div>
+          <div class="pflege-actions">
+            <button class="pflege-submit secondary" type="submit">Buchung löschen</button>
+          </div>
+        </form>
+      </div>
     </div>
     <div class="pflege-card">
       <h4>Watchlist hinzufügen</h4>
@@ -377,18 +401,7 @@ function resetPin(){
         </div>
       </form>
     </div>
-    <div class="pflege-card">
-      <h4>Buchung löschen</h4>
-      <form class="pflege-form" id="deleteTxForm">
-        <label>Transaktion
-          <select id="deleteTxSelect" required></select>
-        </label>
-        <div class="pflege-note">Löscht nur den Transaktionseintrag – die Position selbst bleibt unverändert. Zum Korrigieren: Eintrag löschen, dann neu buchen.</div>
-        <div class="pflege-actions">
-          <button class="pflege-submit secondary" type="submit">Buchung löschen</button>
-        </div>
-      </form>
-    </div>
+
   </div>
 </div>
 <script>
@@ -1117,15 +1130,30 @@ function populatePflegeSelects(){
   const watchItems = appState.watchlist.map(w=>({wkn:w.wkn,name:w.name}));
   fillSelectOptions('sellWkn', activeItems, 'Position wählen');
   fillSelectOptions('deleteWatchWkn', watchItems, 'Watchlist-Titel wählen');
-  // Transaktions-Dropdown befüllen
-  const txSelect = document.getElementById('deleteTxSelect');
-  if(txSelect){
-    const sorted = [...(appState.transactions||[])].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-    txSelect.innerHTML = '<option value="">Buchung wählen</option>' +
-      sorted.map((t,i) => {
-        const idx = appState.transactions.indexOf(t);
-        const label = `${t.date} · ${t.type} · ${t.name} · ${t.shares ? f(t.shares,0)+' Stk' : ''} ${t.price ? f(t.price,2)+'€' : ''}`.replace(/\s+/g,' ').trim();
-        return `<option value="${idx}">${label}</option>`;
+  // Kauf-Buchungen Dropdown
+  const buyTxSelect = document.getElementById('deleteBuyTxSelect');
+  if(buyTxSelect){
+    const buyTx = (appState.transactions||[])
+      .map((t,i) => ({t,i}))
+      .filter(({t}) => t.type === 'KAUF' || t.type === 'START')
+      .sort((a,b) => (b.t.date||'').localeCompare(a.t.date||''));
+    buyTxSelect.innerHTML = '<option value="">Buchung wählen</option>' +
+      buyTx.map(({t,i}) => {
+        const label = `${t.date} · ${t.name} · ${t.shares ? f(t.shares,0)+' Stk' : ''} · ${t.price ? f(t.price,2)+'€' : ''}`.trim();
+        return `<option value="${i}">${label}</option>`;
+      }).join('');
+  }
+  // Verkauf-Buchungen Dropdown
+  const sellTxSelect = document.getElementById('deleteSellTxSelect');
+  if(sellTxSelect){
+    const sellTx = (appState.transactions||[])
+      .map((t,i) => ({t,i}))
+      .filter(({t}) => t.type === 'VERKAUF')
+      .sort((a,b) => (b.t.date||'').localeCompare(a.t.date||''));
+    sellTxSelect.innerHTML = '<option value="">Buchung wählen</option>' +
+      sellTx.map(({t,i}) => {
+        const label = `${t.date} · ${t.name} · ${t.shares ? f(t.shares,0)+' Stk' : ''} · ${t.price ? f(t.price,2)+'€' : ''}`.trim();
+        return `<option value="${i}">${label}</option>`;
       }).join('');
   }
 }
@@ -1248,7 +1276,9 @@ async function handleDeleteWatch(event){
 }
 async function handleDeleteTransaction(event){
   event.preventDefault();
-  const idx = Number(document.getElementById('deleteTxSelect').value);
+  const isBuy = event.target.id === 'deleteBuyTxForm';
+  const selectId = isBuy ? 'deleteBuyTxSelect' : 'deleteSellTxSelect';
+  const idx = Number(document.getElementById(selectId).value);
   if(isNaN(idx) || idx < 0 || idx >= appState.transactions.length) return;
   const tx = appState.transactions[idx];
   appState.transactions.splice(idx, 1);
@@ -1391,7 +1421,8 @@ async function bootstrapApp(){
   document.getElementById('sellForm').addEventListener('submit', handleSell);
   document.getElementById('watchForm').addEventListener('submit', handleAddWatch);
   document.getElementById('watchDeleteForm').addEventListener('submit', handleDeleteWatch);
-  document.getElementById('deleteTxForm').addEventListener('submit', handleDeleteTransaction);
+  document.getElementById('deleteBuyTxForm').addEventListener('submit', handleDeleteTransaction);
+  document.getElementById('deleteSellTxForm').addEventListener('submit', handleDeleteTransaction);
   document.getElementById('pflegeBackdrop').addEventListener('click', closePflegeModal);
 }
 bootstrapApp();
