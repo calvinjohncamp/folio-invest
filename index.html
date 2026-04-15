@@ -511,7 +511,7 @@ async function loadCloudState(){
   const year = getCurrentYear();
   const { data, error } = await SUPABASE_CLIENT
     .from(SUPABASE_TABLE)
-    .select('state_json, updated_at')
+    .select('id, state_json, updated_at')
     .eq('app', SUPABASE_APP)
     .eq('year', year)
     .maybeSingle();
@@ -519,18 +519,69 @@ async function loadCloudState(){
   if(!data?.state_json) return null;
   return normalizeLoadedState(data.state_json);
 }
-async function saveCloudState(){
-  if(!SUPABASE_CLIENT || !appState?.meta?.year) return false;
-  const row = {
+function buildCloudRow(base={}){
+  return {
+    ...base,
     app: SUPABASE_APP,
     year: Number(getCurrentYear()),
     state_json: serializeState(),
     updated_at: new Date().toISOString()
   };
-  const { error } = await SUPABASE_CLIENT
+}
+async function saveCloudState(){
+  if(!SUPABASE_CLIENT || !appState?.meta?.year) return false;
+  const year = Number(getCurrentYear());
+
+  const { data: existing, error: lookupError } = await SUPABASE_CLIENT
     .from(SUPABASE_TABLE)
-    .upsert(row, { onConflict: 'app,year' });
-  if(error) throw error;
+    .select('id')
+    .eq('app', SUPABASE_APP)
+    .eq('year', year)
+    .maybeSingle();
+
+  if(lookupError){
+    console.error('Supabase Lookup-Fehler', {
+      message: lookupError.message,
+      details: lookupError.details,
+      hint: lookupError.hint,
+      code: lookupError.code
+    });
+    throw lookupError;
+  }
+
+  if(existing?.id){
+    const row = buildCloudRow({ id: existing.id });
+    const { error: updateError } = await SUPABASE_CLIENT
+      .from(SUPABASE_TABLE)
+      .update(row)
+      .eq('id', existing.id);
+    if(updateError){
+      console.error('Supabase Update-Fehler', {
+        row,
+        message: updateError.message,
+        details: updateError.details,
+        hint: updateError.hint,
+        code: updateError.code
+      });
+      throw updateError;
+    }
+    return true;
+  }
+
+  const row = buildCloudRow({ id: (window.crypto?.randomUUID ? window.crypto.randomUUID() : `folio-${Date.now()}-${Math.random().toString(16).slice(2)}`) });
+  const { error: insertError } = await SUPABASE_CLIENT
+    .from(SUPABASE_TABLE)
+    .insert(row);
+  if(insertError){
+    console.error('Supabase Insert-Fehler', {
+      row,
+      message: insertError.message,
+      details: insertError.details,
+      hint: insertError.hint,
+      code: insertError.code
+    });
+    throw insertError;
+  }
   return true;
 }
 async function loadState(){
