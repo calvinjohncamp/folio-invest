@@ -163,6 +163,15 @@ body.page-watchlist .positions-header-card .pos-col:nth-child(7),body.page-watch
 .pflege-submit.secondary{background:#fff;color:#444;border-color:#d8d4ce}
 .pflege-note{font-size:11px;color:#777;line-height:1.35}
 .page-empty{background:#fff;border:1px solid #d8d4ce;border-radius:18px;padding:18px;color:#666}
+.ticker-search-btn{display:inline-flex;align-items:center;gap:6px;margin-top:6px;border:1px solid #2f6cf2;background:#fff;color:#2f6cf2;border-radius:999px;padding:7px 12px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .15s}
+.ticker-search-btn:hover{background:#eef2ff}
+.ticker-search-btn.loading{opacity:.6;cursor:wait}
+.ticker-results{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.ticker-result-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #d8d4ce;border-radius:10px;cursor:pointer;background:#fff;transition:background .1s,border-color .1s}
+.ticker-result-item:hover,.ticker-result-item.selected{background:#eef2ff;border-color:#2f6cf2}
+.ticker-result-symbol{font-size:13px;font-weight:700;color:#1a1814;min-width:90px}
+.ticker-result-name{font-size:11px;color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ticker-result-meta{font-size:10px;color:#888;white-space:nowrap}
 @media (max-width: 720px){.pflege-grid{grid-template-columns:1fr}.pflege-modal{padding:14px}}
 
 </style>
@@ -373,7 +382,12 @@ function resetPin(){
           <input id="watchName" type="text" placeholder="z.B. Apple Inc." />
         </label>
         <label>Yahoo Ticker
-          <input id="watchTicker" type="text" placeholder="z.B. AAPL oder VGWD.DE" required />
+          <div style="font-size:11px;color:#777;margin:4px 0 6px;line-height:1.4">Ticker unbekannt? → <a href="https://finance.yahoo.com/lookup/" target="_blank" style="color:#2f6cf2;text-decoration:none;font-weight:600">Yahoo Finance Suche ↗</a> — WKN oder Name eingeben, Ticker kopieren.</div>
+          <input id="watchTicker" type="text" placeholder="z.B. AAPL oder VGWD.DE" />
+          <button type="button" class="ticker-search-btn" id="tickerSearchBtn" onclick="searchTicker()">
+            🔍 Ticker suchen
+          </button>
+          <div class="ticker-results" id="tickerResults"></div>
         </label>
         <label>Währung
           <select id="watchFx">
@@ -384,7 +398,6 @@ function resetPin(){
             <option value="JPY">JPY</option>
           </select>
         </label>
-        <div class="pflege-note">Ticker unbekannt? → <a href="https://finance.yahoo.com/lookup/" target="_blank" style="color:#2f6cf2;text-decoration:none">Yahoo Finance Suche ↗</a> — WKN oder Name eingeben, Ticker aus der Ergebnisliste kopieren.</div>
         <div class="pflege-note">Der Basiskurs wird automatisch mit dem Schlusskurs vom 31.12. des Vorjahres belegt. Das Ticker-Mapping wird gespeichert und bleibt beim nächsten Laden erhalten.</div>
         <div class="pflege-actions">
           <button class="pflege-submit" type="submit">Watchlist ergänzen</button>
@@ -408,6 +421,7 @@ function resetPin(){
 <script>
 const CF_WORKER = 'https://wax-kurse.calvinjohncamp.workers.dev';
 const CF_HISTORY_WORKER = 'https://jk-invest.calvinjohncamp.workers.dev';
+const CF_SEARCH_WORKER = 'https://lively-bread-ee05jk-invest-search.calvinjohncamp.workers.dev';
 const STORAGE_KEY = 'folio-invest-state-v3';
 const DEFAULT_META = { category:'Nicht zugeordnet', country:'Nicht zugeordnet', exchange:'–' };
 const BASE_PORTFOLIO = [
@@ -1233,7 +1247,15 @@ async function handleAddWatch(event){
   const ticker = document.getElementById('watchTicker').value.trim();
   const nameInput = document.getElementById('watchName').value.trim();
   const fx = document.getElementById('watchFx').value || 'EUR';
-  if(!wkn || !ticker) return;
+  if(!wkn){ document.getElementById('watchWkn').focus(); return; }
+  if(!ticker){
+    const tickerInput = document.getElementById('watchTicker');
+    tickerInput.focus();
+    tickerInput.style.borderColor = '#c8441a';
+    tickerInput.placeholder = 'Ticker wird benötigt';
+    setTimeout(()=>{ tickerInput.style.borderColor = ''; tickerInput.placeholder = 'z.B. AAPL oder VGWD.DE'; }, 2500);
+    return;
+  }
   if(appState.watchlist.some(w=>w.wkn===wkn)) return;
   // Ticker-Mapping speichern
   if(!appState.customTickers) appState.customTickers = {};
@@ -1426,6 +1448,60 @@ async function bootstrapApp(){
   document.getElementById('deleteSellTxForm').addEventListener('submit', handleDeleteTransaction);
   document.getElementById('pflegeBackdrop').addEventListener('click', closePflegeModal);
 }
+async function searchTicker(){
+  const wkn = document.getElementById('watchWkn').value.trim().toUpperCase();
+  const name = document.getElementById('watchName').value.trim();
+  const q = wkn || name;
+  if(!q){ document.getElementById('watchWkn').focus(); return; }
+  const btn = document.getElementById('tickerSearchBtn');
+  const resultsDiv = document.getElementById('tickerResults');
+  btn.classList.add('loading');
+  btn.textContent = '⏳ Suche läuft…';
+  resultsDiv.innerHTML = '';
+  try {
+    const url = `${CF_SEARCH_WORKER}/?q=${encodeURIComponent(q)}`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const quotes = data.quotes || [];
+    if(!quotes.length){
+      resultsDiv.innerHTML = '<div style="font-size:11px;color:#888;padding:6px 2px">Keine Treffer — bitte WKN oder Name prüfen</div>';
+      return;
+    }
+    resultsDiv.innerHTML = quotes.map((q, i) => {
+      const typeLabel = {EQUITY:'Aktie', ETF:'ETF', MUTUALFUND:'Fonds', INDEX:'Index', CURRENCY:'Währung', CRYPTOCURRENCY:'Crypto'}[q.type] || q.type;
+      return `<div class="ticker-result-item" onclick="selectTicker('${q.symbol.replace(/'/g,"\'")}','${(q.name||'').replace(/'/g,"\'")}')" title="${q.name}">
+        <span class="ticker-result-symbol">${q.symbol}</span>
+        <span class="ticker-result-name">${q.name}</span>
+        <span class="ticker-result-meta">${typeLabel}${q.exchange ? ' · '+q.exchange : ''}${q.currency ? ' · '+q.currency : ''}</span>
+      </div>`;
+    }).join('');
+    // Währung automatisch vorbelegen falls eindeutig USD
+    const first = quotes[0];
+    if(first?.currency === 'USD') document.getElementById('watchFx').value = 'USD';
+    else if(first?.currency === 'EUR') document.getElementById('watchFx').value = 'EUR';
+    else if(first?.currency === 'GBP') document.getElementById('watchFx').value = 'GBP';
+  } catch(e){
+    resultsDiv.innerHTML = `<div style="font-size:11px;color:#c8441a;padding:6px 2px">Suche fehlgeschlagen: ${e.message}</div>`;
+  } finally {
+    btn.classList.remove('loading');
+    btn.innerHTML = '🔍 Ticker suchen';
+  }
+}
+function selectTicker(symbol, name){
+  document.getElementById('watchTicker').value = symbol;
+  if(!document.getElementById('watchName').value.trim() && name){
+    document.getElementById('watchName').value = name;
+  }
+  // Alle Items deselektieren, gewähltes markieren
+  document.querySelectorAll('.ticker-result-item').forEach(el => el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  // Ticker-Feld kurz highlighten
+  const input = document.getElementById('watchTicker');
+  input.style.borderColor = '#2f6cf2';
+  setTimeout(()=>{ input.style.borderColor = ''; }, 1500);
+}
+
 bootstrapApp();
 </script>
 
