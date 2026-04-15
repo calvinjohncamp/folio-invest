@@ -377,6 +377,18 @@ function resetPin(){
         </div>
       </form>
     </div>
+    <div class="pflege-card">
+      <h4>Buchung löschen</h4>
+      <form class="pflege-form" id="deleteTxForm">
+        <label>Transaktion
+          <select id="deleteTxSelect" required></select>
+        </label>
+        <div class="pflege-note">Löscht nur den Transaktionseintrag – die Position selbst bleibt unverändert. Zum Korrigieren: Eintrag löschen, dann neu buchen.</div>
+        <div class="pflege-actions">
+          <button class="pflege-submit secondary" type="submit">Buchung löschen</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 <script>
@@ -1105,6 +1117,17 @@ function populatePflegeSelects(){
   const watchItems = appState.watchlist.map(w=>({wkn:w.wkn,name:w.name}));
   fillSelectOptions('sellWkn', activeItems, 'Position wählen');
   fillSelectOptions('deleteWatchWkn', watchItems, 'Watchlist-Titel wählen');
+  // Transaktions-Dropdown befüllen
+  const txSelect = document.getElementById('deleteTxSelect');
+  if(txSelect){
+    const sorted = [...(appState.transactions||[])].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    txSelect.innerHTML = '<option value="">Buchung wählen</option>' +
+      sorted.map((t,i) => {
+        const idx = appState.transactions.indexOf(t);
+        const label = `${t.date} · ${t.type} · ${t.name} · ${t.shares ? f(t.shares,0)+' Stk' : ''} ${t.price ? f(t.price,2)+'€' : ''}`.replace(/\s+/g,' ').trim();
+        return `<option value="${idx}">${label}</option>`;
+      }).join('');
+  }
 }
 function openPflegeModal(){
   populatePflegeSelects();
@@ -1188,8 +1211,9 @@ async function handleAddWatch(event){
   appState.customTickers[wkn] = { tickers:[ticker], fx };
   TICKER_MAP[wkn] = { tickers:[ticker], fx };
   // Name übernehmen falls angegeben
-  if(nameInput && !SECURITY_MASTER[wkn]){
-    SECURITY_MASTER[wkn] = { name:nameInput, meta: DEFAULT_META };
+  // Name in SECURITY_MASTER eintragen (auch wenn schon vorhanden, damit Eingabe Vorrang hat)
+  if(nameInput){
+    SECURITY_MASTER[wkn] = { name:nameInput, meta: SECURITY_MASTER[wkn]?.meta || DEFAULT_META };
   }
   const sec = findOrCreateSecurity(wkn);
   if(nameInput) sec.name = nameInput;
@@ -1221,6 +1245,15 @@ async function handleDeleteWatch(event){
   addTransaction({date:todayIso(), type:'WATCH-', name:item.name, wkn:item.wkn, shares:null, price:null, amount:null});
   event.target.reset();
   await afterMaintenance(`Watchlist bereinigt · ${item.name}`);
+}
+async function handleDeleteTransaction(event){
+  event.preventDefault();
+  const idx = Number(document.getElementById('deleteTxSelect').value);
+  if(isNaN(idx) || idx < 0 || idx >= appState.transactions.length) return;
+  const tx = appState.transactions[idx];
+  appState.transactions.splice(idx, 1);
+  event.target.reset();
+  await afterMaintenance(`Buchung gelöscht · ${tx.type} · ${tx.name}`);
 }
 async function applyYearRolloverIfNeeded(){
   const currentYear = getCurrentYear();
@@ -1358,6 +1391,7 @@ async function bootstrapApp(){
   document.getElementById('sellForm').addEventListener('submit', handleSell);
   document.getElementById('watchForm').addEventListener('submit', handleAddWatch);
   document.getElementById('watchDeleteForm').addEventListener('submit', handleDeleteWatch);
+  document.getElementById('deleteTxForm').addEventListener('submit', handleDeleteTransaction);
   document.getElementById('pflegeBackdrop').addEventListener('click', closePflegeModal);
 }
 bootstrapApp();
