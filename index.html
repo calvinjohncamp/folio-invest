@@ -534,6 +534,11 @@ async function loadCloudState(){
 }
 async function saveCloudState(){
   if(!SUPABASE_CLIENT) return false;
+  // Sicherheitscheck: niemals einen leeren oder ungültigen State speichern
+  if(!appState || !appState.meta || !appState.meta.year) {
+    console.warn('saveCloudState: appState ungültig, wird nicht gespeichert');
+    return false;
+  }
   const candidates = activeStateTable ? [activeStateTable, ...SUPABASE_TABLE_CANDIDATES.filter(t=>t!==activeStateTable)] : SUPABASE_TABLE_CANDIDATES;
   for (const tableName of candidates){
     try {
@@ -574,10 +579,13 @@ async function loadState(){
     setStatus(`Cloud-Stand geladen · ${appState.meta.year}`);
     return;
   }
+  // Cloud erreichbar, aber noch kein Datensatz – lokalen Stand laden und sofort in Cloud sichern
   const localState = loadLocalState();
   if(localState){
     appState = localState;
-    setStatus(`Lokaler Stand geladen · ${appState.meta.year}`);
+    setStatus(`Lokaler Stand geladen · ${appState.meta.year} · Synchronisiere…`);
+    await saveCloudState();
+    setStatus(`Lokaler Stand in Cloud gesichert · ${appState.meta.year}`);
     return;
   }
   appState = createDefaultState();
@@ -1121,7 +1129,7 @@ async function handleDeleteWatch(event){
   appState.watchlist.splice(idx,1);
   addTransaction({date:todayIso(), type:'WATCH-', name:item.name, wkn:item.wkn, shares:null, price:null, amount:null});
   event.target.reset();
-  afterMaintenance(`Watchlist bereinigt · ${item.name}`);
+  await afterMaintenance(`Watchlist bereinigt · ${item.name}`);
 }
 function applyYearRolloverIfNeeded(){
   const currentYear = getCurrentYear();
