@@ -467,19 +467,18 @@ const SUPABASE_URL = 'https://ywfpzdniicfrhnrvfqfe.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_P5e_bUSC5yG06QnucNn1BA_ss_uVrzS';
 const SUPABASE_TABLE = 'app_state';
 const SUPABASE_APP = 'invest';
-let SUPABASE_CLIENT = null;
 let currentStorageMode = 'Gerät';
 
-function initSupabase(){
-  try {
-    if(window.supabase?.createClient && SUPABASE_URL && SUPABASE_ANON_KEY){
-      SUPABASE_CLIENT = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
-  } catch(e){
-    console.warn('Supabase konnte nicht initialisiert werden', e);
-    SUPABASE_CLIENT = null;
-  }
+// Kein JS-Client nötig – direkte REST-API via fetch
+function supabaseHeaders(){
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    'Prefer': 'return=minimal'
+  };
 }
+function initSupabase(){ /* REST-basiert, kein Client nötig */ }
 function serializeState(){
   return clone(appState);
 }
@@ -507,80 +506,38 @@ function loadLocalState(){
   }
 }
 async function loadCloudState(){
-  if(!SUPABASE_CLIENT) return null;
   const year = getCurrentYear();
-  const { data, error } = await SUPABASE_CLIENT
-    .from(SUPABASE_TABLE)
-    .select('id, state_json, updated_at')
-    .eq('app', SUPABASE_APP)
-    .eq('year', year)
-    .maybeSingle();
-  if(error) throw error;
-  if(!data?.state_json) return null;
-  return normalizeLoadedState(data.state_json);
+  const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?app=eq.${encodeURIComponent(SUPABASE_APP)}&year=eq.${year}&select=state_json,updated_at&limit=1`;
+  const r = await fetch(url, { headers: supabaseHeaders() });
+  if(!r.ok){
+    const txt = await r.text();
+    throw new Error(`Supabase load ${r.status}: ${txt}`);
+  }
+  const rows = await r.json();
+  if(!rows?.length || !rows[0]?.state_json) return null;
+  return normalizeLoadedState(rows[0].state_json);
 }
-function buildCloudRow(base={}){
-  return {
-    ...base,
+async function saveCloudState(){
+  if(!appState?.meta?.year) return false;
+  const row = {
     app: SUPABASE_APP,
     year: Number(getCurrentYear()),
     state_json: serializeState(),
     updated_at: new Date().toISOString()
   };
-}
-async function saveCloudState(){
-  if(!SUPABASE_CLIENT || !appState?.meta?.year) return false;
-  const year = Number(getCurrentYear());
-
-  const { data: existing, error: lookupError } = await SUPABASE_CLIENT
-    .from(SUPABASE_TABLE)
-    .select('id')
-    .eq('app', SUPABASE_APP)
-    .eq('year', year)
-    .maybeSingle();
-
-  if(lookupError){
-    console.error('Supabase Lookup-Fehler', {
-      message: lookupError.message,
-      details: lookupError.details,
-      hint: lookupError.hint,
-      code: lookupError.code
-    });
-    throw lookupError;
-  }
-
-  if(existing?.id){
-    const row = buildCloudRow({ id: existing.id });
-    const { error: updateError } = await SUPABASE_CLIENT
-      .from(SUPABASE_TABLE)
-      .update(row)
-      .eq('id', existing.id);
-    if(updateError){
-      console.error('Supabase Update-Fehler', {
-        row,
-        message: updateError.message,
-        details: updateError.details,
-        hint: updateError.hint,
-        code: updateError.code
-      });
-      throw updateError;
-    }
-    return true;
-  }
-
-  const row = buildCloudRow({ id: (window.crypto?.randomUUID ? window.crypto.randomUUID() : `folio-${Date.now()}-${Math.random().toString(16).slice(2)}`) });
-  const { error: insertError } = await SUPABASE_CLIENT
-    .from(SUPABASE_TABLE)
-    .insert(row);
-  if(insertError){
-    console.error('Supabase Insert-Fehler', {
-      row,
-      message: insertError.message,
-      details: insertError.details,
-      hint: insertError.hint,
-      code: insertError.code
-    });
-    throw insertError;
+  const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`;
+  const headers = {
+    ...supabaseHeaders(),
+    'Prefer': 'resolution=merge-duplicates,return=minimal'
+  };
+  const r = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(row)
+  });
+  if(!r.ok){
+    const txt = await r.text();
+    throw new Error(`Supabase upsert ${r.status}: ${txt}`);
   }
   return true;
 }
