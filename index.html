@@ -3,6 +3,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
 <title>Folio.invest · Privates Depot</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=DM+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
@@ -25,6 +26,7 @@ body { background: #f0ede8; color: #111; font-family: 'DM Sans', sans-serif; fon
 .nav-btn.active { color: #faf9f6; border-bottom-color: #c8441a; }
 .nav-btn:hover:not(.active) { color: #ccc; }
 .nav-btn-pflege{color:#c8441a;padding-right:10px}
+body.page-watchlist #detailsBtn{display:none}
 .nav-btn-pflege:hover{color:#e35a2d !important;border-bottom-color:#c8441a}
 .nav-btn-pflege.active{color:#c8441a;border-bottom-color:#c8441a}
 .statusbar { background: #141210; border-top: none; border-bottom: 1px solid #222; margin-top:-1px; padding: 5px 24px; display: flex; align-items: center; gap: 8px; font-size: 10px; color: #666; position: sticky; top: 101px; z-index: 98; }
@@ -91,7 +93,8 @@ body.page-watchlist .positions-header-card .pos-col:nth-child(7),body.page-watch
 .pos-value-top{font-size:16.5px;font-weight:700;line-height:1.05;color:inherit;margin-bottom:8px;letter-spacing:-.02em}
 .pos-value-sub{font-size:12.5px;color:#333;line-height:1.2}
 .positions-header-card .pos-value-sub{color:#222}
-.pos-pctnote{display:block;font-size:10.5px;color:#333;margin-top:2px}
+.pos-pctnote{display:block;font-size:12.5px;color:#333;margin-top:2px}
+.pos-pctnote.bold{font-weight:700;color:#111}
 .positions-header-card .pos-pctnote{color:#555}
 .pos-muted{color:#333}
 .positions-header-card .pos-muted{color:#666}
@@ -384,10 +387,12 @@ function resetPin(){
         <label>Yahoo Ticker
           <div style="font-size:11px;color:#777;margin:4px 0 6px;line-height:1.4">Ticker unbekannt? → <a href="https://finance.yahoo.com/lookup/" target="_blank" style="color:#2f6cf2;text-decoration:none;font-weight:600">Yahoo Finance Suche ↗</a> — WKN oder Name eingeben, Ticker kopieren.</div>
           <input id="watchTicker" type="text" placeholder="z.B. AAPL oder VGWD.DE" />
-          <button type="button" class="ticker-search-btn" id="tickerSearchBtn" onclick="searchTicker()">
-            🔍 Nach Name suchen
-          </button>
-          <div class="ticker-results" id="tickerResults"></div>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <button type="button" class="ticker-search-btn" id="tickerSearchBtn" onclick="validateTicker()">
+              ✓ Ticker prüfen
+            </button>
+          </div>
+          <div id="tickerResults" style="margin-top:6px"></div>
         </label>
         <label>Währung
           <select id="watchFx">
@@ -836,13 +841,16 @@ function calcHistoricalMetrics(prices, currentPrice, shares) {
   const high12m = Math.max(...prices.map(p => p.close));
   const belowPct = high => (Number.isFinite(high) && high > 0) ? ((currentPrice / high) - 1) * 100 : null;
   const potential = high => (Number.isFinite(high) && Number.isFinite(shares)) ? (high - currentPrice) * shares : null;
+  const upsidePct = high => (Number.isFinite(high) && high > 0 && currentPrice > 0) ? ((high / currentPrice) - 1) * 100 : null;
   return {
     ytdHigh,
     high12m,
     ytdBelowPct: belowPct(ytdHigh),
     below12mPct: belowPct(high12m),
     ytdPotential: potential(ytdHigh),
-    potential12m: potential(high12m)
+    potential12m: potential(high12m),
+    ytdUpsidePct: upsidePct(ytdHigh),
+    upside12mPct: upsidePct(high12m)
   };
 }
 function getSortArrow(key){
@@ -1008,12 +1016,12 @@ function renderPositions(rows, type='overview'){
   const yearLabel = getPrevYearEndIso().replace(/-/g,'.');
   if(historicalMode){
     const stamp = lastMarketUpdate ? formatStamp(lastMarketUpdate) : 'Historische Daten';
-    const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier', false)}</div><div class="pos-head-sub">${type==='watchlist' ? `WKN · Watchlist · ${stamp}` : `WKN · Anzahl · ${stamp}`}</div></div><div class="pos-col neutral"><div class="pos-head-main">Wert aktuell</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdBelowPct','YTD High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('below12mPct','12M High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdPotential','Potenzial', false)}</div><div class="pos-head-sub">YTD / 12M in €</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
+    const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier', false)}</div><div class="pos-head-sub">${type==='watchlist' ? `WKN · Watchlist · ${stamp}` : `WKN · Anzahl · ${stamp}`}</div></div><div class="pos-col neutral"><div class="pos-head-main">Wert aktuell</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdBelowPct','YTD High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('below12mPct','12M High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdPotential','Potenzial', false)}</div><div class="pos-head-sub">YTD / 12M in € · Upside %</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
     const sortedRows = sortRows(rows);
     const fmtPct = v => v == null ? '–' : fp(v/100);
     const fmtCur = v => v == null ? '–' : fc(v);
     const fmtNum = v => v == null ? '–' : f(v,2);
-    const cards = sortedRows.map((r,idx)=>`<article class="position-card ${idx % 2 === 0 ? 'light' : 'dark'}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${type==='watchlist' ? 'Watchlist' : `${f(r.shares,0)} Stck.`}</span><span>${stamp}</span></div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${f(r.currentPrice,2)}</div></div><div class="pos-col ${cl(r.ytdBelowPct || 0)}"><div class="pos-value-top">${fmtNum(r.ytdHigh)}</div><div class="pos-value-sub">${fmtPct(r.ytdBelowPct)}</div></div><div class="pos-col ${cl(r.below12mPct || 0)}"><div class="pos-value-top">${fmtNum(r.high12m)}</div><div class="pos-value-sub">${fmtPct(r.below12mPct)}</div></div><div class="pos-col neutral"><div class="pos-value-top">${fmtCur(r.ytdPotential)}</div><div class="pos-value-sub">${fmtCur(r.potential12m)}</div></div><div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div></div></article>`).join('');
+    const cards = sortedRows.map((r,idx)=>`<article class="position-card ${idx % 2 === 0 ? 'light' : 'dark'}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${type==='watchlist' ? 'Watchlist' : `${f(r.shares,0)} Stck.`}</span><span>${stamp}</span></div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${f(r.currentPrice,2)}</div></div><div class="pos-col ${cl(r.ytdBelowPct || 0)}"><div class="pos-value-top">${fmtNum(r.ytdHigh)}</div><div class="pos-value-sub">${fmtPct(r.ytdBelowPct)}</div></div><div class="pos-col ${cl(r.below12mPct || 0)}"><div class="pos-value-top">${fmtNum(r.high12m)}</div><div class="pos-value-sub">${fmtPct(r.below12mPct)}</div></div><div class="pos-col neutral">${renderUpsideCol(r)}</div><div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div></div></article>`).join('');
     const sumYtdPotential = sortedRows.reduce((s,r)=>s+(Number(r.ytdPotential)||0),0);
     const sum12mPotential = sortedRows.reduce((s,r)=>s+(Number(r.potential12m)||0),0);
     const summaryText = type === 'watchlist' ? 'Historische Hochs · Watchlist' : 'Historische Hochs · Aktive Positionen';
@@ -1126,6 +1134,18 @@ function switchPage(page){
   render();
 }
 function toggleDetails(){ if(currentPage === 'transactions') return; detailMode = !detailMode; if(detailMode) historicalMode = false; render(); }
+function renderUpsideCol(r) {
+  const ytdU = r.ytdUpsidePct;
+  const m12U = r.upside12mPct;
+  // Bold the larger upside; on tie (incl. when YTD High === 12M High), always bold 12m
+  const bigger = (ytdU != null && m12U != null && ytdU > m12U) ? 'ytd' : '12m';
+  const fmtU = (v, bold) => v != null
+    ? '<span class="pos-pctnote' + (bold ? ' bold' : '') + '">' + (v >= 0 ? '+' : '') + f(v,2) + '%</span>'
+    : '<span class="pos-pctnote">\u2013</span>';
+  const fmtCur = v => v == null ? '\u2013' : fc(v);
+  return '<div class="pos-value-top">' + fmtCur(r.ytdPotential) + fmtU(ytdU, bigger==='ytd') + '</div>'
+       + '<div class="pos-value-sub">' + fmtCur(r.potential12m) + fmtU(m12U, bigger==='12m') + '</div>';
+}
 function toggleHistoricalMode(){ if(currentPage === 'transactions') return; historicalMode = !historicalMode; if(historicalMode) detailMode = false; currentSort = historicalMode ? { key: 'ytdPotential', dir: 'desc' } : { key: 'currentValue', dir: 'desc' }; render(); }
 function goHome(){
   currentPage = 'overview';
@@ -1448,59 +1468,52 @@ async function bootstrapApp(){
   document.getElementById('deleteSellTxForm').addEventListener('submit', handleDeleteTransaction);
   document.getElementById('pflegeBackdrop').addEventListener('click', closePflegeModal);
 }
-async function searchTicker(){
-  const wkn = document.getElementById('watchWkn').value.trim().toUpperCase();
-  const name = document.getElementById('watchName').value.trim();
-  // Name hat Vorrang – Yahoo kennt keine deutschen WKN
-  const q = name || wkn;
-  if(!q){ document.getElementById('watchWkn').focus(); return; }
-  if(!name && wkn){
-    // Nur WKN eingegeben – Hinweis zeigen aber trotzdem versuchen
-    document.getElementById('tickerResults').innerHTML =
-      '<div style="font-size:11px;color:#888;padding:4px 2px">Tipp: Yahoo findet Titel besser über den <strong>Namen</strong> (z.B. "Palantir") als über die WKN.</div>';
-  }
-  const btn = document.getElementById('tickerSearchBtn');
+async function validateTicker(){
+  const ticker = document.getElementById('watchTicker').value.trim();
   const resultsDiv = document.getElementById('tickerResults');
+  const btn = document.getElementById('tickerSearchBtn');
+  if(!ticker){
+    resultsDiv.innerHTML = '<div style="font-size:11px;color:#c8441a;padding:4px 2px">Bitte zuerst einen Ticker eingeben.</div>';
+    document.getElementById('watchTicker').focus();
+    return;
+  }
   btn.classList.add('loading');
-  btn.textContent = '⏳ Suche läuft…';
+  btn.textContent = '⏳ Prüfe…';
   resultsDiv.innerHTML = '';
   try {
-    // Direkt aus dem Browser – Yahoo erlaubt Browser-Requests, blockiert aber Server-Requests (Worker)
-    const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&lang=en-US&region=US&quotesCount=8&newsCount=0&enableFuzzyQuery=true`;
+    const bust = Math.floor(Date.now() / 60000);
+    const url = `${CF_WORKER}/?ticker=${encodeURIComponent(ticker)}&_=${bust}`;
     const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
-    const data = await r.json();
-    const quotes = (data.quotes || []).filter(item => item.symbol && item.quoteType).map(item => ({
-      symbol: item.symbol,
-      name: item.longname || item.shortname || item.symbol,
-      type: item.quoteType,
-      exchange: item.exchDisp || item.exchange || '',
-      currency: item.currency || ''
-    }));
-    if(!quotes.length){
-      resultsDiv.innerHTML = '<div style="font-size:11px;color:#888;padding:6px 2px">Keine Treffer — gib den <strong>Namen</strong> des Wertpapiers ins Name-Feld ein (z.B. "Palantir", "NVIDIA") und such erneut.</div>';
-      return;
-    }
-    resultsDiv.innerHTML = quotes.map((q, i) => {
-      const typeLabel = {EQUITY:'Aktie', ETF:'ETF', MUTUALFUND:'Fonds', INDEX:'Index', CURRENCY:'Währung', CRYPTOCURRENCY:'Crypto'}[q.type] || q.type;
-      return `<div class="ticker-result-item" onclick="selectTicker('${q.symbol.replace(/'/g,"\'")}','${(q.name||'').replace(/'/g,"\'")}')" title="${q.name}">
-        <span class="ticker-result-symbol">${q.symbol}</span>
-        <span class="ticker-result-name">${q.name}</span>
-        <span class="ticker-result-meta">${typeLabel}${q.exchange ? ' · '+q.exchange : ''}${q.currency ? ' · '+q.currency : ''}</span>
+    const j = await r.json();
+    const parsed = parseWorkerQuotePayload(j);
+    if(parsed && parsed.price){
+      const fx = document.getElementById('watchFx').value || 'EUR';
+      const priceEur = toEUR(parsed.price, fx);
+      resultsDiv.innerHTML = `<div style="font-size:11px;color:#1a6e3a;padding:6px 10px;background:#f0faf4;border:1px solid #b6e2c8;border-radius:8px;margin-top:2px">
+        ✓ <strong>${ticker}</strong> gefunden · Kurs: <strong>${f(priceEur, 2)} ${fx === 'EUR' ? '€' : fx}</strong>
       </div>`;
-    }).join('');
-    // Währung automatisch vorbelegen falls eindeutig USD
-    const first = quotes[0];
-    if(first?.currency === 'USD') document.getElementById('watchFx').value = 'USD';
-    else if(first?.currency === 'EUR') document.getElementById('watchFx').value = 'EUR';
-    else if(first?.currency === 'GBP') document.getElementById('watchFx').value = 'GBP';
+      // Währung automatisch setzen wenn ticker .DE oder kein Suffix
+      if(ticker.endsWith('.DE') || ticker.endsWith('.F') || ticker.endsWith('.SG') || ticker.endsWith('.MU')) {
+        document.getElementById('watchFx').value = 'EUR';
+      } else if(!ticker.includes('.')) {
+        document.getElementById('watchFx').value = 'USD';
+      }
+    } else {
+      resultsDiv.innerHTML = `<div style="font-size:11px;color:#c8441a;padding:6px 10px;background:#fdf3f2;border:1px solid #f0b8b4;border-radius:8px;margin-top:2px">
+        ✗ <strong>${ticker}</strong> liefert keinen Kurs — Ticker prüfen oder anderen versuchen.
+      </div>`;
+    }
   } catch(e){
-    resultsDiv.innerHTML = `<div style="font-size:11px;color:#c8441a;padding:6px 2px">Suche fehlgeschlagen: ${e.message}</div>`;
+    resultsDiv.innerHTML = `<div style="font-size:11px;color:#c8441a;padding:6px 10px;background:#fdf3f2;border:1px solid #f0b8b4;border-radius:8px;margin-top:2px">
+      ✗ Prüfung fehlgeschlagen: ${e.message}
+    </div>`;
   } finally {
     btn.classList.remove('loading');
-    btn.innerHTML = '🔍 Ticker suchen';
+    btn.innerHTML = '✓ Ticker prüfen';
   }
 }
+
 function selectTicker(symbol, name){
   document.getElementById('watchTicker').value = symbol;
   if(!document.getElementById('watchName').value.trim() && name){
