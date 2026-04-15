@@ -524,7 +524,10 @@ async function loadCloudState(){
   }
   const rows = await r.json();
   if(!rows?.length || !rows[0]?.state_json) return null;
-  return normalizeLoadedState(rows[0].state_json);
+  // state_json kann String oder Objekt sein – beide Fälle abfangen
+  const raw = rows[0].state_json;
+  const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  return normalizeLoadedState(parsed);
 }
 async function saveCloudState(){
   if(!appState?.meta?.year) return false;
@@ -543,10 +546,11 @@ async function saveCloudState(){
     return false;
   }
   console.log('saveCloudState: state_json Länge =', stateJsonStr.length);
+  // state_json als String senden – PostgREST castet automatisch zu json/jsonb
   const row = {
     app: SUPABASE_APP,
     year: Number(getCurrentYear()),
-    state_json: JSON.parse(stateJsonStr),
+    state_json: stateJsonStr,
     updated_at: new Date().toISOString()
   };
   const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`;
@@ -574,7 +578,7 @@ async function saveCloudState(){
     r = await fetch(patchUrl, {
       method: 'PATCH',
       headers,
-      body: JSON.stringify({ state_json: row.state_json, updated_at: row.updated_at })
+      body: JSON.stringify({ state_json: stateJsonStr, updated_at: row.updated_at })
     });
   } else {
     // INSERT
