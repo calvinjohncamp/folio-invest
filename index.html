@@ -519,15 +519,25 @@ async function loadCloudState(){
 }
 async function saveCloudState(){
   if(!appState?.meta?.year) return false;
+  let stateSnapshot;
+  try {
+    stateSnapshot = clone(appState);
+  } catch(e) {
+    console.error('State konnte nicht geklont werden', e);
+    return false;
+  }
+  if(!stateSnapshot) return false;
   const row = {
     app: SUPABASE_APP,
     year: Number(getCurrentYear()),
-    state_json: serializeState(),
+    state_json: stateSnapshot,
     updated_at: new Date().toISOString()
   };
   const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`;
   const headers = {
-    ...supabaseHeaders(),
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
     'Prefer': 'resolution=merge-duplicates,return=minimal'
   };
   const r = await fetch(url, {
@@ -1226,10 +1236,31 @@ function render(){
   renderSold(soldRows);
   renderStructure(activeRows);
 }
+async function testSupabaseConnection(){
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?limit=1&select=app`;
+    const r = await fetch(url, { headers: supabaseHeaders() });
+    if(!r.ok){
+      const txt = await r.text();
+      console.warn(`⚠️ Supabase-Verbindungstest fehlgeschlagen: HTTP ${r.status}`, txt);
+      return false;
+    }
+    console.info('✅ Supabase-Verbindung OK');
+    return true;
+  } catch(e) {
+    console.warn('⚠️ Supabase nicht erreichbar', e);
+    return false;
+  }
+}
 async function bootstrapApp(){
   await loadState();
   render();
-  setStatus(`Bereit · ${currentStorageMode}`);
+  const sbOk = await testSupabaseConnection();
+  if(!sbOk && currentStorageMode !== 'Cloud + Gerät'){
+    setStatus(`Bereit · Nur Gerät (Supabase nicht erreichbar – Key prüfen)`);
+  } else {
+    setStatus(`Bereit · ${currentStorageMode}`);
+  }
   refreshMarketData();
   document.getElementById('buyDate').value = todayIso();
   document.getElementById('sellDate').value = todayIso();
