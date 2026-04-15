@@ -93,7 +93,7 @@ body.page-watchlist .positions-header-card .pos-col:nth-child(7),body.page-watch
 .pos-value-top{font-size:16.5px;font-weight:700;line-height:1.05;color:inherit;margin-bottom:8px;letter-spacing:-.02em}
 .pos-value-sub{font-size:12.5px;color:#333;line-height:1.2}
 .positions-header-card .pos-value-sub{color:#222}
-.pos-pctnote{display:block;font-size:12.5px;color:#333;margin-top:2px}
+.pos-pctnote{display:block;font-size:12.5px;color:#333;margin-top:2px;font-weight:400}
 .pos-pctnote.bold{font-weight:700;color:#111}
 .positions-header-card .pos-pctnote{color:#555}
 .pos-muted{color:#333}
@@ -1135,16 +1135,21 @@ function switchPage(page){
 }
 function toggleDetails(){ if(currentPage === 'transactions') return; detailMode = !detailMode; if(detailMode) historicalMode = false; render(); }
 function renderUpsideCol(r) {
-  const ytdU = r.ytdUpsidePct;
-  const m12U = r.upside12mPct;
-  // Bold the larger upside; on tie (incl. when YTD High === 12M High), always bold 12m
-  const bigger = (ytdU != null && m12U != null && ytdU > m12U) ? 'ytd' : '12m';
-  const fmtU = (v, bold) => v != null
-    ? '<span class="pos-pctnote' + (bold ? ' bold' : '') + '">' + (v >= 0 ? '+' : '') + f(v,2) + '%</span>'
-    : '<span class="pos-pctnote">\u2013</span>';
-  const fmtCur = v => v == null ? '\u2013' : fc(v);
-  return '<div class="pos-value-top">' + fmtCur(r.ytdPotential) + fmtU(ytdU, bigger==='ytd') + '</div>'
-       + '<div class="pos-value-sub">' + fmtCur(r.potential12m) + fmtU(m12U, bigger==='12m') + '</div>';
+  try {
+    const ytdU = r.ytdUpsidePct;
+    const m12U = r.upside12mPct;
+    // Bold the larger; on tie always bold 12m
+    const boldYtd = (ytdU != null && m12U != null && ytdU > m12U);
+    const boldM12 = !boldYtd;
+    const fmtU = (v, bold) => v != null
+      ? '<span class="pos-pctnote' + (bold ? ' bold' : '') + '">' + (v >= 0 ? '+' : '') + f(v,2) + '%</span>'
+      : '<span class="pos-pctnote">–</span>';
+    const fmtCur = v => (v != null && v !== undefined) ? fc(v) : '–';
+    return '<div class="pos-value-top">' + fmtCur(r.ytdPotential) + fmtU(ytdU, boldYtd) + '</div>'
+         + '<div class="pos-value-sub">' + fmtCur(r.potential12m) + fmtU(m12U, boldM12) + '</div>';
+  } catch(e) {
+    return '<div class="pos-value-top">–</div><div class="pos-value-sub">–</div>';
+  }
 }
 function toggleHistoricalMode(){ if(currentPage === 'transactions') return; historicalMode = !historicalMode; if(historicalMode) detailMode = false; currentSort = historicalMode ? { key: 'ytdPotential', dir: 'desc' } : { key: 'currentValue', dir: 'desc' }; render(); }
 function goHome(){
