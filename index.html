@@ -45,6 +45,7 @@ body { background: radial-gradient(circle at top, rgba(223,87,53,.08), transpare
 .nav-btn:hover:not(.active) { color: var(--grey); }
 .nav-btn-pflege{color:var(--orange);padding-right:10px}
 body.page-watchlist #detailsBtn{display:none}
+body.page-transactions #detailsBtn,body.page-transactions #historischBtn,body.page-transactions #refreshBtn{display:none !important}
 .nav-btn-pflege:hover{color:#ef7a5f !important;border-bottom-color:var(--orange)}
 .nav-btn-pflege.active{color:var(--orange);border-bottom-color:var(--orange)}
 .statusbar { background: rgba(18,18,18,.94); border-top: none; border-bottom: 1px solid var(--line); margin-top:-1px; padding: 5px 24px; display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text-dim); position: sticky; top: 101px; z-index: 98; }
@@ -96,7 +97,7 @@ td:nth-child(2) { text-align: left; }
 .positions-shell{margin-bottom:24px}
 .positions-shell.detail-width{max-width:980px}
 .positions-header-card,.position-card{border:1px solid var(--line-2);border-radius:18px;overflow:hidden}
-.positions-header-card{background:linear-gradient(180deg, rgba(223,87,53,.22) 0%, rgba(223,87,53,.12) 100%), #2a211f;margin-bottom:8px;position:sticky;top:140px;z-index:40;box-shadow:0 12px 28px rgba(0,0,0,.22)}
+.positions-header-card{background:linear-gradient(180deg, rgba(168,170,172,.98) 0%, rgba(168,170,172,.92) 100%), #A8AAAC;margin-bottom:8px;position:sticky;top:140px;z-index:40;box-shadow:0 12px 28px rgba(0,0,0,.22)}
 .position-card{margin-bottom:8px;box-shadow:0 8px 20px rgba(0,0,0,.14)}
 .position-card:hover{background:#272727}
 .position-card.light,.position-card.dark{background:#222222;color:var(--text)}
@@ -168,6 +169,9 @@ body.page-watchlist .positions-header-card .pos-col:nth-child(7),body.page-watch
 .positions-summary-card{background:linear-gradient(180deg, rgba(223,87,53,.18) 0%, rgba(223,87,53,.08) 100%), #2a211f;border:1px solid rgba(223,87,53,.18);border-radius:18px;overflow:hidden;margin-top:8px;box-shadow:0 10px 24px rgba(0,0,0,.18)}
 .positions-summary-card .pos-col{border-right:1px solid rgba(255,255,255,.06)}
 .positions-summary-card .pos-col:last-child{border-right:none}
+
+body.page-watchlist .positions-header-card{background:linear-gradient(180deg, rgba(223,87,53,.22) 0%, rgba(223,87,53,.12) 100%), #2a211f}
+body.page-transactions .positions-header-card{background:linear-gradient(180deg, rgba(223,87,53,.22) 0%, rgba(223,87,53,.12) 100%), #2a211f}
 .positions-summary-label{font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--silver);line-height:1.15;margin-bottom:8px}
 .positions-summary-sub{font-size:10px;color:var(--text-muted);line-height:1.2}
 .structure-footer{margin-top:10px;padding-top:7px;border-top:1px solid var(--line);font-size:11px;font-weight:700;color:var(--text);text-align:right}
@@ -216,7 +220,9 @@ body.theme-original td{color:#333}
 body.theme-original td:first-child{color:#111}
 body.theme-original .total-row td{background:#F0EDE8;border-top:2px solid #D8D4CE;color:#111}
 body.theme-original .positions-header-card,body.theme-original .position-card{border:1px solid #D8D4CE;border-radius:18px;box-shadow:none}
-body.theme-original .positions-header-card{background:#D9D7D3}
+body.theme-original .positions-header-card{background:#A8AAAC}
+body.theme-original.page-watchlist .positions-header-card{background:#D9D7D3}
+body.theme-original.page-transactions .positions-header-card{background:#D9D7D3}
 body.theme-original .position-card:hover{background:#FDF9F5}
 body.theme-original .position-card.light,body.theme-original .position-card.dark{background:#FFFFFF;color:#111}
 body.theme-original .pos-col{border-right:1px solid #ECE7DF}
@@ -529,15 +535,6 @@ function resetPin(){
           </div>
           <div id="tickerResults" style="margin-top:6px"></div>
         </label>
-        <label>Währung
-          <select id="watchFx">
-            <option value="EUR">EUR (€)</option>
-            <option value="USD">USD ($)</option>
-            <option value="GBP">GBP (£)</option>
-            <option value="CHF">CHF</option>
-            <option value="JPY">JPY</option>
-          </select>
-        </label>
         <div class="pflege-note">Der Basiskurs wird automatisch mit dem Schlusskurs vom 31.12. des Vorjahres belegt. Das Ticker-Mapping wird gespeichert und bleibt beim nächsten Laden erhalten.</div>
         <div class="pflege-actions">
           <button class="pflege-submit" type="submit">Watchlist ergänzen</button>
@@ -668,6 +665,7 @@ function fc(v){const n=Number(v||0);const s=n>=0?'+':'';return s+f(n)+' €'}
 function fp(v){const n=Number(v||0);const s=n>=0?'+':''; return s+f(n*100,2)+'%'}
 function cl(v){return Number(v||0)>=0?'pos':'neg'}
 function formatStamp(dateStr){ if(!dateStr) return '–'; const d = new Date(dateStr); return d.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(',', ' ·'); }
+function formatShortDate(dateStr){ if(!dateStr) return '–'; const d = new Date(dateStr); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'}); }
 function compactCurrency(v){ return f(v)+' €'; }
 function setStatus(text){ const el=document.getElementById('statusText'); if(el) el.textContent=text; }
 function setRefreshButtonsLoading(isLoading){
@@ -691,7 +689,14 @@ function normalizeSold(rec){
   return { wkn:rec.wkn, name:rec.name || SECURITY_MASTER[rec.wkn]?.name || `WKN ${rec.wkn}`, meta:rec.meta || SECURITY_MASTER[rec.wkn]?.meta || DEFAULT_META, shares:Number(rec.shares||0), refPrice:Number(rec.refPrice||0), sellPrice:Number(rec.sellPrice||0), sellDate:rec.sellDate || todayIso() };
 }
 function normalizeWatch(w){
-  return { wkn:w.wkn, name:w.name || SECURITY_MASTER[w.wkn]?.name || `WKN ${w.wkn}`, meta:w.meta || SECURITY_MASTER[w.wkn]?.meta || DEFAULT_META, basePrice:Number(w.basePrice||0), date:w.date || getPrevYearEndIso() };
+  return {
+    wkn:w.wkn,
+    name:w.name || SECURITY_MASTER[w.wkn]?.name || `WKN ${w.wkn}`,
+    meta:w.meta || SECURITY_MASTER[w.wkn]?.meta || DEFAULT_META,
+    basePrice:Number(w.basePrice||0),
+    addedDate:w.addedDate || null,
+    date:w.date || getPrevYearEndIso()
+  };
 }
 function seedTransactionsFromPortfolio(portfolio){
   const tx = [];
@@ -905,7 +910,8 @@ function parseWorkerQuotePayload(j) {
   if (!prev && price && !isNaN(changeAbs) && changeAbs !== 0) prev = price - changeAbs;
   if (!prev && price && changePct != null && changePct !== -100) prev = price / (1 + changePct / 100);
   if (!prev) prev = Number(meta.chartPreviousClose || meta.previousClose || 0) || null;
-  return price ? { price, prev: prev || null } : null;
+  const currency = String(j.currency || j.quoteCurrency || meta.currency || '').toUpperCase();
+  return price ? { price, prev: prev || null, currency } : null;
 }
 async function cfFetchQuote(ticker) {
   const bust = Math.floor(Date.now() / 60000);
@@ -942,8 +948,17 @@ async function loadFX() {
 }
 function toEUR(priceLocal, ccy) {
   if (ccy === 'EUR') return priceLocal;
-  const rate = fxRates[ccy];
-  return rate ? priceLocal / rate : priceLocal;
+  const rate = Number(fxRates[ccy] || 0);
+  if (!rate) return priceLocal;
+  return rate > 1 ? priceLocal / rate : priceLocal * rate;
+}
+function inferFxFromTicker(ticker='', quoteCurrency='') {
+  const t = String(ticker || '').toUpperCase();
+  const qc = String(quoteCurrency || '').toUpperCase();
+  if (qc === 'EUR' || qc === 'USD' || qc === 'GBP' || qc === 'CHF' || qc === 'JPY') return qc;
+  if (/(\.DE|\.F|\.SG|\.MU|\.BE|\.DU|\.HM|\.HA|\.XETRA)$/.test(t)) return 'EUR';
+  if (!t.includes('.')) return 'USD';
+  return 'EUR';
 }
 function parseWorkerHistoryPayload(j) {
   if (!j) return [];
@@ -989,8 +1004,11 @@ async function loadKurse() {
     if (!info) return;
     const quote = await fetchTickerWithFallback(info.tickers);
     if (quote && quote.price) {
-      liveKurse[wkn] = toEUR(quote.price, info.fx);
-      prevKurse[wkn] = toEUR(quote.prev || quote.price, info.fx);
+      const fx = inferFxFromTicker(info.tickers?.[0], quote.currency || info.fx);
+      info.fx = fx;
+      if(appState?.customTickers?.[wkn]) appState.customTickers[wkn].fx = fx;
+      liveKurse[wkn] = toEUR(quote.price, fx);
+      prevKurse[wkn] = toEUR(quote.prev || quote.price, fx);
     }
     const history = await fetchHistoryWithFallback(info.tickers);
     if (history && history.prices?.length) {
@@ -1005,6 +1023,12 @@ function prevYearCloseFromHistory(wkn){
   if (exact) return exact.close;
   const earlier = prices.filter(p => p.date <= target).sort((a,b)=>b.date.localeCompare(a.date))[0];
   return earlier?.close ?? null;
+}
+function getWatchAddedDate(w){
+  if (w?.addedDate) return w.addedDate;
+  const txs = (appState?.transactions || []).filter(t => t?.type === 'WATCH+' && t?.wkn === w?.wkn).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if (txs.length) return txs[0].date;
+  return null;
 }
 function calcHistoricalMetrics(prices, currentPrice, shares) {
   if (!Array.isArray(prices) || !prices.length || !Number.isFinite(currentPrice) || !currentPrice) {
@@ -1039,8 +1063,11 @@ function renderSortButton(key, label, showArrow = true){
 }
 function sortRows(rows){
   const sorted = [...rows];
-  const dir = currentSort.dir === 'asc' ? 1 : -1;
-  sorted.sort((a,b)=>{
+  if(currentPage === 'watchlist'){
+    sorted.sort((a,b)=> String(a.name || '').localeCompare(String(b.name || ''), 'de', { sensitivity:'base' }));
+  } else {
+    const dir = currentSort.dir === 'asc' ? 1 : -1;
+    sorted.sort((a,b)=>{
     let av, bv;
     switch(currentSort.key){
       case 'name':
@@ -1064,9 +1091,10 @@ function sortRows(rows){
       default:
         av = Number(a.currentValue || 0); bv = Number(b.currentValue || 0);
     }
-    if (av === bv) return 0;
-    return (av - bv) * dir;
-  });
+      if (av === bv) return 0;
+      return (av - bv) * dir;
+    });
+  }
   const total = sorted.reduce((s,r)=>s+r.currentValue,0);
   let running = 0;
   sorted.forEach(r=>{ r.share = total ? r.currentValue/total : 0; running += r.share; r.cumShare = running; });
@@ -1121,14 +1149,16 @@ function rowsFromWatchlist(){
     const shares = 1;
     const currentPrice = liveKurse[w.wkn] ?? w.basePrice;
     const prevPrice = prevKurse[w.wkn] ?? currentPrice;
-    const refPrice = w.basePrice || prevYearCloseFromHistory(w.wkn) || currentPrice;
+    const histClose = prevYearCloseFromHistory(w.wkn);
+    const refPrice = histClose ?? w.basePrice ?? currentPrice;
+    const refSource = histClose != null ? 'history' : (w.basePrice != null ? 'stored' : 'current');
     const refValue = refPrice;
     const currentValue = currentPrice;
     const prevValue = prevPrice;
     const dayAbs = currentValue - prevValue;
     const dayPct = prevValue ? dayAbs / prevValue : 0;
     const hist = calcHistoricalMetrics(historicalData[w.wkn], currentPrice, shares);
-    return {...w, shares, refValue, refPrice, currentPrice, currentValue, prevPrice, prevValue, diffAbs: currentValue-refValue, diffPct: refValue ? (currentValue-refValue)/refValue : 0, dayAbs, dayPct, isLive: liveKurse[w.wkn] != null, ...hist};
+    return {...w, shares, refValue, refPrice, refSource, currentPrice, currentValue, prevPrice, prevValue, diffAbs: currentValue-refValue, diffPct: refValue ? (currentValue-refValue)/refValue : 0, dayAbs, dayPct, isLive: liveKurse[w.wkn] != null, ...hist};
   });
   const total = rows.reduce((s,r)=>s+r.currentValue,0);
   let running = 0;
@@ -1148,7 +1178,8 @@ function renderKpis(activeRows, soldRows){
   const dayAbs = activeRows.reduce((s,r)=>s+r.dayAbs,0) + soldRows.reduce((s,r)=>s+r.dayAbs,0);
   const prevTotal = activeRows.reduce((s,r)=>s+r.prevValue,0);
   const dayPct = prevTotal ? dayAbs/prevTotal : 0;
-  const yearLabel = getPrevYearEndIso().replace(/-/g,'.');
+  const prevYearEndIso = getPrevYearEndIso();
+  const yearLabel = prevYearEndIso.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3.$2.' + '$1'.slice(2));
   const kpis = [
     ['Aktiver Depotwert', `${f(total)} €`, 'nur aktive Positionen', ''],
     [`Wert ${yearLabel}`, `${f(ref)} €`, 'eingefrorene Referenzbasis aktiv', ''],
@@ -1188,7 +1219,8 @@ function renderPositions(rows, type='overview'){
     wrap.innerHTML = `<div class="tw"><table id="positionsTable"><thead><tr><th>Bezeichnung</th><th>WKN</th><th>Kategorie</th><th>Land</th><th>Börse</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.name}</td><td class="dim">${r.wkn}</td><td class="dim">${r.meta.category}</td><td class="dim">${r.meta.country}</td><td class="dim">${r.meta.exchange}</td></tr>`).join('')}</tbody></table></div>`;
     return;
   }
-  const yearLabel = getPrevYearEndIso().replace(/-/g,'.');
+  const prevYearEndIso = getPrevYearEndIso();
+  const yearLabel = prevYearEndIso.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3.$2.' + '$1'.slice(2));
   if(historicalMode){
     const stamp = lastMarketUpdate ? formatStamp(lastMarketUpdate) : 'Historische Daten';
     const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier', false)}</div><div class="pos-head-sub">${type==='watchlist' ? `WKN · Watchlist · ${stamp}` : `WKN · Anzahl · ${stamp}`}</div></div><div class="pos-col neutral"><div class="pos-head-main">Wert aktuell</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdBelowPct','YTD High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('below12mPct','12M High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdPotential','Potenzial', false)}</div><div class="pos-head-sub">YTD / 12M in € · Upside %</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
@@ -1205,12 +1237,19 @@ function renderPositions(rows, type='overview'){
     return;
   }
   const stamp = lastMarketUpdate ? formatStamp(lastMarketUpdate) : `Referenzbasis ${yearLabel}`;
-  const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier')}</div><div class="pos-head-sub">${type==='watchlist' ? `WKN · Watchlist · Datum / Uhrzeit` : `WKN · Anzahl · Datum / Uhrzeit`}</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('currentValue','Wert aktuell')}</div><div class="pos-head-sub">${type==='watchlist' ? `Kurs ${yearLabel}` : `Wert ${yearLabel}`}</div></div><div class="pos-col"><div class="pos-head-main">Kurs aktuell</div><div class="pos-head-sub">${type==='watchlist' ? `Basis ${yearLabel}` : `Kurs ${yearLabel}`}</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('dayAbs','Veränd. heute')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('diffAbs','Veränd. YTD')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
+  const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${type==='watchlist' ? 'Wertpapier' : renderSortButton('name','Wertpapier')}</div><div class="pos-head-sub">${type==='watchlist' ? `WKN · Watchlist · Hinzugefügt` : `WKN · Anzahl · Datum / Uhrzeit`}</div></div><div class="pos-col"><div class="pos-head-main">${type==='watchlist' ? 'Kurs aktuell' : renderSortButton('currentValue','Wert aktuell')}</div><div class="pos-head-sub">${type==='watchlist' ? `Livekurs in €` : `Wert ${yearLabel}`}</div></div><div class="pos-col"><div class="pos-head-main">${type==='watchlist' ? `Kurs ${yearLabel}` : `Kurs aktuell`}</div><div class="pos-head-sub">${type==='watchlist' ? `Bezugsbasis` : `Kurs ${yearLabel}`}</div></div><div class="pos-col"><div class="pos-head-main">${type==='watchlist' ? 'Veränd. heute' : renderSortButton('dayAbs','Veränd. heute')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">${type==='watchlist' ? 'Veränd. YTD' : renderSortButton('diffAbs','Veränd. YTD')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
   const sortedRows = sortRows(rows);
   const cards = sortedRows.map((r,idx)=>{
     const tone = idx % 2 === 0 ? 'light' : 'dark';
     const subLeft = type==='watchlist' ? 'Watchlist' : `${f(r.shares,0)} Stck.`;
-    return `<article class="position-card ${tone}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${subLeft}</span><span>${stamp}</span></div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${compactCurrency(r.refValue)}</div></div><div class="pos-col neutral"><div class="pos-value-top">${f(r.currentPrice,2)}</div><div class="pos-value-sub">${f(r.refPrice,2)}</div></div><div class="pos-col ${cl(r.dayAbs)}"><div class="pos-value-top">${fc(r.dayAbs)}</div><div class="pos-value-sub">${fp(r.dayPct)}</div></div><div class="pos-col ${cl(r.diffAbs)}"><div class="pos-value-top">${fc(r.diffAbs)}</div><div class="pos-value-sub">${fp(r.diffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div></div></article>`;
+    const metaStamp = type==='watchlist' ? formatShortDate(r.addedDate || getWatchAddedDate(r) || r.date) : stamp;
+    const valueCol = type==='watchlist'
+      ? `<div class="pos-col neutral"><div class="pos-value-top">${f(r.currentPrice,2)}</div><div class="pos-value-sub">${r.isLive ? 'live' : 'Fallback'}</div></div>`
+      : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${compactCurrency(r.refValue)}</div></div>`;
+    const priceCol = type==='watchlist'
+      ? `<div class="pos-col neutral"><div class="pos-value-top">${f(r.refPrice,2)}</div><div class="pos-value-sub">${r.refSource === 'history' ? `Bezugsbasis` : 'Fallback-Basis'}</div></div>`
+      : `<div class="pos-col neutral"><div class="pos-value-top">${f(r.currentPrice,2)}</div><div class="pos-value-sub">${f(r.refPrice,2)}</div></div>`;
+    return `<article class="position-card ${tone}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${subLeft}</span><span>${metaStamp}</span></div></div>${valueCol}${priceCol}<div class="pos-col ${cl(r.dayAbs)}"><div class="pos-value-top">${fc(r.dayAbs)}</div><div class="pos-value-sub">${fp(r.dayPct)}</div></div><div class="pos-col ${cl(r.diffAbs)}"><div class="pos-value-top">${fc(r.diffAbs)}</div><div class="pos-value-sub">${fp(r.diffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div></div></article>`;
   }).join('');
   const totalCurrent = sortedRows.reduce((s,r)=>s+r.currentValue,0);
   const totalRef = sortedRows.reduce((s,r)=>s+r.refValue,0);
@@ -1220,7 +1259,13 @@ function renderPositions(rows, type='overview'){
   const totalDiffAbs = sortedRows.reduce((s,r)=>s+r.diffAbs,0);
   const totalDiffPct = totalRef ? totalDiffAbs / totalRef : 0;
   const summaryText = type === 'watchlist' ? 'Aktuelle Sortierung · Watchlist' : 'Aktuelle Sortierung · Aktive Positionen';
-  const summary = `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">${summaryText}</div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(totalCurrent)}</div><div class="pos-value-sub">${compactCurrency(totalRef)}</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col ${cl(totalDayAbs)}"><div class="pos-value-top">${fc(totalDayAbs)}</div><div class="pos-value-sub">${fp(totalDayPct)}</div></div><div class="pos-col ${cl(totalDiffAbs)}"><div class="pos-value-top">${fc(totalDiffAbs)}</div><div class="pos-value-sub">${fp(totalDiffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div></div>`;
+  const summaryValueCol = type==='watchlist'
+    ? `<div class="pos-col neutral"><div class="pos-value-top">${f(totalCurrent,2)}</div><div class="pos-value-sub">Livekurse in €</div></div>`
+    : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(totalCurrent)}</div><div class="pos-value-sub">${compactCurrency(totalRef)}</div></div>`;
+  const summaryPriceCol = type==='watchlist'
+    ? `<div class="pos-col neutral"><div class="pos-value-top">${f(totalRef,2)}</div><div class="pos-value-sub">Vergleichsbasis</div></div>`
+    : `<div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div>`;
+  const summary = `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">${summaryText}</div></div>${summaryValueCol}${summaryPriceCol}<div class="pos-col ${cl(totalDayAbs)}"><div class="pos-value-top">${fc(totalDayAbs)}</div><div class="pos-value-sub">${fp(totalDayPct)}</div></div><div class="pos-col ${cl(totalDiffAbs)}"><div class="pos-value-top">${fc(totalDiffAbs)}</div><div class="pos-value-sub">${fp(totalDiffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div></div>`;
   wrap.innerHTML = header + cards + summary;
 }
 function renderSold(rows){
@@ -1452,7 +1497,7 @@ async function handleAddWatch(event){
   const wkn = document.getElementById('watchWkn').value.trim().toUpperCase();
   const ticker = document.getElementById('watchTicker').value.trim();
   const nameInput = document.getElementById('watchName').value.trim();
-  const fx = document.getElementById('watchFx').value || 'EUR';
+  let fx = 'EUR';
   if(!wkn){ document.getElementById('watchWkn').focus(); return; }
   if(!ticker){
     const tickerInput = document.getElementById('watchTicker');
@@ -1478,6 +1523,9 @@ async function handleAddWatch(event){
   try {
     const quote = await fetchTickerWithFallback([ticker]);
     if(quote?.price) {
+      fx = inferFxFromTicker(ticker, quote.currency);
+      appState.customTickers[wkn] = { tickers:[ticker], fx };
+      TICKER_MAP[wkn] = { tickers:[ticker], fx };
       liveKurse[wkn] = toEUR(quote.price, fx);
       prevKurse[wkn] = toEUR(quote.prev || quote.price, fx);
     }
@@ -1487,7 +1535,7 @@ async function handleAddWatch(event){
     }
   } catch(e) { console.warn('Kurs für neue Watchlist-WKN konnte nicht geladen werden', e); }
   const basePrice = prevYearCloseFromHistory(wkn) || liveKurse[wkn] || 0;
-  appState.watchlist.push(normalizeWatch({wkn,name:nameInput||sec.name,meta:sec.meta,basePrice,date:getPrevYearEndIso()}));
+  appState.watchlist.push(normalizeWatch({wkn,name:nameInput||sec.name,meta:sec.meta,basePrice,addedDate:todayIso(),date:getPrevYearEndIso()}));
   addTransaction({date:todayIso(), type:'WATCH+', name:nameInput||sec.name, wkn, shares:null, price:basePrice, amount:basePrice});
   event.target.reset();
   await afterMaintenance(`Watchlist ergänzt · ${nameInput||sec.name}`);
@@ -1852,7 +1900,7 @@ async function applyYearRolloverIfNeeded(){
     const price = prevYearCloseFromHistory(p.wkn) || liveKurse[p.wkn] || avgRefPrice(p);
     return normalizePosition({ wkn:p.wkn, name:p.name, meta:p.meta, lots:[{shares, price, date:getPrevYearEndIso(currentYear)}] });
   });
-  appState.watchlist = appState.watchlist.map(w => normalizeWatch({ wkn:w.wkn, name:w.name, meta:w.meta, basePrice:prevYearCloseFromHistory(w.wkn) || liveKurse[w.wkn] || w.basePrice, date:getPrevYearEndIso(currentYear) }));
+  appState.watchlist = appState.watchlist.map(w => normalizeWatch({ wkn:w.wkn, name:w.name, meta:w.meta, basePrice:prevYearCloseFromHistory(w.wkn) || liveKurse[w.wkn] || w.basePrice, addedDate:w.addedDate || getWatchAddedDate(w), date:getPrevYearEndIso(currentYear) }));
   appState.sold = [];
   appState.transactions = [];
   appState.meta.year = currentYear;
@@ -1955,7 +2003,7 @@ function render(){
     modeNote.classList.remove('hidden');
     modeNote.textContent = historicalMode
       ? 'Historische Watchlist mit YTD-High und 12-Monats-High – ohne Anteilslogik'
-      : 'Watchlist fokussiert auf Titel, Kurse und Veränderungen – ohne Anteilslogik';
+      : 'Watchlist mit echtem 31.12.-Schlusskurs je Titel als Basis – ohne Anteilslogik';
     renderPositions(watchRows, 'watchlist');
     document.getElementById('soldSection').classList.add('hidden');
     structureTitle.classList.add('hidden');
@@ -2023,17 +2071,12 @@ async function validateTicker(){
     const j = await r.json();
     const parsed = parseWorkerQuotePayload(j);
     if(parsed && parsed.price){
-      const fx = document.getElementById('watchFx').value || 'EUR';
+      const fx = inferFxFromTicker(ticker, parsed.currency);
       const priceEur = toEUR(parsed.price, fx);
+      const nativeLabel = fx === 'EUR' ? '€' : fx;
       resultsDiv.innerHTML = `<div style="font-size:11px;color:var(--success);padding:6px 10px;background:rgba(47,163,107,.12);border:1px solid rgba(47,163,107,.35);border-radius:8px;margin-top:2px">
-        ✓ <strong>${ticker}</strong> gefunden · Kurs: <strong>${f(priceEur, 2)} ${fx === 'EUR' ? '€' : fx}</strong>
+        ✓ <strong>${ticker}</strong> gefunden · Kurs: <strong>${f(priceEur, 2)} €</strong> <span style="opacity:.8">(${f(parsed.price, 2)} ${nativeLabel})</span>
       </div>`;
-      // Währung automatisch setzen wenn ticker .DE oder kein Suffix
-      if(ticker.endsWith('.DE') || ticker.endsWith('.F') || ticker.endsWith('.SG') || ticker.endsWith('.MU')) {
-        document.getElementById('watchFx').value = 'EUR';
-      } else if(!ticker.includes('.')) {
-        document.getElementById('watchFx').value = 'USD';
-      }
     } else {
       resultsDiv.innerHTML = `<div style="font-size:11px;color:var(--orange);padding:6px 10px;background:rgba(223,87,53,.08);border:1px solid rgba(223,87,53,.32);border-radius:8px;margin-top:2px">
         ✗ <strong>${ticker}</strong> liefert keinen Kurs — Ticker prüfen oder anderen versuchen.
