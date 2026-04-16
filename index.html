@@ -103,9 +103,9 @@ td:nth-child(2) { text-align: left; }
 .position-card.light,.position-card.dark{background:#222222;color:var(--text)}
 .position-card.light{background:#242424}
 .position-card.dark{background:#202020}
-.pos-grid{display:grid;grid-template-columns:72px 2.5fr 1.2fr 1fr 1fr 1fr 0.95fr;gap:0}
-body.page-watchlist .pos-grid{grid-template-columns:72px 2.7fr 1.25fr 1fr 1fr 1fr}
-body.page-watchlist .positions-header-card .pos-col:nth-child(7),body.page-watchlist .position-card .pos-col:nth-child(7),body.page-watchlist .positions-summary-card .pos-col:nth-child(7){display:none}
+.pos-grid{display:grid;grid-template-columns:72px 2.3fr 1.15fr 0.95fr 1fr 1fr 1fr 0.95fr;gap:0}
+body.page-watchlist .pos-grid{grid-template-columns:72px 2.45fr 1.15fr 0.95fr 1fr 1fr 0.95fr}
+body.page-watchlist .positions-header-card .pos-col:nth-child(8),body.page-watchlist .position-card .pos-col:nth-child(8),body.page-watchlist .positions-summary-card .pos-col:nth-child(8){display:none}
 .pos-col{padding:13px 14px 11px;border-right:1px solid rgba(246,246,246,.05);min-width:0}
 .positions-header-card .pos-col{border-right:1px solid rgba(255,255,255,.06)}
 .pos-col:last-child{border-right:none}
@@ -136,6 +136,12 @@ body.page-watchlist .positions-header-card .pos-col:nth-child(7),body.page-watch
 .pos-col.pos .pos-value-sub,.pos-col.neg .pos-value-sub{color:inherit}
 .pos-share-top{font-size:16.5px;font-weight:700;line-height:1.1;color:inherit;margin-bottom:7px}
 .pos-share-sub{font-size:12px;color:var(--text-soft);line-height:1.2}
+
+.pos-col.kgv-low .pos-value-top{color:var(--success)}
+.pos-col.kgv-mid .pos-value-top{color:#d7b44a}
+.pos-col.kgv-high .pos-value-top{color:var(--warning)}
+.pos-col.kgv-na .pos-value-top{color:var(--text-muted)}
+body.theme-original .pos-col.kgv-mid .pos-value-top{color:#9b7a10}
 
 
 .structure-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:24px}
@@ -179,9 +185,9 @@ body.page-transactions .positions-header-card{background:linear-gradient(180deg,
 .structure-footer{margin-top:10px;padding-top:7px;border-top:1px solid var(--line);font-size:11px;font-weight:700;color:var(--text);text-align:right}
 .structure-footer.bars{margin-top:8px}
 
-@media (max-width: 1180px){.positions-header-card{top:140px}.pos-grid{grid-template-columns:72px 1.7fr 1fr 1fr;}.pos-col:nth-child(5),.pos-col:nth-child(6),.pos-col:nth-child(7){border-top:1px solid rgba(255,255,255,.10)}.positions-header-card .pos-col:nth-child(5),.positions-header-card .pos-col:nth-child(6),.positions-header-card .pos-col:nth-child(7){border-top:1px solid rgba(0,0,0,.06)}.pos-col:nth-child(5){grid-column:2}.pos-col:nth-child(6){grid-column:3}.pos-col:nth-child(7){grid-column:4}body.page-watchlist .pos-grid{grid-template-columns:72px 1.9fr 1fr 1fr;}body.page-watchlist .pos-col:nth-child(6){grid-column:4}.structure-grid{grid-template-columns:1fr}}
-@media (max-width: 720px){.pos-main-title{font-size:15px}.pos-main-meta{font-size:10px}.pos-value-sub{font-size:11px}.pos-share-sub{font-size:10.5px}.pos-pctnote{font-size:9.5px}.content, .statusbar { padding-left: 14px; padding-right: 14px; } .hd-inner{padding-left:14px;padding-right:14px}.nav-inner{padding-left:14px;padding-right:14px} .nav-btn:first-child{padding-left:0}.kpi-grid{grid-template-columns:repeat(2,1fr)} .donut-wrap{flex-direction:column;align-items:flex-start}.donut{width:118px;height:118px;flex-basis:118px}.structure-card{min-height:auto}.positions-header-card{display:none}.position-card{border-radius:16px}.pos-grid{grid-template-columns:54px 1fr 1fr;}.pos-col{padding:14px 14px 13px}.pos-col{border-right:1px solid rgba(255,255,255,.10)}.pos-col:nth-child(1){grid-row:1 / span 3}.pos-col:nth-child(2){grid-column:2 / -1;border-right:none;border-bottom:1px solid rgba(255,255,255,.10)}.pos-col:nth-child(3){grid-column:2}.pos-col:nth-child(4){grid-column:3;border-right:none}.pos-col:nth-child(5){grid-column:2;border-top:1px solid rgba(255,255,255,.10)}.pos-col:nth-child(6){grid-column:3;border-top:1px solid rgba(255,255,255,.10);border-right:none}.pos-col:nth-child(7){grid-column:2 / -1;border-top:1px solid rgba(255,255,255,.10);border-right:none}body.page-watchlist .pos-col:nth-child(6){grid-column:2 / -1}.pos-main-title{font-size:18px}.pos-value-top{font-size:18px}.pos-main-meta{gap:8px 14px;font-size:10px}.pos-head-main{font-size:10px}.pos-head-sub{font-size:9px}.pos-rank-badge{width:34px;height:34px}.pos-rank-badge strong{font-size:14px}.pos-share-top{font-size:16px}}
-@media (max-width: 720px){body.theme-original .pos-col{border-right:1px solid #ece7df}body.theme-original .pos-col:nth-child(2){border-bottom:1px solid #ece7df}body.theme-original .pos-col:nth-child(5),body.theme-original .pos-col:nth-child(6),body.theme-original .pos-col:nth-child(7){border-top:1px solid #ece7df}}
+@media (max-width: 1180px){ .positions-header-card{top:140px} .pos-grid{grid-template-columns:72px 1.55fr 1fr 1fr 1fr;} .pos-col:nth-child(5),.pos-col:nth-child(6),.pos-col:nth-child(7),.pos-col:nth-child(8){border-top:1px solid rgba(255,255,255,.10)} .positions-header-card .pos-col:nth-child(5),.positions-header-card .pos-col:nth-child(6),.positions-header-card .pos-col:nth-child(7),.positions-header-card .pos-col:nth-child(8){border-top:1px solid rgba(0,0,0,.06)} .pos-col:nth-child(5){grid-column:2} .pos-col:nth-child(6){grid-column:3} .pos-col:nth-child(7){grid-column:4} .pos-col:nth-child(8){grid-column:5} body.page-watchlist .pos-grid{grid-template-columns:72px 1.75fr 1fr 1fr 1fr;} body.page-watchlist .pos-col:nth-child(7){grid-column:5} .structure-grid{grid-template-columns:1fr} }
+@media (max-width: 720px){.pos-main-title{font-size:15px}.pos-main-meta{font-size:10px}.pos-value-sub{font-size:11px}.pos-share-sub{font-size:10.5px}.pos-pctnote{font-size:9.5px}.content, .statusbar { padding-left: 14px; padding-right: 14px; } .hd-inner{padding-left:14px;padding-right:14px}.nav-inner{padding-left:14px;padding-right:14px} .nav-btn:first-child{padding-left:0}.kpi-grid{grid-template-columns:repeat(2,1fr)} .donut-wrap{flex-direction:column;align-items:flex-start}.donut{width:118px;height:118px;flex-basis:118px}.structure-card{min-height:auto}.positions-header-card{display:none}.position-card{border-radius:16px}.pos-grid{grid-template-columns:54px 1fr 1fr;} .pos-col{padding:14px 14px 13px} .pos-col{border-right:1px solid rgba(255,255,255,.10)} .pos-col:nth-child(1){grid-row:1 / span 4} .pos-col:nth-child(2){grid-column:2 / -1;border-right:none;border-bottom:1px solid rgba(255,255,255,.10)} .pos-col:nth-child(3){grid-column:2} .pos-col:nth-child(4){grid-column:3;border-right:none} .pos-col:nth-child(5){grid-column:2;border-top:1px solid rgba(255,255,255,.10)} .pos-col:nth-child(6){grid-column:3;border-top:1px solid rgba(255,255,255,.10);border-right:none} .pos-col:nth-child(7){grid-column:2;border-top:1px solid rgba(255,255,255,.10)} .pos-col:nth-child(8){grid-column:3;border-top:1px solid rgba(255,255,255,.10);border-right:none} body.page-watchlist .pos-col:nth-child(7){grid-column:2 / -1} body.page-watchlist .pos-col:nth-child(8){display:none}.pos-main-title{font-size:18px}.pos-value-top{font-size:18px}.pos-main-meta{gap:8px 14px;font-size:10px}.pos-head-main{font-size:10px}.pos-head-sub{font-size:9px}.pos-rank-badge{width:34px;height:34px}.pos-rank-badge strong{font-size:14px}.pos-share-top{font-size:16px}}
+@media (max-width: 720px){body.theme-original .pos-col{border-right:1px solid #ece7df}body.theme-original .pos-col:nth-child(2){border-bottom:1px solid #ece7df}body.theme-original .pos-col:nth-child(5),body.theme-original .pos-col:nth-child(6),body.theme-original .pos-col:nth-child(7),body.theme-original .pos-col:nth-child(8){border-top:1px solid #ece7df}}
 
 body.theme-original{
   --silver:#FAF9F6;
@@ -303,6 +309,9 @@ body.theme-dark .pflege-note{color:#9b9ea2}
 .rollover-btn-cancel{border:1px solid var(--line-2);background:var(--card);color:var(--text-soft);border-radius:999px;padding:11px 22px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .rollover-btn-cancel:hover{background:var(--midnight)}
 
+
+body.page-watchlist .positions-summary-card{display:none !important;}
+
 </style>
 </head>
 <body>
@@ -354,6 +363,9 @@ cursor:pointer;
 }
 .k:hover{background:#262626;}
 .k.meta{font-size:14px;color:var(--stone);}
+
+body.page-watchlist .positions-summary-card{display:none !important;}
+
 </style>
 
 <script>
@@ -663,6 +675,7 @@ let marketRefreshRunning = false;
 let currentSort = { key: 'currentValue', dir: 'desc' };
 let liveKurse = {};
 let prevKurse = {};
+let liveKgv = {};
 let fxRates = {};
 let lastMarketUpdate = null;
 let currentPage = 'overview';
@@ -677,6 +690,8 @@ function cl(v){return Number(v||0)>=0?'pos':'neg'}
 function formatStamp(dateStr){ if(!dateStr) return '–'; const d = new Date(dateStr); return d.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(',', ' ·'); }
 function formatShortDate(dateStr){ if(!dateStr) return '–'; const d = new Date(dateStr); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'}); }
 function compactCurrency(v){ return f(v)+' €'; }
+function fmtKgv(v){ return v != null && isFinite(Number(v)) ? f(Number(v), 2) : '–'; }
+function kgvTone(v){ const n = Number(v); if(!Number.isFinite(n)) return 'kgv-na'; if(n < 20) return 'kgv-low'; if(n <= 30) return 'kgv-mid'; return 'kgv-high'; }
 function setStatus(text){ const el=document.getElementById('statusText'); if(el) el.textContent=text; }
 function setRefreshButtonsLoading(isLoading){
   marketRefreshRunning = isLoading;
@@ -921,7 +936,9 @@ function parseWorkerQuotePayload(j) {
   if (!prev && price && changePct != null && changePct !== -100) prev = price / (1 + changePct / 100);
   if (!prev) prev = Number(meta.chartPreviousClose || meta.previousClose || 0) || null;
   const currency = String(j.currency || j.quoteCurrency || meta.currency || '').toUpperCase();
-  return price ? { price, prev: prev || null, currency } : null;
+  const trailingPeRaw = j.trailingPE ?? j.trailingPe ?? j.trailing_pe ?? j.defaultKeyStatistics?.trailingPE?.raw ?? j.defaultKeyStatistics?.trailingPE ?? j.summaryDetail?.trailingPE?.raw ?? j.summaryDetail?.trailingPE ?? j.quoteSummary?.result?.[0]?.defaultKeyStatistics?.trailingPE?.raw ?? j.quoteSummary?.result?.[0]?.defaultKeyStatistics?.trailingPE ?? j.quoteSummary?.result?.[0]?.summaryDetail?.trailingPE?.raw ?? j.quoteSummary?.result?.[0]?.summaryDetail?.trailingPE ?? null;
+  const trailingPE = trailingPeRaw != null && !isNaN(Number(trailingPeRaw)) ? Number(trailingPeRaw) : null;
+  return price ? { price, prev: prev || null, currency, trailingPE } : null;
 }
 async function cfFetchQuote(ticker) {
   const bust = Math.floor(Date.now() / 60000);
@@ -1008,6 +1025,9 @@ function allRelevantWkns(){
   ])];
 }
 async function loadKurse() {
+  liveKurse = {};
+  prevKurse = {};
+  liveKgv = {};
   const wkns = allRelevantWkns();
   await Promise.all(wkns.map(async wkn => {
     const info = TICKER_MAP[wkn];
@@ -1019,6 +1039,9 @@ async function loadKurse() {
       if(appState?.customTickers?.[wkn]) appState.customTickers[wkn].fx = fx;
       liveKurse[wkn] = toEUR(quote.price, fx);
       prevKurse[wkn] = toEUR(quote.prev || quote.price, fx);
+      liveKgv[wkn] = quote.trailingPE != null && isFinite(Number(quote.trailingPE)) ? Number(quote.trailingPE) : null;
+    } else {
+      liveKgv[wkn] = null;
     }
     const history = await fetchHistoryWithFallback(info.tickers);
     if (history && history.prices?.length) {
@@ -1132,7 +1155,7 @@ function rowsFromPortfolio(list){
     const dayAbs = currentValue - prevValue;
     const dayPct = prevValue ? dayAbs / prevValue : 0;
     const hist = calcHistoricalMetrics(historicalData[p.wkn], currentPrice, shares);
-    return {...p, shares, refValue, refPrice, currentPrice, currentValue, prevPrice, prevValue, diffAbs: currentValue-refValue, diffPct: refValue ? (currentValue-refValue)/refValue : 0, dayAbs, dayPct, isLive: liveKurse[p.wkn] != null, ...hist};
+    return {...p, shares, refValue, refPrice, currentPrice, currentValue, prevPrice, prevValue, diffAbs: currentValue-refValue, diffPct: refValue ? (currentValue-refValue)/refValue : 0, dayAbs, dayPct, isLive: liveKurse[p.wkn] != null, kgv: liveKgv[p.wkn] ?? null, ...hist};
   });
   const total = rows.reduce((s,r)=>s+r.currentValue,0);
   let running = 0;
@@ -1168,7 +1191,7 @@ function rowsFromWatchlist(){
     const dayAbs = currentValue - prevValue;
     const dayPct = prevValue ? dayAbs / prevValue : 0;
     const hist = calcHistoricalMetrics(historicalData[w.wkn], currentPrice, shares);
-    return {...w, shares, refValue, refPrice, refSource, currentPrice, currentValue, prevPrice, prevValue, diffAbs: currentValue-refValue, diffPct: refValue ? (currentValue-refValue)/refValue : 0, dayAbs, dayPct, isLive: liveKurse[w.wkn] != null, ...hist};
+    return {...w, shares, refValue, refPrice, refSource, currentPrice, currentValue, prevPrice, prevValue, diffAbs: currentValue-refValue, diffPct: refValue ? (currentValue-refValue)/refValue : 0, dayAbs, dayPct, isLive: liveKurse[w.wkn] != null, kgv: liveKgv[w.wkn] ?? null, ...hist};
   });
   const total = rows.reduce((s,r)=>s+r.currentValue,0);
   let running = 0;
@@ -1233,21 +1256,36 @@ function renderPositions(rows, type='overview'){
   const yearLabel = prevYearEndIso.replace(/^(\d{4})-(\d{2})-(\d{2})$/, (_,y,m,d) => `${d}.${m}.${y.slice(2)}`);
   if(historicalMode){
     const stamp = lastMarketUpdate ? formatStamp(lastMarketUpdate) : 'Historische Daten';
-    const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier', false)}</div><div class="pos-head-sub">${type==='watchlist' ? `WKN · Watchlist · ${stamp}` : `WKN · Anzahl · ${stamp}`}</div></div><div class="pos-col neutral"><div class="pos-head-main">Wert aktuell</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdBelowPct','YTD High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('below12mPct','12M High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdPotential','Potenzial', false)}</div><div class="pos-head-sub">YTD / 12M in € · Upside %</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
+    const header = type==='watchlist'
+      ? `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier', false)}</div><div class="pos-head-sub">WKN · Watchlist · ${stamp}</div></div><div class="pos-col neutral"><div class="pos-head-main">Wert aktuell</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdBelowPct','YTD High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('below12mPct','12M High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdPotential','Potenzial', false)}</div><div class="pos-head-sub">YTD / 12M in € · Upside %</div></div><div class="pos-col neutral"><div class="pos-head-main">KGV</div><div class="pos-head-sub">aktuell</div></div></div></div>`
+      : `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier', false)}</div><div class="pos-head-sub">WKN · Anzahl · ${stamp}</div></div><div class="pos-col neutral"><div class="pos-head-main">Wert aktuell</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdBelowPct','YTD High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('below12mPct','12M High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdPotential','Potenzial', false)}</div><div class="pos-head-sub">YTD / 12M in € · Upside %</div></div><div class="pos-col neutral"><div class="pos-head-main">KGV</div><div class="pos-head-sub">aktuell</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
     const sortedRows = sortRows(rows);
     const fmtPct = v => v == null ? '–' : fp(v/100);
-    const fmtCur = v => v == null ? '–' : fc(v);
     const fmtNum = v => v == null ? '–' : f(v,2);
-    const cards = sortedRows.map((r,idx)=>`<article class="position-card ${idx % 2 === 0 ? 'light' : 'dark'}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${type==='watchlist' ? 'Watchlist' : `${f(r.shares,0)} Stck.`}</span><span>${stamp}</span></div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${f(r.currentPrice,2)}</div></div><div class="pos-col ${cl(r.ytdBelowPct || 0)}"><div class="pos-value-top">${fmtNum(r.ytdHigh)}</div><div class="pos-value-sub">${fmtPct(r.ytdBelowPct)}</div></div><div class="pos-col ${cl(r.below12mPct || 0)}"><div class="pos-value-top">${fmtNum(r.high12m)}</div><div class="pos-value-sub">${fmtPct(r.below12mPct)}</div></div><div class="pos-col neutral">${renderUpsideCol(r)}</div><div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div></div></article>`).join('');
+    const historicalKgvCol = r => `<div class="pos-col neutral ${kgvTone(r.kgv)}"><div class="pos-value-top">${fmtKgv(r.kgv)}</div><div class="pos-value-sub">Trailing PE</div></div>`;
+    const historicalShareCol = r => `<div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div>`;
+    const cards = sortedRows.map((r,idx)=>{
+      const tailCols = type==='watchlist'
+        ? `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${f(r.currentPrice,2)}</div></div><div class="pos-col ${cl(r.ytdBelowPct || 0)}"><div class="pos-value-top">${fmtNum(r.ytdHigh)}</div><div class="pos-value-sub">${fmtPct(r.ytdBelowPct)}</div></div><div class="pos-col ${cl(r.below12mPct || 0)}"><div class="pos-value-top">${fmtNum(r.high12m)}</div><div class="pos-value-sub">${fmtPct(r.below12mPct)}</div></div><div class="pos-col neutral">${renderUpsideCol(r)}</div>${historicalKgvCol(r)}`
+        : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${f(r.currentPrice,2)}</div></div><div class="pos-col ${cl(r.ytdBelowPct || 0)}"><div class="pos-value-top">${fmtNum(r.ytdHigh)}</div><div class="pos-value-sub">${fmtPct(r.ytdBelowPct)}</div></div><div class="pos-col ${cl(r.below12mPct || 0)}"><div class="pos-value-top">${fmtNum(r.high12m)}</div><div class="pos-value-sub">${fmtPct(r.below12mPct)}</div></div><div class="pos-col neutral">${renderUpsideCol(r)}</div>${historicalKgvCol(r)}${historicalShareCol(r)}`;
+      return `<article class="position-card ${idx % 2 === 0 ? 'light' : 'dark'}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${type==='watchlist' ? 'Watchlist' : `${f(r.shares,0)} Stck.`}</span><span>${stamp}</span></div></div>${tailCols}</div></article>`;
+    }).join('');
     const sumYtdPotential = sortedRows.reduce((s,r)=>s+(Number(r.ytdPotential)||0),0);
     const sum12mPotential = sortedRows.reduce((s,r)=>s+(Number(r.potential12m)||0),0);
     const summaryText = type === 'watchlist' ? 'Historische Hochs · Watchlist' : 'Historische Hochs · Aktive Positionen';
-    const summary = `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">${summaryText}</div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(sortedRows.reduce((s,r)=>s+r.currentValue,0))}</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">${fc(sumYtdPotential)}</div><div class="pos-value-sub">${fc(sum12mPotential)}</div></div><div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div></div>`;
+    const summaryKgvValues = sortedRows.map(r => Number(r.kgv)).filter(v => Number.isFinite(v));
+    const avgKgv = summaryKgvValues.length ? summaryKgvValues.reduce((s,v)=>s+v,0) / summaryKgvValues.length : null;
+    const summaryTailCols = type==='watchlist'
+      ? `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(sortedRows.reduce((s,r)=>s+r.currentValue,0))}</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">${fc(sumYtdPotential)}</div><div class="pos-value-sub">${fc(sum12mPotential)}</div></div><div class="pos-col neutral ${kgvTone(avgKgv)}"><div class="pos-value-top">${fmtKgv(avgKgv)}</div><div class="pos-value-sub">Ø Trailing PE</div></div>`
+      : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(sortedRows.reduce((s,r)=>s+r.currentValue,0))}</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">${fc(sumYtdPotential)}</div><div class="pos-value-sub">${fc(sum12mPotential)}</div></div><div class="pos-col neutral ${kgvTone(avgKgv)}"><div class="pos-value-top">${fmtKgv(avgKgv)}</div><div class="pos-value-sub">Ø Trailing PE</div></div><div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div>`;
+    const summary = `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">${summaryText}</div></div>${summaryTailCols}</div></div>`;
     wrap.innerHTML = header + cards + summary;
     return;
   }
   const stamp = lastMarketUpdate ? formatStamp(lastMarketUpdate) : `Referenzbasis ${yearLabel}`;
-  const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${type==='watchlist' ? 'Wertpapier' : renderSortButton('name','Wertpapier')}</div><div class="pos-head-sub">${type==='watchlist' ? `WKN · Watchlist · Hinzugefügt` : `WKN · Anzahl · Datum / Uhrzeit`}</div></div><div class="pos-col"><div class="pos-head-main">${type==='watchlist' ? 'Kurs aktuell' : renderSortButton('currentValue','Wert aktuell')}</div><div class="pos-head-sub">${type==='watchlist' ? `Livekurs in €` : `Wert ${yearLabel}`}</div></div><div class="pos-col"><div class="pos-head-main">${type==='watchlist' ? `Kurs ${yearLabel}` : `Kurs aktuell`}</div><div class="pos-head-sub">${type==='watchlist' ? `Bezugsbasis` : `Kurs ${yearLabel}`}</div></div><div class="pos-col"><div class="pos-head-main">${type==='watchlist' ? 'Veränd. heute' : renderSortButton('dayAbs','Veränd. heute')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">${type==='watchlist' ? 'Veränd. YTD' : renderSortButton('diffAbs','Veränd. YTD')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
+  const header = type==='watchlist'
+    ? `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">Wertpapier</div><div class="pos-head-sub">WKN · Watchlist · Hinzugefügt</div></div><div class="pos-col"><div class="pos-head-main">Kurs aktuell</div><div class="pos-head-sub">Livekurs in €</div></div><div class="pos-col"><div class="pos-head-main">Kurs ${yearLabel}</div><div class="pos-head-sub">Bezugsbasis</div></div><div class="pos-col"><div class="pos-head-main">Veränd. heute</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">Veränd. YTD</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col neutral"><div class="pos-head-main">KGV</div><div class="pos-head-sub">aktuell</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`
+    : `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier')}</div><div class="pos-head-sub">WKN · Anzahl · Datum / Uhrzeit</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('currentValue','Wert aktuell')}</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">Kurs aktuell</div><div class="pos-head-sub">Bezugsbasis</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('dayAbs','Veränd. heute')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('diffAbs','Veränd. YTD')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col neutral"><div class="pos-head-main">KGV</div><div class="pos-head-sub">aktuell</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
   const sortedRows = sortRows(rows);
   const cards = sortedRows.map((r,idx)=>{
     const tone = idx % 2 === 0 ? 'light' : 'dark';
@@ -1255,11 +1293,18 @@ function renderPositions(rows, type='overview'){
     const metaStamp = type==='watchlist' ? formatShortDate(r.addedDate || getWatchAddedDate(r) || r.date) : stamp;
     const valueCol = type==='watchlist'
       ? `<div class="pos-col neutral"><div class="pos-value-top">${f(r.currentPrice,2)}</div><div class="pos-value-sub">${r.isLive ? 'live' : 'Fallback'}</div></div>`
-      : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${compactCurrency(r.refValue)}</div></div>`;
+      : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${f(r.currentPrice,2)}</div></div>`;
     const priceCol = type==='watchlist'
       ? `<div class="pos-col neutral"><div class="pos-value-top">${f(r.refPrice,2)}</div><div class="pos-value-sub">${r.refSource === 'history' ? `Bezugsbasis` : 'Fallback-Basis'}</div></div>`
       : `<div class="pos-col neutral"><div class="pos-value-top">${f(r.currentPrice,2)}</div><div class="pos-value-sub">${f(r.refPrice,2)}</div></div>`;
-    return `<article class="position-card ${tone}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${subLeft}</span><span>${metaStamp}</span></div></div>${valueCol}${priceCol}<div class="pos-col ${cl(r.dayAbs)}"><div class="pos-value-top">${fc(r.dayAbs)}</div><div class="pos-value-sub">${fp(r.dayPct)}</div></div><div class="pos-col ${cl(r.diffAbs)}"><div class="pos-value-top">${fc(r.diffAbs)}</div><div class="pos-value-sub">${fp(r.diffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div></div></article>`;
+    const dayCol = `<div class="pos-col ${cl(r.dayAbs)}"><div class="pos-value-top">${fc(r.dayAbs)}</div><div class="pos-value-sub">${fp(r.dayPct)}</div></div>`;
+    const diffCol = `<div class="pos-col ${cl(r.diffAbs)}"><div class="pos-value-top">${fc(r.diffAbs)}</div><div class="pos-value-sub">${fp(r.diffPct)}</div></div>`;
+    const kgvCol = `<div class="pos-col neutral ${kgvTone(r.kgv)}"><div class="pos-value-top">${fmtKgv(r.kgv)}</div><div class="pos-value-sub">Trailing PE</div></div>`;
+    const shareCol = `<div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div>`;
+    const tailCols = type==='watchlist'
+      ? `${valueCol}${priceCol}${dayCol}${diffCol}${kgvCol}${shareCol}`
+      : `${valueCol}${priceCol}${dayCol}${diffCol}${kgvCol}${shareCol}`;
+    return `<article class="position-card ${tone}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${subLeft}</span><span>${metaStamp}</span></div></div>${tailCols}</div></article>`;
   }).join('');
   const totalCurrent = sortedRows.reduce((s,r)=>s+r.currentValue,0);
   const totalRef = sortedRows.reduce((s,r)=>s+r.refValue,0);
@@ -1271,11 +1316,20 @@ function renderPositions(rows, type='overview'){
   const summaryText = type === 'watchlist' ? 'Aktuelle Sortierung · Watchlist' : 'Aktuelle Sortierung · Aktive Positionen';
   const summaryValueCol = type==='watchlist'
     ? `<div class="pos-col neutral"><div class="pos-value-top">${f(totalCurrent,2)}</div><div class="pos-value-sub">Livekurse in €</div></div>`
-    : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(totalCurrent)}</div><div class="pos-value-sub">${compactCurrency(totalRef)}</div></div>`;
+    : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(totalCurrent)}</div><div class="pos-value-sub">${f(sortedRows.reduce((s,r)=>s+Number(r.currentPrice||0),0) / (sortedRows.length || 1),2)}</div></div>`;
   const summaryPriceCol = type==='watchlist'
     ? `<div class="pos-col neutral"><div class="pos-value-top">${f(totalRef,2)}</div><div class="pos-value-sub">Vergleichsbasis</div></div>`
     : `<div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div>`;
-  const summary = `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">${summaryText}</div></div>${summaryValueCol}${summaryPriceCol}<div class="pos-col ${cl(totalDayAbs)}"><div class="pos-value-top">${fc(totalDayAbs)}</div><div class="pos-value-sub">${fp(totalDayPct)}</div></div><div class="pos-col ${cl(totalDiffAbs)}"><div class="pos-value-top">${fc(totalDiffAbs)}</div><div class="pos-value-sub">${fp(totalDiffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div></div>`;
+  const summaryDayCol = `<div class="pos-col ${cl(totalDayAbs)}"><div class="pos-value-top">${fc(totalDayAbs)}</div><div class="pos-value-sub">${fp(totalDayPct)}</div></div>`;
+  const summaryDiffCol = `<div class="pos-col ${cl(totalDiffAbs)}"><div class="pos-value-top">${fc(totalDiffAbs)}</div><div class="pos-value-sub">${fp(totalDiffPct)}</div></div>`;
+  const summaryKgvValues = sortedRows.map(r => Number(r.kgv)).filter(v => Number.isFinite(v));
+  const avgKgv = summaryKgvValues.length ? summaryKgvValues.reduce((s,v)=>s+v,0) / summaryKgvValues.length : null;
+  const summaryKgvCol = `<div class="pos-col neutral ${kgvTone(avgKgv)}"><div class="pos-value-top">${fmtKgv(avgKgv)}</div><div class="pos-value-sub">Ø Trailing PE</div></div>`;
+  const summaryShareCol = `<div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div>`;
+  const summaryTailCols = type==='watchlist'
+    ? `${summaryValueCol}${summaryPriceCol}${summaryDayCol}${summaryDiffCol}${summaryKgvCol}${summaryShareCol}`
+    : `${summaryValueCol}${summaryPriceCol}${summaryDayCol}${summaryDiffCol}${summaryKgvCol}${summaryShareCol}`;
+  const summary = `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">${summaryText}</div></div>${summaryTailCols}</div></div>`;
   wrap.innerHTML = header + cards + summary;
 }
 function renderSold(rows){
