@@ -622,7 +622,7 @@ const CF_SEARCH_WORKER = 'https://lively-bread-ee05jk-invest-search.calvinjohnca
 const STORAGE_KEY = 'folio-invest-state-v3';
 const DEFAULT_META = { category:'Nicht zugeordnet', country:'Nicht zugeordnet', exchange:'–' };
 const THEME_STORAGE_KEY = 'folio-invest-theme';
-let currentTheme = 'original';
+let currentTheme = localStorage.getItem(THEME_STORAGE_KEY) === 'original' ? 'original' : 'dark';
 const BASE_PORTFOLIO = [
   {wkn:'EWG2LD',name:'ETC-Zertifikat auf 100 GR Gold',lots:[{shares:2400,price:122.15,date:'2025-12-31'}],meta:{category:'Precious Metals',country:'Europa',exchange:'Xetra'}},
   {wkn:'A0F5UH',name:'iShares STOXX Global Select Div 100',lots:[{shares:3000,price:35.16,date:'2025-12-31'}],meta:{category:'Broad Market ETFs',country:'Global',exchange:'Xetra'}},
@@ -775,11 +775,20 @@ function loadLocalState(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return null;
-    return normalizeLoadedState(JSON.parse(raw));
+    const state = normalizeLoadedState(JSON.parse(raw));
+    return { state, source:'local' };
   } catch(e) {
     console.warn('Lokaler State konnte nicht geladen werden', e);
     return null;
   }
+}
+function stateScore(state){
+  if(!state) return -1;
+  return (state.active?.length || 0) * 10 + (state.watchlist?.length || 0) * 100 + (state.transactions?.length || 0) * 5 + (state.sold?.length || 0) * 20;
+}
+function isSeedOnlyState(state){
+  if(!state) return false;
+  return (state.watchlist?.length || 0) === 0 && (state.sold?.length || 0) === 0 && (state.customTickers ? Object.keys(state.customTickers).length : 0) === 0;
 }
 async function loadCloudState(){
   const year = getCurrentYear();
@@ -791,10 +800,9 @@ async function loadCloudState(){
   }
   const rows = await r.json();
   if(!rows?.length || !rows[0]?.state_json) return null;
-  // state_json kann String oder Objekt sein – beide Fälle abfangen
   const raw = rows[0].state_json;
   const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-  return normalizeLoadedState(parsed);
+  return { state: normalizeLoadedState(parsed), updatedAt: rows[0].updated_at || null, source:'cloud' };
 }
 async function saveCloudState(){
   if(!appState?.meta?.year) return false;
@@ -867,22 +875,44 @@ function applyCustomTickers(){
 }
 async function loadState(){
   initSupabase();
+  const local = loadLocalState();
+  let cloud = null;
   try {
-    const cloud = await loadCloudState();
-    if(cloud){
-      appState = cloud;
-      appState.meta.year = getCurrentYear();
-      applyCustomTickers();
-      currentStorageMode = 'Cloud + Gerät';
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
-      return;
-    }
+    cloud = await loadCloudState();
   } catch(e) {
     console.warn('Cloud-State konnte nicht geladen werden', e);
   }
-  const local = loadLocalState();
-  if(local){
-    appState = local;
+
+  if(cloud?.state && local?.state){
+    const cloudScore = stateScore(cloud.state);
+    const localScore = stateScore(local.state);
+    const chosen = localScore > cloudScore ? local.state : cloud.state;
+    appState = chosen;
+    appState.meta.year = getCurrentYear();
+    applyCustomTickers();
+    currentStorageMode = 'Cloud + Gerät';
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
+    if(chosen === local.state && localScore > cloudScore){
+      try {
+        await saveCloudState();
+      } catch(e) {
+        console.warn('Lokaler State konnte nicht in die Cloud gespiegelt werden', e);
+      }
+    }
+    return;
+  }
+
+  if(cloud?.state){
+    appState = cloud.state;
+    appState.meta.year = getCurrentYear();
+    applyCustomTickers();
+    currentStorageMode = 'Cloud + Gerät';
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
+    return;
+  }
+
+  if(local?.state){
+    appState = local.state;
     appState.meta.year = getCurrentYear();
     applyCustomTickers();
     currentStorageMode = 'Gerät';
@@ -894,15 +924,11 @@ async function loadState(){
     }
     return;
   }
+
   appState = defaultState();
   currentStorageMode = 'Gerät';
   localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
-  try {
-    const saved = await saveCloudState();
-    if(saved) currentStorageMode = 'Cloud + Gerät';
-  } catch(e) {
-    console.warn('Default-State konnte nicht in die Cloud geschrieben werden', e);
-  }
+  console.warn('Weder Cloud- noch lokaler State gefunden – Default-State nur lokal gesetzt, kein automatisches Cloud-Überschreiben.');
 }
 async function saveState(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
