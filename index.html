@@ -1281,10 +1281,12 @@ function renderPositions(rows, type='overview'){
       }
       return 0;
     };
-    const summaryKgvRows = sortedRows.filter(r => Number.isFinite(Number(r.kgv)) && Number(r.kgv) > 0);
-    const summaryKgvWeight = summaryKgvRows.reduce((s,r)=>s + parseKgvWeightValue(r.currentValue), 0);
-    const avgKgv = summaryKgvWeight
-      ? summaryKgvRows.reduce((s,r)=>s + Number(r.kgv || 0) * parseKgvWeightValue(r.currentValue), 0) / summaryKgvWeight
+    const summaryKgvValues = sortedRows
+      .map(r => r.kgv)
+      .filter(v => v != null && Number.isFinite(Number(v)) && Number(v) > 0)
+      .map(v => Number(v));
+    const avgKgv = summaryKgvValues.length
+      ? summaryKgvValues.reduce((s,v)=>s+v,0) / summaryKgvValues.length
       : null;
     const summaryTailCols = type==='watchlist'
       ? `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(sortedRows.reduce((s,r)=>s+r.currentValue,0))}</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">${fc(sumYtdPotential)}</div><div class="pos-value-sub">${fc(sum12mPotential)}</div></div><div class="pos-col neutral ${kgvTone(avgKgv)}"><div class="pos-value-top">${fmtKgv(avgKgv)}</div><div class="pos-value-sub">Ø Trailing PE</div></div>`
