@@ -1273,8 +1273,19 @@ function renderPositions(rows, type='overview'){
     const sumYtdPotential = sortedRows.reduce((s,r)=>s+(Number(r.ytdPotential)||0),0);
     const sum12mPotential = sortedRows.reduce((s,r)=>s+(Number(r.potential12m)||0),0);
     const summaryText = type === 'watchlist' ? 'Historische Hochs · Watchlist' : 'Historische Hochs · Aktive Positionen';
-    const summaryKgvValues = sortedRows.map(r => Number(r.kgv)).filter(v => Number.isFinite(v));
-    const avgKgv = summaryKgvValues.length ? summaryKgvValues.reduce((s,v)=>s+v,0) / summaryKgvValues.length : null;
+    const parseKgvWeightValue = v => {
+      if (typeof v === 'number' && Number.isFinite(v)) return v;
+      if (typeof v === 'string') {
+        const n = Number(v.replace(/€/g,'').replace(/\./g,'').replace(/,/g,'.').trim());
+        return Number.isFinite(n) ? n : 0;
+      }
+      return 0;
+    };
+    const summaryKgvRows = sortedRows.filter(r => Number.isFinite(Number(r.kgv)) && Number(r.kgv) > 0);
+    const summaryKgvWeight = summaryKgvRows.reduce((s,r)=>s + parseKgvWeightValue(r.currentValue), 0);
+    const avgKgv = summaryKgvWeight
+      ? summaryKgvRows.reduce((s,r)=>s + Number(r.kgv || 0) * parseKgvWeightValue(r.currentValue), 0) / summaryKgvWeight
+      : null;
     const summaryTailCols = type==='watchlist'
       ? `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(sortedRows.reduce((s,r)=>s+r.currentValue,0))}</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">${fc(sumYtdPotential)}</div><div class="pos-value-sub">${fc(sum12mPotential)}</div></div><div class="pos-col neutral ${kgvTone(avgKgv)}"><div class="pos-value-top">${fmtKgv(avgKgv)}</div><div class="pos-value-sub">Ø Trailing PE</div></div>`
       : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(sortedRows.reduce((s,r)=>s+r.currentValue,0))}</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col neutral"><div class="pos-value-top">${fc(sumYtdPotential)}</div><div class="pos-value-sub">${fc(sum12mPotential)}</div></div><div class="pos-col neutral ${kgvTone(avgKgv)}"><div class="pos-value-top">${fmtKgv(avgKgv)}</div><div class="pos-value-sub">Ø Trailing PE</div></div><div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div>`;
@@ -1322,7 +1333,10 @@ function renderPositions(rows, type='overview'){
     : `<div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div>`;
   const summaryDayCol = `<div class="pos-col ${cl(totalDayAbs)}"><div class="pos-value-top">${fc(totalDayAbs)}</div><div class="pos-value-sub">${fp(totalDayPct)}</div></div>`;
   const summaryDiffCol = `<div class="pos-col ${cl(totalDiffAbs)}"><div class="pos-value-top">${fc(totalDiffAbs)}</div><div class="pos-value-sub">${fp(totalDiffPct)}</div></div>`;
-  const summaryKgvValues = sortedRows.map(r => Number(r.kgv)).filter(v => Number.isFinite(v));
+  const summaryKgvValues = sortedRows
+    .map(r => r.kgv)
+    .filter(v => v != null && Number.isFinite(Number(v)) && Number(v) > 0)
+    .map(v => Number(v));
   const avgKgv = summaryKgvValues.length ? summaryKgvValues.reduce((s,v)=>s+v,0) / summaryKgvValues.length : null;
   const summaryKgvCol = `<div class="pos-col neutral ${kgvTone(avgKgv)}"><div class="pos-value-top">${fmtKgv(avgKgv)}</div><div class="pos-value-sub">Ø Trailing PE</div></div>`;
   const summaryShareCol = `<div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div>`;
