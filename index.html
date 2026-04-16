@@ -97,7 +97,7 @@ td:nth-child(2) { text-align: left; }
 .positions-shell{margin-bottom:24px}
 .positions-shell.detail-width{max-width:980px}
 .positions-header-card,.position-card{border:1px solid var(--line-2);border-radius:18px;overflow:hidden}
-.positions-header-card{background:linear-gradient(180deg, rgba(168,170,172,.98) 0%, rgba(168,170,172,.92) 100%), #A8AAAC;margin-bottom:8px;position:sticky;top:140px;z-index:40;box-shadow:0 12px 28px rgba(0,0,0,.22)}
+.positions-header-card{background:#A8AAAC;margin-bottom:8px;position:sticky;top:140px;z-index:40;box-shadow:0 12px 28px rgba(0,0,0,.22)}
 .position-card{margin-bottom:8px;box-shadow:0 8px 20px rgba(0,0,0,.14)}
 .position-card:hover{background:#272727}
 .position-card.light,.position-card.dark{background:#222222;color:var(--text)}
@@ -166,11 +166,11 @@ body.page-watchlist .positions-header-card .pos-col:nth-child(7),body.page-watch
 .sort-btn{border:none;background:none;padding:0;margin:0;cursor:pointer;color:inherit;font:inherit;display:inline-flex;align-items:center;gap:10px}
 .sort-arrow{font-size:14px;font-weight:800;opacity:.8;line-height:1;margin-left:10px;display:inline-block;transform:translateY(-1px)}
 .sort-btn.active .sort-arrow{opacity:1}
-.positions-summary-card{background:linear-gradient(180deg, rgba(223,87,53,.18) 0%, rgba(223,87,53,.08) 100%), #2a211f;border:1px solid rgba(223,87,53,.18);border-radius:18px;overflow:hidden;margin-top:8px;box-shadow:0 10px 24px rgba(0,0,0,.18)}
+.positions-summary-card{background:#545556;border:1px solid rgba(255,255,255,.08);border-radius:18px;overflow:hidden;margin-top:8px;box-shadow:0 10px 24px rgba(0,0,0,.18)}
 .positions-summary-card .pos-col{border-right:1px solid rgba(255,255,255,.06)}
 .positions-summary-card .pos-col:last-child{border-right:none}
 
-body.page-watchlist .positions-header-card{background:linear-gradient(180deg, rgba(223,87,53,.22) 0%, rgba(223,87,53,.12) 100%), #2a211f}
+body.page-watchlist .positions-header-card{background:#A8AAAC}
 body.page-transactions .positions-header-card{background:linear-gradient(180deg, rgba(223,87,53,.22) 0%, rgba(223,87,53,.12) 100%), #2a211f}
 .positions-summary-label{font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--silver);line-height:1.15;margin-bottom:8px}
 .positions-summary-sub{font-size:10px;color:var(--text-muted);line-height:1.2}
@@ -220,9 +220,10 @@ body.theme-original td{color:#333}
 body.theme-original td:first-child{color:#111}
 body.theme-original .total-row td{background:#F0EDE8;border-top:2px solid #D8D4CE;color:#111}
 body.theme-original .positions-header-card,body.theme-original .position-card{border:1px solid #D8D4CE;border-radius:18px;box-shadow:none}
-body.theme-original .positions-header-card{background:#A8AAAC}
-body.theme-original.page-watchlist .positions-header-card{background:#D9D7D3}
-body.theme-original.page-transactions .positions-header-card{background:#D9D7D3}
+body.theme-original .positions-header-card{background:#D9D7D4}
+body.theme-original.page-watchlist .positions-header-card{background:#D9D7D4}
+body.theme-original.page-transactions .positions-header-card{background:#D9D7D4}
+body.theme-original .positions-summary-card{background:#452922;border:1px solid rgba(255,255,255,.06)}
 body.theme-original .position-card:hover{background:#FDF9F5}
 body.theme-original .position-card.light,body.theme-original .position-card.dark{background:#FFFFFF;color:#111}
 body.theme-original .pos-col{border-right:1px solid #ECE7DF}
@@ -1179,7 +1180,7 @@ function renderKpis(activeRows, soldRows){
   const prevTotal = activeRows.reduce((s,r)=>s+r.prevValue,0);
   const dayPct = prevTotal ? dayAbs/prevTotal : 0;
   const prevYearEndIso = getPrevYearEndIso();
-  const yearLabel = prevYearEndIso.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3.$2.' + '$1'.slice(2));
+  const yearLabel = prevYearEndIso.replace(/^(\d{4})-(\d{2})-(\d{2})$/, (_,y,m,d) => `${d}.${m}.${y.slice(2)}`);
   const kpis = [
     ['Aktiver Depotwert', `${f(total)} €`, 'nur aktive Positionen', ''],
     [`Wert ${yearLabel}`, `${f(ref)} €`, 'eingefrorene Referenzbasis aktiv', ''],
@@ -1220,7 +1221,7 @@ function renderPositions(rows, type='overview'){
     return;
   }
   const prevYearEndIso = getPrevYearEndIso();
-  const yearLabel = prevYearEndIso.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3.$2.' + '$1'.slice(2));
+  const yearLabel = prevYearEndIso.replace(/^(\d{4})-(\d{2})-(\d{2})$/, (_,y,m,d) => `${d}.${m}.${y.slice(2)}`);
   if(historicalMode){
     const stamp = lastMarketUpdate ? formatStamp(lastMarketUpdate) : 'Historische Daten';
     const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier', false)}</div><div class="pos-head-sub">${type==='watchlist' ? `WKN · Watchlist · ${stamp}` : `WKN · Anzahl · ${stamp}`}</div></div><div class="pos-col neutral"><div class="pos-head-main">Wert aktuell</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdBelowPct','YTD High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('below12mPct','12M High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdPotential','Potenzial', false)}</div><div class="pos-head-sub">YTD / 12M in € · Upside %</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
