@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
-<title>Folio.invest · Privates Depot</title>
+<title>Folio.invest · Privates Depot v5.8</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=DM+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -46,6 +46,13 @@ body { background: radial-gradient(circle at top, rgba(223,87,53,.08), transpare
 .nav-btn-pflege{color:var(--orange);padding-right:10px}
 body.page-watchlist #detailsBtn{display:none}
 body.page-transactions #detailsBtn,body.page-transactions #historischBtn,body.page-transactions #refreshBtn{display:none !important}
+body.page-pflege #detailsBtn,body.page-pflege #historischBtn,body.page-pflege #refreshBtn{display:none !important}
+body.page-pflege .pflege-backdrop{display:none !important}
+body.page-pflege .pflege-modal{position:static;left:auto;top:auto;transform:none;width:min(1120px,calc(100vw - 48px));max-height:none;overflow:visible;display:block;z-index:auto;margin:20px auto 40px;background:var(--card);border:1px solid var(--line-2);border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.16);padding:18px}
+body.page-pflege .pflege-close{display:none}
+body.page-pflege .pflege-title::after{content:' — direkt als eigene Seite, ohne Overlay'}
+body.theme-original.page-pflege .pflege-modal{background:#fff}
+@media (max-width: 900px){body.page-pflege .pflege-modal{width:calc(100vw - 28px);margin:14px auto 28px}}
 .nav-btn-pflege:hover{color:#ef7a5f !important;border-bottom-color:var(--orange)}
 .nav-btn-pflege.active{color:var(--orange);border-bottom-color:var(--orange)}
 .statusbar { background: rgba(18,18,18,.94); border-top: none; border-bottom: 1px solid var(--line); margin-top:-1px; padding: 5px 24px; display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text-dim); position: sticky; top: 101px; z-index: 98; }
@@ -312,6 +319,49 @@ body.theme-dark .pflege-note{color:#9b9ea2}
 
 body.page-watchlist .positions-summary-card{display:none !important;}
 
+
+
+/* Folio-Invest v5.8: Pflege als eigene Seite */
+.pflege-backdrop,.pflege-modal{display:none!important}
+.pflege-page{display:block;width:min(1180px,calc(100vw - 48px));max-width:1180px;margin:0 auto 28px}
+.pflege-page.hidden{display:none!important}
+.pflege-hero{background:linear-gradient(180deg,rgba(223,87,53,.12),rgba(223,87,53,.04)),var(--card);border:1px solid var(--line-2);border-radius:22px;padding:18px 20px;margin-bottom:16px;box-shadow:0 10px 30px rgba(0,0,0,.16)}
+.pflege-hero h2{font-size:22px;line-height:1.15;margin:0 0 6px;color:var(--text)}
+.pflege-hero p{font-size:12px;line-height:1.5;color:var(--text-muted);max-width:950px;margin:0}
+.pflege-section{margin:18px 0 24px}
+.pflege-section-title{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);padding-bottom:10px;border-bottom:1px solid var(--line-2);margin-bottom:12px}
+.pflege-wide-grid{display:grid;grid-template-columns:minmax(340px,450px) minmax(340px,450px);gap:clamp(34px,6vw,90px);margin-bottom:18px;align-items:start}
+.pflege-page .pflege-card{background:var(--card);border:1px solid var(--line-2);border-radius:18px;padding:14px;box-shadow:0 10px 28px rgba(0,0,0,.12)}
+.pflege-table-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.14);margin-bottom:14px}
+.pflege-master-table{width:100%;border-collapse:collapse;font-size:11px;min-width:980px}
+.pflege-master-table th{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);background:#1a1a1a;position:sticky;top:0;z-index:1}
+.pflege-master-table td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle;color:var(--text-soft);white-space:nowrap}
+.pflege-master-table tr:last-child td{border-bottom:none}
+.pflege-master-table input,.pflege-master-table select{width:100%;min-width:120px;padding:7px 8px;border:1px solid var(--line-2);border-radius:10px;background:#191919;color:var(--text);font:inherit}
+.pflege-master-table .wkn-cell{font-weight:800;color:var(--text);letter-spacing:.04em}
+.pflege-master-table .status-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:rgba(223,87,53,.12);color:var(--orange);border:1px solid rgba(223,87,53,.24)}
+.pflege-small-btn{border:1px solid var(--line-2);background:#191919;color:var(--text-soft);border-radius:999px;padding:7px 10px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.pflege-small-btn:hover{border-color:var(--orange);color:var(--orange)}
+.pflege-small-btn.primary{background:var(--orange);border-color:var(--orange);color:var(--silver)}
+.pflege-small-btn.danger{color:var(--orange)}
+.pflege-ticker-status{font-size:10px;color:var(--text-muted);line-height:1.3;min-width:160px;white-space:normal}
+.pflege-empty-row{padding:16px!important;color:var(--text-muted)!important;white-space:normal!important}
+body.theme-original .pflege-hero,body.theme-original .pflege-page .pflege-card,body.theme-original .pflege-table-wrap{background:#fff;border-color:#D8D4CE;box-shadow:none;border-radius:0}
+body.theme-original .pflege-hero h2{color:#111}
+body.theme-original .pflege-hero p,body.theme-original .pflege-section-title{color:#666}
+body.theme-original .pflege-master-table th{background:#faf9f6;color:#777;border-bottom-color:#e8e4de}
+body.theme-original .pflege-master-table td{color:#333;border-bottom-color:#f2efe9}
+body.theme-original .pflege-master-table input,body.theme-original .pflege-master-table select,body.theme-original .pflege-small-btn{background:#fff;color:#333;border-color:#d8d4ce}
+body.theme-original .pflege-master-table .wkn-cell{color:#111}
+body.theme-original .pflege-ticker-status{color:#666}
+.jahres-card{max-width:990px}
+.jahres-card .jahres-text{font-size:12px;line-height:1.55;color:var(--text-muted);margin:0 0 12px}
+.jahres-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.jahres-hint{font-size:10px;color:var(--text-dim);line-height:1.45;margin-top:8px}
+body.theme-original .jahres-card .jahres-text{color:#555}
+body.theme-original .jahres-hint{color:#777}
+@media(max-width:980px){.pflege-page{width:calc(100vw - 28px);max-width:none;margin-left:auto;margin-right:auto}.pflege-wide-grid{grid-template-columns:1fr;gap:14px}.pflege-hero h2{font-size:20px}}
+
 </style>
 </head>
 <body>
@@ -413,7 +463,7 @@ function resetPin(){
 <button class="nav-btn active" id="overviewNavBtn" onclick="switchPage('overview')">▣ Übersicht</button>
 <button class="nav-btn" id="watchlistNavBtn" onclick="switchPage('watchlist')">◉ Watchlist</button>
 <button class="nav-btn" id="transactionsNavBtn" onclick="switchPage('transactions')">◈ Transaktionen</button>
-<button class="nav-btn nav-btn-pflege" id="pflegeNavBtn" onclick="openPflegeModal()">● Pflege</button>
+<button class="nav-btn nav-btn-pflege" id="pflegeNavBtn" onclick="switchPage('pflege')">● Pflege</button>
 </div>
 </div>
 <div class="statusbar"><span class="sdot"></span><span id="statusText">Initialisiere Online-Kurse…</span></div>
@@ -446,8 +496,6 @@ function resetPin(){
 </div>
 </div>
 
-<div class="pflege-backdrop" id="pflegeBackdrop"></div>
-
 <!-- Jahreswechsel-Bestätigungsdialog -->
 <div class="rollover-backdrop" id="rolloverBackdrop" style="display:none">
   <div class="rollover-modal">
@@ -468,23 +516,52 @@ function resetPin(){
     </div>
   </div>
 </div>
-<div class="pflege-modal" id="pflegeModal">
-  <div class="pflege-head">
-    <div class="pflege-title">Pflege</div>
-    <button class="pflege-close" type="button" onclick="closePflegeModal()">×</button>
+
+<!-- Manueller Jahresabschluss-Dialog -->
+<div class="rollover-backdrop" id="jahresabschlussBackdrop" style="display:none">
+  <div class="rollover-modal">
+    <h2>Jahresabschluss durchführen?</h2>
+    <p>Die App übernimmt alle aktiven Positionen ins neue Jahr und setzt die Bezugsbasis auf den 31.12.-Kurs des Vorjahres.</p>
+    <ul>
+      <li>aktive Positionen bleiben erhalten</li>
+      <li>Einstandskurse werden auf die neue Jahresbasis gesetzt</li>
+      <li>Watchlist-Basiskurse werden aktualisiert</li>
+      <li>Verkaufs-/Transaktionslog wird geleert</li>
+    </ul>
+    <p>Altjahr: <strong id="jaOldYear">–</strong> · Neues Jahr: <strong id="jaNewYear">–</strong></p>
+    <div class="rollover-actions">
+      <button class="rollover-btn-cancel" onclick="cancelJahresabschluss()">Abbrechen</button>
+      <button class="rollover-btn-confirm" onclick="confirmJahresabschluss()">Jahresabschluss speichern</button>
+    </div>
   </div>
-  <div class="pflege-grid">
+</div>
+
+<div class="pflege-page hidden" id="pflegePage">
+  <div class="pflege-hero">
+    <h2>Pflege & Stammdaten</h2>
+    <p>Hier werden Käufe, Verkäufe, Watchlist und Stammdaten getrennt gepflegt. Aktive Depotpositionen, Watchlist-Titel und historische Wertpapiere bleiben sauber voneinander getrennt. Ticker können direkt geprüft und Stammdaten dauerhaft gespeichert werden.</p>
+  </div>
+  <div class="pflege-wide-grid">
     <div class="pflege-card">
       <h4>Kauf</h4>
       <form class="pflege-form" id="buyForm">
         <label>WKN
           <input id="buyWkn" type="text" placeholder="z. B. A0YEDG" required />
         </label>
+        <label>Name (bei neuer WKN optional)
+          <input id="buyName" type="text" placeholder="z. B. iShares Bitcoin ETP" />
+        </label>
+        <label>Yahoo Ticker (optional, für Kursabruf)
+          <div style="font-size:11px;color:var(--text-muted);margin:4px 0 6px;line-height:1.4">Bei neuer WKN bitte prüfen: Kurs, Währung und EUR-Umrechnung werden angezeigt.</div>
+          <input id="buyTicker" type="text" placeholder="z. B. IB1T.DE" />
+          <div style="display:flex;gap:6px;margin-top:6px"><button type="button" class="ticker-search-btn" id="buyTickerSearchBtn" onclick="validateBuyTicker()">✓ Ticker prüfen</button></div>
+          <div id="buyTickerResults" style="margin-top:6px"></div>
+        </label>
         <label>Stück
-          <input id="buyShares" type="number" min="1" step="1" required />
+          <input id="buyShares" type="number" min="0" step="0.000001" required />
         </label>
         <label>Kurs
-          <input id="buyPrice" type="number" min="0" step="0.01" required />
+          <input id="buyPrice" type="number" min="0" step="0.000001" required />
         </label>
         <label>Datum
           <input id="buyDate" type="date" />
@@ -499,122 +576,82 @@ function resetPin(){
           <label>Transaktion
             <select id="deleteBuyTxSelect" required></select>
           </label>
-          <div class="pflege-note">Löscht nur den Log-Eintrag. Position bleibt unverändert.</div>
-          <div class="pflege-actions">
-            <button class="pflege-submit secondary" type="submit">Buchung löschen</button>
-          </div>
+          <div class="pflege-note">Macht die Buchung wirklich rückgängig: Bestand/Lots und Log werden korrigiert.</div>
+          <div class="pflege-actions"><button class="pflege-submit secondary" type="submit">Buchung löschen</button></div>
         </form>
       </div>
     </div>
     <div class="pflege-card">
       <h4>Verkauf</h4>
       <form class="pflege-form" id="sellForm">
-        <label>Aktive Position
-          <select id="sellWkn" required></select>
-        </label>
-        <label>Stück
-          <input id="sellShares" type="number" min="1" step="1" required />
-        </label>
-        <label>Verkaufskurs
-          <input id="sellPrice" type="number" min="0" step="0.01" placeholder="leer = aktueller Kurs" />
-        </label>
-        <label>Datum
-          <input id="sellDate" type="date" />
-        </label>
-        <div class="pflege-actions">
-          <button class="pflege-submit" type="submit">Verkauf speichern</button>
-        </div>
+        <label>Aktive Position<select id="sellWkn" required></select></label>
+        <label>Stück<input id="sellShares" type="number" min="0" step="0.000001" required /></label>
+        <label>Verkaufskurs<input id="sellPrice" type="number" min="0" step="0.000001" placeholder="leer = aktueller Kurs" /></label>
+        <label>Datum<input id="sellDate" type="date" /></label>
+        <div class="pflege-actions"><button class="pflege-submit" type="submit">Verkauf speichern</button></div>
       </form>
       <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(246,246,246,.05)">
         <h4 style="margin-bottom:10px">Verkauf-Buchung löschen</h4>
         <form class="pflege-form" id="deleteSellTxForm">
-          <label>Transaktion
-            <select id="deleteSellTxSelect" required></select>
-          </label>
-          <div class="pflege-note">Löscht nur den Log-Eintrag. Position bleibt unverändert.</div>
-          <div class="pflege-actions">
-            <button class="pflege-submit secondary" type="submit">Buchung löschen</button>
-          </div>
+          <label>Transaktion<select id="deleteSellTxSelect" required></select></label>
+          <div class="pflege-note">Macht die Buchung wirklich rückgängig: Bestand/Lots und Log werden korrigiert.</div>
+          <div class="pflege-actions"><button class="pflege-submit secondary" type="submit">Buchung löschen</button></div>
         </form>
       </div>
     </div>
     <div class="pflege-card">
       <h4>Watchlist hinzufügen</h4>
       <form class="pflege-form" id="watchForm">
-        <label>WKN
-          <input id="watchWkn" type="text" placeholder="z.B. 865985" required />
-        </label>
-        <label>Name (optional)
-          <input id="watchName" type="text" placeholder="z.B. Apple Inc." />
-        </label>
+        <label>WKN<input id="watchWkn" type="text" placeholder="z.B. 865985" required /></label>
+        <label>Name (optional)<input id="watchName" type="text" placeholder="z.B. Apple Inc." /></label>
         <label>Yahoo Ticker
-          <div style="font-size:11px;color:var(--text-muted);margin:4px 0 6px;line-height:1.4">Ticker unbekannt? → <a href="https://finance.yahoo.com/lookup/" target="_blank" style="color:var(--orange);text-decoration:none;font-weight:600">Yahoo Finance Suche ↗</a> — WKN oder Name eingeben, Ticker kopieren.</div>
+          <div style="font-size:11px;color:var(--text-muted);margin:4px 0 6px;line-height:1.4">Ticker unbekannt? → <a href="https://finance.yahoo.com/lookup/" target="_blank" style="color:var(--orange);text-decoration:none;font-weight:600">Yahoo Finance Suche ↗</a></div>
           <input id="watchTicker" type="text" placeholder="z.B. AAPL oder VGWD.DE" />
-          <div style="display:flex;gap:6px;margin-top:6px">
-            <button type="button" class="ticker-search-btn" id="tickerSearchBtn" onclick="validateTicker()">
-              ✓ Ticker prüfen
-            </button>
-          </div>
+          <div style="display:flex;gap:6px;margin-top:6px"><button type="button" class="ticker-search-btn" id="tickerSearchBtn" onclick="validateTicker()">✓ Ticker prüfen</button></div>
           <div id="tickerResults" style="margin-top:6px"></div>
         </label>
-        <div class="pflege-note">Der Basiskurs wird automatisch mit dem Schlusskurs vom 31.12. des Vorjahres belegt. Das Ticker-Mapping wird gespeichert und bleibt beim nächsten Laden erhalten.</div>
-        <div class="pflege-actions">
-          <button class="pflege-submit" type="submit">Watchlist ergänzen</button>
-        </div>
+        <div class="pflege-note">Der Basiskurs wird automatisch mit dem Schlusskurs vom 31.12. des Vorjahres belegt.</div>
+        <div class="pflege-actions"><button class="pflege-submit" type="submit">Watchlist ergänzen</button></div>
       </form>
     </div>
     <div class="pflege-card">
       <h4>Watchlist löschen</h4>
       <form class="pflege-form" id="watchDeleteForm">
-        <label>Watchlist-Titel
-          <select id="deleteWatchWkn" required></select>
-        </label>
-        <div class="pflege-actions">
-          <button class="pflege-submit secondary" type="submit">Eintrag löschen</button>
-        </div>
+        <label>Watchlist-Titel<select id="deleteWatchWkn" required></select></label>
+        <div class="pflege-note">Entfernt den Titel aus der Watchlist. Die Stammdaten bleiben für spätere Nutzung erhalten.</div>
+        <div class="pflege-actions"><button class="pflege-submit secondary" type="submit">Watchlist-Titel löschen</button></div>
       </form>
     </div>
-
-    <!-- Jahresabschluss volle Breite -->
-    <div class="pflege-card" style="grid-column:1 / -1">
-      <h4>Depot-Export &amp; Jahresabschluss</h4>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px">
-        <div>
-          <div style="font-size:12px;font-weight:700;color:var(--text-soft);margin-bottom:6px">Snapshot</div>
-          <div class="pflege-note" style="margin-bottom:10px">Friert den aktuellen Stand als PDF ein — jederzeit nutzbar, z.B. für Beratungsgespräche. Kein Einfluss auf die App-Daten.</div>
-          <button class="pflege-submit secondary" type="button" onclick="generateSnapshotPDF()">📄 Snapshot exportieren</button>
-        </div>
-        <div>
-          <div style="font-size:12px;font-weight:700;color:var(--text-soft);margin-bottom:6px">Jahresabschluss</div>
-          <div class="pflege-note" style="margin-bottom:10px">Berechnet die neue Jahresbasis und erstellt eine PDF-Vorschau. Erst nach Prüfung und Freigabe wird der Rollover tatsächlich durchgeführt.</div>
-          <button class="pflege-submit" type="button" onclick="startJahresabschluss()" style="background:var(--orange);border-color:var(--orange)">🗓️ Jahresabschluss starten</button>
-        </div>
+  </div>
+  <div class="pflege-section">
+    <div class="pflege-section-title"><span class="sec-n">0 ·</span> Jahresabschluss</div>
+    <div class="pflege-card jahres-card">
+      <h4>Neues Börsenjahr starten</h4>
+      <p class="jahres-text">Für Folio-Invest ist der Jahresabschluss bewusst einfach: Alle aktiven Positionen werden ins neue Jahr übernommen. Als neue Bezugsbasis gilt der Kurs zum 31.12. des Vorjahres. Ab dann misst die App die Entwicklung wieder sauber Year-to-date.</p>
+      <div class="jahres-actions">
+        <button class="pflege-small-btn primary" type="button" onclick="startJahresabschluss()">Jahresabschluss vorbereiten</button>
       </div>
+      <div class="jahres-hint">Sinnvoll erst nach dem Jahreswechsel. Vorher bleibt die Funktion gesperrt, damit nicht versehentlich Transaktionen im laufenden Jahr gelöscht werden.</div>
     </div>
-
+  </div>
+  <div class="pflege-section">
+    <div class="pflege-section-title"><span class="sec-n">1 ·</span> Aktive Depotpositionen</div>
+    <div id="securityMasterActive"></div>
+  </div>
+  <div class="pflege-section">
+    <div class="pflege-section-title"><span class="sec-n">2 ·</span> Watchlist-Titel</div>
+    <div id="securityMasterWatchlist"></div>
+  </div>
+  <div class="pflege-section">
+    <div class="pflege-section-title"><span class="sec-n">3 ·</span> Verkaufte / historische Wertpapiere</div>
+    <div id="securityMasterHistorical"></div>
+  </div>
+  <div class="pflege-section">
+    <div class="pflege-section-title"><span class="sec-n">4 ·</span> Alle bekannten Stammdaten</div>
+    <div id="knownSecuritiesBox"></div>
   </div>
 </div>
 
-<!-- Jahresabschluss-Freigabe-Dialog -->
-<div class="rollover-backdrop" id="jahresabschlussBackdrop" style="display:none">
-  <div class="rollover-modal" style="max-width:540px">
-    <h2>🗓️ Jahresabschluss <span id="jaOldYear">–</span></h2>
-    <p style="margin-bottom:14px">Die PDF-Vorschau wurde heruntergeladen. Bitte prüfe sie sorgfältig und vergleiche sie mit deinem Snapshot vom 31.12.</p>
-    <div style="background:rgba(223,87,53,.10);border:1px solid var(--orange);border-radius:12px;padding:12px 14px;margin-bottom:16px;text-align:left;font-size:12px;color:#f0b4a5;line-height:1.6">
-      <strong>Mit der Freigabe wird unwiderruflich:</strong><br>
-      · Alle Positionen auf 31.12.-Schlusskurs eingefroren<br>
-      · Watchlist-Basis aktualisiert<br>
-      · Alle Transaktionen des Vorjahres gelöscht<br>
-      · Verkaufte Positionen geleert<br>
-      · Jahr auf <strong id="jaNewYear">–</strong> gesetzt
-    </div>
-    <p style="color:var(--orange);font-weight:600;margin-bottom:20px">⚠️ Diese Aktion ist nicht rückgängig zu machen.</p>
-    <div class="rollover-actions">
-      <button class="rollover-btn-cancel" onclick="cancelJahresabschluss()">Abbrechen</button>
-      <button class="rollover-btn-confirm" onclick="confirmJahresabschluss()" style="background:var(--orange);border-color:var(--orange)">✓ Freigabe erteilen</button>
-    </div>
-  </div>
-</div>
 <script>
 const CF_WORKER = 'https://wax-kurse.calvinjohncamp.workers.dev';
 const CF_HISTORY_WORKER = 'https://jk-invest.calvinjohncamp.workers.dev';
@@ -665,9 +702,16 @@ const TICKER_MAP = {
   '918422': { tickers:['NVDA'], fx:'USD' },
   '870747': { tickers:['MSFT'], fx:'USD' },
   'A2JG9Z': { tickers:['AVGO'], fx:'USD' },
-  'A0YJQ2': { tickers:['BRK-B'], fx:'USD' }
+  'A0YJQ2': { tickers:['BRK-B'], fx:'USD' },
+  'A4A59K': { tickers:['IB1T.DE'], fx:'EUR' }
 };
 const SECURITY_MASTER = Object.fromEntries(BASE_PORTFOLIO.map(p => [p.wkn, {name:p.name, meta:p.meta}]));
+Object.assign(SECURITY_MASTER, {
+  'A4A59K': {
+    name: 'iShares Bitcoin ETP',
+    meta: {category:'Crypto & Digital Assets', country:'Global', exchange:'Xetra'}
+  }
+});
 const historicalData = {};
 let historicalMode = false;
 let detailMode = false;
@@ -707,16 +751,24 @@ function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
 function sharesOf(position){ return (position.lots||[]).reduce((s,l)=>s+Number(l.shares||0),0); }
 function refValueOf(position){ return (position.lots||[]).reduce((s,l)=>s+Number(l.shares||0)*Number(l.price||0),0); }
 function avgRefPrice(position){ const shares = sharesOf(position); return shares ? refValueOf(position)/shares : 0; }
+function cleanSecurityName(wkn, name){
+  const key = String(wkn||'').trim().toUpperCase();
+  const n = String(name||'').trim();
+  if(!n || /^WKN\s+/i.test(n)) return SECURITY_MASTER[key]?.name || `WKN ${key}`;
+  return n;
+}
 function normalizePosition(p){
-  return { wkn:p.wkn, name:p.name || (SECURITY_MASTER[p.wkn]?.name || `WKN ${p.wkn}`), lots:(p.lots||[]).map(l=>({shares:Number(l.shares||0),price:Number(l.price||0),date:l.date || getPrevYearEndIso()})), meta:p.meta || SECURITY_MASTER[p.wkn]?.meta || DEFAULT_META };
+  const wkn = String(p.wkn||'').trim().toUpperCase();
+  const lots = (p.lots||[]).map(l=>({shares:Number(l.shares||0),price:Number(l.price||0),date:l.date || getPrevYearEndIso()})).filter(l=>Math.abs(Number(l.shares||0)) > 0.000001);
+  return { wkn, name:cleanSecurityName(wkn, p.name), lots, meta:p.meta || SECURITY_MASTER[wkn]?.meta || DEFAULT_META };
 }
 function normalizeSold(rec){
-  return { wkn:rec.wkn, name:rec.name || SECURITY_MASTER[rec.wkn]?.name || `WKN ${rec.wkn}`, meta:rec.meta || SECURITY_MASTER[rec.wkn]?.meta || DEFAULT_META, shares:Number(rec.shares||0), refPrice:Number(rec.refPrice||0), sellPrice:Number(rec.sellPrice||0), sellDate:rec.sellDate || todayIso() };
+  return { wkn:rec.wkn, name:cleanSecurityName(rec.wkn, rec.name), meta:rec.meta || SECURITY_MASTER[rec.wkn]?.meta || DEFAULT_META, shares:Number(rec.shares||0), refPrice:Number(rec.refPrice||0), sellPrice:Number(rec.sellPrice||0), sellDate:rec.sellDate || todayIso() };
 }
 function normalizeWatch(w){
   return {
     wkn:w.wkn,
-    name:w.name || SECURITY_MASTER[w.wkn]?.name || `WKN ${w.wkn}`,
+    name:cleanSecurityName(w.wkn, w.name),
     meta:w.meta || SECURITY_MASTER[w.wkn]?.meta || DEFAULT_META,
     basePrice:Number(w.basePrice||0),
     addedDate:w.addedDate || null,
@@ -746,26 +798,70 @@ function supabaseHeaders(){
 function initSupabase(){ /* REST-basiert, kein Client nötig */ }
 function serializeState(){
   if(!appState) return null;
-  // null-Einträge aus Arrays bereinigen bevor wir serialisieren
+  cleanupStateData(appState);
   const clean = {
     meta: appState.meta,
-    active: (appState.active||[]).filter(Boolean),
+    active: (appState.active||[]).filter(Boolean).filter(p=>sharesOf(p)>0.000001),
     sold: (appState.sold||[]).filter(Boolean),
     watchlist: (appState.watchlist||[]).filter(Boolean),
     transactions: (appState.transactions||[]).filter(Boolean),
-    customTickers: appState.customTickers || {}
+    customTickers: appState.customTickers || {},
+    customSecurityMaster: appState.customSecurityMaster || {}
   };
   return clone(clean);
 }
+function mergePositionsByWkn(positions){
+  const map = new Map();
+  (positions||[]).forEach(pos => {
+    if(!pos?.wkn) return;
+    const existing = map.get(pos.wkn);
+    if(existing){
+      existing.lots.push(...(pos.lots||[]));
+      existing.name = cleanSecurityName(pos.wkn, existing.name);
+      existing.meta = existing.meta || pos.meta || SECURITY_MASTER[pos.wkn]?.meta || DEFAULT_META;
+    } else {
+      map.set(pos.wkn, normalizePosition(pos));
+    }
+  });
+  return [...map.values()].filter(p => sharesOf(p) > 0.000001);
+}
+function cleanupStateData(state){
+  if(!state) return state;
+  state.active = mergePositionsByWkn(state.active || []);
+  state.watchlist = (state.watchlist||[]).map(normalizeWatch);
+  state.sold = (state.sold||[]).map(normalizeSold).filter(s => Number(s.shares||0) > 0);
+  state.transactions = (state.transactions||[]).filter(Boolean);
+  applyCustomSecurityMasterToState(state);
+  state.active.forEach(p => { p.name = cleanSecurityName(p.wkn, p.name); p.meta = p.meta || SECURITY_MASTER[p.wkn]?.meta || DEFAULT_META; });
+  state.watchlist.forEach(w => { w.name = cleanSecurityName(w.wkn, w.name); w.meta = w.meta || SECURITY_MASTER[w.wkn]?.meta || DEFAULT_META; });
+  state.sold.forEach(x => { x.name = cleanSecurityName(x.wkn, x.name); x.meta = x.meta || SECURITY_MASTER[x.wkn]?.meta || DEFAULT_META; });
+  return state;
+}
+function cleanupOrphanBitcoinPosition(state){
+  if(!state) return false;
+  const wkn = 'A4A59K';
+  const hasRealTx = (state.transactions||[]).some(t => t && t.wkn === wkn && ['KAUF','START'].includes(t.type));
+  const bitcoinPos = (state.active||[]).find(p => p?.wkn === wkn);
+  const prevYearBasis = getPrevYearEndIso();
+  const looksLikeFreshGhost = !!bitcoinPos && (bitcoinPos.lots||[]).some(l => (l.date || '') !== prevYearBasis);
+  const before = (state.active||[]).length;
+  if(!hasRealTx && looksLikeFreshGhost){
+    state.active = (state.active||[]).filter(p => p?.wkn !== wkn);
+    state.sold = (state.sold||[]).filter(s => s?.wkn !== wkn);
+  }
+  cleanupStateData(state);
+  return before !== (state.active||[]).length;
+}
 function normalizeLoadedState(parsed){
-  return {
+  return cleanupStateData({
     meta: { year:Number(parsed?.meta?.year || getCurrentYear()) },
     active:(parsed?.active||[]).filter(Boolean).map(normalizePosition),
     sold:(parsed?.sold||[]).map(normalizeSold),
     watchlist:(parsed?.watchlist||[]).map(normalizeWatch),
     transactions:(parsed?.transactions||[]).map(t=>({...t, shares:Number(t?.shares||0), price:Number(t?.price||0), amount:Number(t?.amount||0)})),
-    customTickers: parsed?.customTickers || {}
-  };
+    customTickers: parsed?.customTickers || {},
+    customSecurityMaster: parsed?.customSecurityMaster || {}
+  });
 }
 function defaultState(){
   const active = BASE_PORTFOLIO.map(normalizePosition);
@@ -872,6 +968,10 @@ function applyCustomTickers(){
   Object.entries(custom).forEach(([wkn, mapping]) => {
     TICKER_MAP[wkn] = mapping;
   });
+  const master = appState?.customSecurityMaster || {};
+  Object.entries(master).forEach(([wkn, sec]) => {
+    ensureSecurityMaster(wkn, { name: sec.name, meta: sec.meta || DEFAULT_META });
+  });
 }
 async function loadState(){
   initSupabase();
@@ -890,8 +990,10 @@ async function loadState(){
     appState = chosen;
     appState.meta.year = getCurrentYear();
     applyCustomTickers();
+    const repairedBitcoinGhost = cleanupOrphanBitcoinPosition(appState);
     currentStorageMode = 'Cloud + Gerät';
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
+    if(repairedBitcoinGhost){ try { await saveCloudState(); } catch(e){ console.warn('Bitcoin-Geisterposition konnte nicht in Cloud bereinigt werden', e); } }
     if(chosen === local.state && localScore > cloudScore){
       try {
         await saveCloudState();
@@ -906,8 +1008,10 @@ async function loadState(){
     appState = cloud.state;
     appState.meta.year = getCurrentYear();
     applyCustomTickers();
+    const repairedBitcoinGhost = cleanupOrphanBitcoinPosition(appState);
     currentStorageMode = 'Cloud + Gerät';
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
+    if(repairedBitcoinGhost){ try { await saveCloudState(); } catch(e){ console.warn('Bitcoin-Geisterposition konnte nicht in Cloud bereinigt werden', e); } }
     return;
   }
 
@@ -915,6 +1019,7 @@ async function loadState(){
     appState = local.state;
     appState.meta.year = getCurrentYear();
     applyCustomTickers();
+    cleanupOrphanBitcoinPosition(appState);
     currentStorageMode = 'Gerät';
     try {
       const saved = await saveCloudState();
@@ -942,9 +1047,44 @@ async function saveState(){
   }
 }
 function ensureSecurityMaster(wkn, fallback={}){
-  if(!SECURITY_MASTER[wkn]){
-    SECURITY_MASTER[wkn] = { name:fallback.name || `WKN ${wkn}`, meta:fallback.meta || DEFAULT_META };
+  const key = String(wkn||'').trim().toUpperCase();
+  if(!key) return;
+  const fallbackName = fallback.name && !/^WKN\s+/i.test(String(fallback.name)) ? fallback.name : null;
+  if(!SECURITY_MASTER[key]){
+    SECURITY_MASTER[key] = { name:fallbackName || `WKN ${key}`, meta:fallback.meta || DEFAULT_META };
+  } else {
+    if(fallbackName) SECURITY_MASTER[key].name = fallbackName;
+    if(fallback.meta) SECURITY_MASTER[key].meta = fallback.meta;
   }
+}
+
+function escapeAttr(v){ return String(v ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escapeHtml(v){ return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function persistSecurityMasterEntry(wkn, sec){
+  if(!appState.customSecurityMaster) appState.customSecurityMaster = {};
+  const key = String(wkn||'').trim().toUpperCase();
+  if(!key) return;
+  appState.customSecurityMaster[key] = { name: sec.name || SECURITY_MASTER[key]?.name || `WKN ${key}`, meta: sec.meta || SECURITY_MASTER[key]?.meta || DEFAULT_META };
+  ensureSecurityMaster(key, appState.customSecurityMaster[key]);
+}
+function applyCustomSecurityMasterToState(state){
+  const master = state?.customSecurityMaster || {};
+  Object.entries(master).forEach(([wkn, sec]) => ensureSecurityMaster(wkn, {name:sec.name, meta:sec.meta || DEFAULT_META}));
+}
+function updateSecurityEverywhere(wkn, sec){
+  const key = String(wkn||'').trim().toUpperCase();
+  if(!key) return;
+  persistSecurityMasterEntry(key, sec);
+  const patch = item => {
+    if(item && String(item.wkn||'').toUpperCase() === key){
+      item.name = sec.name || item.name;
+      item.meta = sec.meta || item.meta || DEFAULT_META;
+    }
+  };
+  (appState.active||[]).forEach(patch);
+  (appState.watchlist||[]).forEach(patch);
+  (appState.sold||[]).forEach(patch);
+  (appState.transactions||[]).forEach(t => { if(String(t.wkn||'').toUpperCase() === key && sec.name) t.name = sec.name; });
 }
 function parseWorkerQuotePayload(j) {
   if (!j) return null;
@@ -1442,16 +1582,16 @@ function renderTransactions(){
   document.getElementById('transactionsTable').innerHTML = html;
 }
 function setNavState(){
-  ['overview','watchlist','transactions'].forEach(page => {
+  ['overview','watchlist','transactions','pflege'].forEach(page => {
     const btn = document.getElementById(`${page}NavBtn`);
     if(btn) btn.classList.toggle('active', currentPage === page);
   });
-  const pflegeBtn = document.getElementById('pflegeNavBtn');
-  if(pflegeBtn) pflegeBtn.classList.remove('active');
 }
 function switchPage(page){
   currentPage = page;
-  if(page === 'transactions'){
+  document.getElementById('pflegeBackdrop')?.classList.remove('open');
+  document.getElementById('pflegeModal')?.classList.remove('open');
+  if(page === 'transactions' || page === 'pflege'){
     detailMode = false;
     historicalMode = false;
   } else {
@@ -1529,15 +1669,130 @@ function populatePflegeSelects(){
       }).join('');
   }
 }
-function openPflegeModal(){
-  populatePflegeSelects();
-  document.getElementById('pflegeBackdrop').classList.add('open');
-  document.getElementById('pflegeModal').classList.add('open');
+
+function collectKnownSecurityRows(){
+  const map = new Map();
+  const put = (item, status) => {
+    if(!item?.wkn) return;
+    const wkn = String(item.wkn).trim().toUpperCase();
+    const master = SECURITY_MASTER[wkn] || {};
+    const existing = map.get(wkn) || { wkn, name: cleanSecurityName(wkn, item.name || master.name), ticker: TICKER_MAP[wkn]?.tickers?.[0] || '', meta: item.meta || master.meta || DEFAULT_META, statuses:new Set(), historical:false };
+    existing.name = cleanSecurityName(wkn, item.name || existing.name);
+    existing.meta = item.meta || existing.meta || DEFAULT_META;
+    existing.ticker = TICKER_MAP[wkn]?.tickers?.[0] || existing.ticker || '';
+    existing.statuses.add(status);
+    if(status === 'Historie') existing.historical = true;
+    map.set(wkn, existing);
+  };
+  (appState.active||[]).forEach(x => put(x, 'Depot'));
+  (appState.watchlist||[]).forEach(x => put(x, 'Watchlist'));
+  (appState.sold||[]).forEach(x => put(x, 'Historie'));
+  Object.entries(SECURITY_MASTER).forEach(([wkn, sec]) => {
+    if(!map.has(wkn) && (appState.customSecurityMaster?.[wkn] || ['A4A59K'].includes(wkn))){
+      map.set(wkn, {wkn, name:sec.name || `WKN ${wkn}`, ticker:TICKER_MAP[wkn]?.tickers?.[0] || '', meta:sec.meta || DEFAULT_META, statuses:new Set(['Stammdaten']), historical:false});
+    }
+  });
+  return [...map.values()].sort((a,b)=>a.name.localeCompare(b.name,'de'));
 }
-function closePflegeModal(){
-  document.getElementById('pflegeBackdrop').classList.remove('open');
-  document.getElementById('pflegeModal').classList.remove('open');
+function renderSecurityMasterTable(rows, options={}){
+  if(!rows.length) return '<div class="page-empty">Keine Einträge vorhanden.</div>';
+  const body = rows.map(row => {
+    const w = row.wkn;
+    const meta = row.meta || DEFAULT_META;
+    const status = [...row.statuses].join(' · ');
+    const removeBtn = options.history ? `<button class="pflege-small-btn danger" type="button" onclick="removeHistoricalSecurity('${escapeAttr(w)}')">aus Historie</button>` : '';
+    return `<tr>
+      <td class="wkn-cell">${escapeHtml(w)}</td>
+      <td><input id="sec_name_${escapeAttr(w)}" value="${escapeAttr(row.name)}" /></td>
+      <td><input id="sec_ticker_${escapeAttr(w)}" value="${escapeAttr(row.ticker)}" placeholder="z.B. IB1T.DE" /></td>
+      <td><input id="sec_category_${escapeAttr(w)}" value="${escapeAttr(meta.category || '')}" placeholder="Kategorie" /></td>
+      <td><input id="sec_country_${escapeAttr(w)}" value="${escapeAttr(meta.country || '')}" placeholder="Land" /></td>
+      <td><input id="sec_exchange_${escapeAttr(w)}" value="${escapeAttr(meta.exchange || '')}" placeholder="Börse" /></td>
+      <td><span class="status-pill">${escapeHtml(status)}</span></td>
+      <td><div class="pflege-ticker-status" id="sec_status_${escapeAttr(w)}">Noch nicht geprüft</div></td>
+      <td style="display:flex;gap:6px;align-items:center;justify-content:flex-start">
+        <button class="pflege-small-btn primary" type="button" onclick="saveSecurityMeta('${escapeAttr(w)}')">Speichern</button>
+        <button class="pflege-small-btn" type="button" onclick="validateSecurityTicker('${escapeAttr(w)}')">Ticker prüfen</button>
+        ${removeBtn}
+      </td>
+    </tr>`;
+  }).join('');
+  return `<div class="pflege-table-wrap"><table class="pflege-master-table"><thead><tr><th>WKN</th><th>Name</th><th>Yahoo-Ticker</th><th>Kategorie</th><th>Land</th><th>Börse</th><th>Status</th><th>Prüfung</th><th>Aktion</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
+function renderKnownSecuritiesBox(){
+  const rows = collectKnownSecurityRows();
+  const active = rows.filter(r => r.statuses.has('Depot'));
+  const watch = rows.filter(r => r.statuses.has('Watchlist') && !r.statuses.has('Depot'));
+  const hist = rows.filter(r => r.statuses.has('Historie') && !r.statuses.has('Depot') && !r.statuses.has('Watchlist'));
+  const all = rows;
+  const a = document.getElementById('securityMasterActive'); if(a) a.innerHTML = renderSecurityMasterTable(active);
+  const w = document.getElementById('securityMasterWatchlist'); if(w) w.innerHTML = renderSecurityMasterTable(watch);
+  const h = document.getElementById('securityMasterHistorical'); if(h) h.innerHTML = renderSecurityMasterTable(hist,{history:true});
+  const box = document.getElementById('knownSecuritiesBox'); if(box) box.innerHTML = renderSecurityMasterTable(all);
+}
+async function saveSecurityMeta(wkn){
+  const key = String(wkn||'').trim().toUpperCase();
+  const name = document.getElementById(`sec_name_${key}`)?.value.trim() || `WKN ${key}`;
+  const ticker = document.getElementById(`sec_ticker_${key}`)?.value.trim();
+  const meta = {
+    category: document.getElementById(`sec_category_${key}`)?.value.trim() || 'Sonstige',
+    country: document.getElementById(`sec_country_${key}`)?.value.trim() || 'Global',
+    exchange: document.getElementById(`sec_exchange_${key}`)?.value.trim() || '–'
+  };
+  updateSecurityEverywhere(key, {name, meta});
+  if(ticker){
+    if(!appState.customTickers) appState.customTickers = {};
+    const fx = inferFxFromTicker(ticker);
+    appState.customTickers[key] = { tickers:[ticker], fx };
+    TICKER_MAP[key] = { tickers:[ticker], fx };
+  }
+  cleanupStateData(appState);
+  await saveState();
+  setStatus(`Stammdaten gespeichert · ${name} · ${currentStorageMode}`);
+  render();
+  refreshMarketData();
+}
+async function validateSecurityTicker(wkn){
+  const key = String(wkn||'').trim().toUpperCase();
+  const ticker = document.getElementById(`sec_ticker_${key}`)?.value.trim();
+  const target = document.getElementById(`sec_status_${key}`);
+  if(!target) return;
+  if(!ticker){ target.innerHTML = '<span style="color:var(--orange)">Kein Ticker eingetragen.</span>'; return; }
+  target.innerHTML = 'Prüfe…';
+  try{
+    const bust = Math.floor(Date.now() / 60000);
+    const url = `${CF_WORKER}/?ticker=${encodeURIComponent(ticker)}&_=${bust}`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const j = await r.json();
+    const parsed = parseWorkerQuotePayload(j);
+    if(parsed && parsed.price){
+      const fx = inferFxFromTicker(ticker, parsed.currency);
+      const priceEur = toEUR(parsed.price, fx);
+      target.innerHTML = `<span style="color:var(--success);font-weight:800">OK</span><br>${escapeHtml(ticker)} · ${f(priceEur,2)} €`;
+    } else {
+      target.innerHTML = `<span style="color:var(--orange);font-weight:800">Kein Kurs</span><br>${escapeHtml(ticker)}`;
+    }
+  }catch(e){
+    target.innerHTML = `<span style="color:var(--orange);font-weight:800">Fehler</span><br>${escapeHtml(e.message)}`;
+  }
+}
+async function removeHistoricalSecurity(wkn){
+  const key = String(wkn||'').trim().toUpperCase();
+  if(!key) return;
+  if((appState.active||[]).some(p=>p.wkn===key) || (appState.watchlist||[]).some(w=>w.wkn===key)){
+    setStatus('Historie kann nicht entfernt werden: Titel ist noch aktiv oder auf der Watchlist.');
+    return;
+  }
+  appState.sold = (appState.sold||[]).filter(s=>s.wkn!==key);
+  if(appState.customSecurityMaster) delete appState.customSecurityMaster[key];
+  cleanupStateData(appState);
+  await saveState();
+  setStatus(`Historie entfernt · ${key} · ${currentStorageMode}`);
+  render();
+}
+function openPflegeModal(){ switchPage('pflege'); }
+function closePflegeModal(){ if(currentPage === 'pflege') switchPage('overview'); }
 function findOrCreateSecurity(wkn){
   const key = String(wkn||'').trim().toUpperCase();
   const master = SECURITY_MASTER[key];
@@ -1548,9 +1803,11 @@ function addTransaction(entry){
   appState.transactions.unshift(entry);
 }
 async function afterMaintenance(status){
+  cleanupStateData(appState);
   await saveState();
-  closePflegeModal();
+  if(currentPage !== 'pflege') closePflegeModal();
   populatePflegeSelects();
+  renderKnownSecuritiesBox();
   setStatus(`${status} · ${currentStorageMode}`);
   render();
   refreshMarketData();
@@ -1561,18 +1818,30 @@ async function handleBuy(event){
   const shares = Number(document.getElementById('buyShares').value);
   const price = Number(document.getElementById('buyPrice').value);
   const date = document.getElementById('buyDate').value || todayIso();
+  const nameInput = (document.getElementById('buyName')?.value || '').trim();
+  const tickerInput = (document.getElementById('buyTicker')?.value || '').trim();
   if(!wkn || !shares || !price) return;
+  if(nameInput) ensureSecurityMaster(wkn, {name:nameInput});
+  if(tickerInput){
+    if(!appState.customTickers) appState.customTickers = {};
+    const fx = inferFxFromTicker(tickerInput);
+    appState.customTickers[wkn] = { tickers:[tickerInput], fx };
+    TICKER_MAP[wkn] = { tickers:[tickerInput], fx };
+  }
   const sec = findOrCreateSecurity(wkn);
   let pos = appState.active.find(p=>p.wkn===wkn);
   if(!pos){
-    pos = normalizePosition({wkn,name:sec.name,meta:sec.meta,lots:[]});
+    pos = normalizePosition({wkn,name:nameInput||sec.name,meta:sec.meta,lots:[]});
     appState.active.push(pos);
+  } else {
+    pos.name = cleanSecurityName(wkn, nameInput || pos.name);
+    pos.meta = pos.meta || sec.meta;
   }
   pos.lots.push({shares, price, date});
   addTransaction({date, type:'KAUF', name:pos.name, wkn, shares, price, amount:shares*price});
   event.target.reset();
   document.getElementById('buyDate').value = todayIso();
-  await afterMaintenance(`Kauf erfasst · ${sec.name} · ${f(shares,0)} Stück`);
+  await afterMaintenance(`Kauf erfasst · ${pos.name} · ${f(shares,0)} Stück`);
 }
 async function handleSell(event){
   event.preventDefault();
@@ -1657,6 +1926,49 @@ async function handleDeleteWatch(event){
   event.target.reset();
   await afterMaintenance(`Watchlist bereinigt · ${item.name}`);
 }
+function rollbackBuyTransaction(tx){
+  const pos = appState.active.find(p => p.wkn === tx.wkn);
+  if(!pos) return false;
+  let remaining = Number(tx.shares || 0);
+  const txPrice = Number(tx.price || 0);
+  const txDate = tx.date || '';
+  for(let i = pos.lots.length - 1; i >= 0 && remaining > 0; i--){
+    const lot = pos.lots[i];
+    const priceMatch = Math.abs(Number(lot.price||0) - txPrice) < 0.0001;
+    const dateMatch = !txDate || lot.date === txDate;
+    if(!priceMatch || !dateMatch) continue;
+    const take = Math.min(Number(lot.shares||0), remaining);
+    lot.shares = Number(lot.shares||0) - take;
+    remaining -= take;
+    if(Number(lot.shares||0) <= 0.000001) pos.lots.splice(i,1);
+  }
+  if(remaining > 0.000001){
+    for(let i = pos.lots.length - 1; i >= 0 && remaining > 0; i--){
+      const lot = pos.lots[i];
+      const take = Math.min(Number(lot.shares||0), remaining);
+      lot.shares = Number(lot.shares||0) - take;
+      remaining -= take;
+      if(Number(lot.shares||0) <= 0.000001) pos.lots.splice(i,1);
+    }
+  }
+  appState.active = (appState.active||[]).filter(p => sharesOf(p) > 0.000001);
+  return remaining <= 0.000001;
+}
+function rollbackSellTransaction(tx){
+  const idx = (appState.sold||[]).findIndex(s => s.wkn === tx.wkn && Number(s.shares||0) === Number(tx.shares||0) && Math.abs(Number(s.sellPrice||0) - Number(tx.price||0)) < 0.0001 && (!tx.date || s.sellDate === tx.date));
+  const sold = idx >= 0 ? appState.sold.splice(idx,1)[0] : null;
+  const shares = Number(tx.shares || sold?.shares || 0);
+  if(!shares) return false;
+  const refPrice = Number(sold?.refPrice || 0) || Number(tx.price || 0);
+  let pos = appState.active.find(p => p.wkn === tx.wkn);
+  if(!pos){
+    pos = normalizePosition({wkn:tx.wkn, name:cleanSecurityName(tx.wkn, tx.name), meta:sold?.meta || SECURITY_MASTER[tx.wkn]?.meta || DEFAULT_META, lots:[]});
+    appState.active.push(pos);
+  }
+  pos.lots.push({shares, price:refPrice, date:getPrevYearEndIso()});
+  pos.name = cleanSecurityName(tx.wkn, pos.name);
+  return true;
+}
 async function handleDeleteTransaction(event){
   event.preventDefault();
   const isBuy = event.target.id === 'deleteBuyTxForm';
@@ -1664,9 +1976,12 @@ async function handleDeleteTransaction(event){
   const idx = Number(document.getElementById(selectId).value);
   if(isNaN(idx) || idx < 0 || idx >= appState.transactions.length) return;
   const tx = appState.transactions[idx];
+  if(isBuy) rollbackBuyTransaction(tx);
+  else rollbackSellTransaction(tx);
   appState.transactions.splice(idx, 1);
+  cleanupStateData(appState);
   event.target.reset();
-  await afterMaintenance(`Buchung gelöscht · ${tx.type} · ${tx.name}`);
+  await afterMaintenance(`Buchung rückgängig · ${tx.type} · ${tx.name}`);
 }
 // ─── PDF Export ────────────────────────────────────────────────────────────
 function loadJsPDF() {
@@ -1919,6 +2234,11 @@ async function startJahresabschluss() {
   const currentYear = getCurrentYear();
   const oldYear = appState.meta.year;
 
+  if(Number(oldYear) === Number(currentYear)){
+    alert('Der Jahresabschluss ist erst nach dem Jahreswechsel sinnvoll. Aktuell läuft Folio-Invest bereits im Jahr ' + currentYear + '.');
+    return;
+  }
+
   // Theoretischen neuen State berechnen (ohne zu speichern)
   // Priorität: aktueller Livekurs → 31.12.-Schlusskurs aus History → bisheriger Einstandskurs
   const newState = clone(appState);
@@ -2068,6 +2388,7 @@ function render(){
   document.body.classList.toggle('page-watchlist', currentPage === 'watchlist');
   document.body.classList.toggle('page-overview', currentPage === 'overview');
   document.body.classList.toggle('page-transactions', currentPage === 'transactions');
+  document.body.classList.toggle('page-pflege', currentPage === 'pflege');
   const activeRows = rowsFromPortfolio(appState.active);
   const soldRows = rowsFromSold();
   const watchRows = rowsFromWatchlist();
@@ -2080,7 +2401,24 @@ function render(){
   const kpiGrid = document.getElementById('kpiGrid');
   const structureTitle = document.getElementById('structureTitle');
   const structureGrid = document.getElementById('structureGrid');
+  const pflegePage = document.getElementById('pflegePage');
+  if(pflegePage) pflegePage.classList.add('hidden');
   document.getElementById('positionsSectionLabel').innerHTML = '<span class="sec-n">2 ·</span> Positionen — Gesamtdepot';
+  if(currentPage === 'pflege'){
+    overviewTitle.classList.add('hidden');
+    kpiGrid.classList.add('hidden');
+    positionsSection.classList.add('hidden');
+    modeNote.classList.add('hidden');
+    positionsWrap.classList.add('hidden');
+    soldSection.classList.add('hidden');
+    structureTitle.classList.add('hidden');
+    structureGrid.classList.add('hidden');
+    transactionsWrap.classList.add('hidden');
+    if(pflegePage) pflegePage.classList.remove('hidden');
+    populatePflegeSelects();
+    renderKnownSecuritiesBox();
+    return;
+  }
   if(currentPage === 'transactions'){
     overviewTitle.classList.add('hidden');
     kpiGrid.classList.add('hidden');
@@ -2155,16 +2493,26 @@ async function bootstrapApp(){
   document.getElementById('watchDeleteForm').addEventListener('submit', handleDeleteWatch);
   document.getElementById('deleteBuyTxForm').addEventListener('submit', handleDeleteTransaction);
   document.getElementById('deleteSellTxForm').addEventListener('submit', handleDeleteTransaction);
-  document.getElementById('pflegeBackdrop').addEventListener('click', closePflegeModal);
 }
-async function validateTicker(){
-  const ticker = document.getElementById('watchTicker').value.trim();
-  const resultsDiv = document.getElementById('tickerResults');
-  const btn = document.getElementById('tickerSearchBtn');
+function renderTickerCheckResult(target, ticker, parsed, fx){
+  const priceEur = toEUR(parsed.price, fx);
+  const nativeLabel = fx === 'EUR' ? '€' : fx;
+  const fxHint = fx === 'EUR'
+    ? 'EUR-Ticker · keine Umrechnung nötig'
+    : `Währung ${fx} · App rechnet für Depotwerte in EUR um`;
+  target.innerHTML = `<div style="font-size:11px;color:var(--success);padding:6px 10px;background:rgba(47,163,107,.12);border:1px solid rgba(47,163,107,.35);border-radius:8px;margin-top:2px;line-height:1.45">
+    ✓ <strong>${escapeHtml(ticker)}</strong> gefunden · Kurs: <strong>${f(priceEur, 2)} €</strong> <span style="opacity:.8">(${f(parsed.price, 2)} ${nativeLabel})</span><br>
+    <span style="color:var(--text-muted)">${escapeHtml(fxHint)}</span>
+  </div>`;
+}
+async function validateTickerField(inputId, resultsId, buttonId){
+  const ticker = document.getElementById(inputId).value.trim();
+  const resultsDiv = document.getElementById(resultsId);
+  const btn = document.getElementById(buttonId);
   if(!ticker){
     resultsDiv.innerHTML = '<div style="font-size:11px;color:var(--orange);padding:4px 2px">Bitte zuerst einen Ticker eingeben.</div>';
-    document.getElementById('watchTicker').focus();
-    return;
+    document.getElementById(inputId).focus();
+    return null;
   }
   btn.classList.add('loading');
   btn.textContent = '⏳ Prüfe…';
@@ -2178,24 +2526,29 @@ async function validateTicker(){
     const parsed = parseWorkerQuotePayload(j);
     if(parsed && parsed.price){
       const fx = inferFxFromTicker(ticker, parsed.currency);
-      const priceEur = toEUR(parsed.price, fx);
-      const nativeLabel = fx === 'EUR' ? '€' : fx;
-      resultsDiv.innerHTML = `<div style="font-size:11px;color:var(--success);padding:6px 10px;background:rgba(47,163,107,.12);border:1px solid rgba(47,163,107,.35);border-radius:8px;margin-top:2px">
-        ✓ <strong>${ticker}</strong> gefunden · Kurs: <strong>${f(priceEur, 2)} €</strong> <span style="opacity:.8">(${f(parsed.price, 2)} ${nativeLabel})</span>
-      </div>`;
+      renderTickerCheckResult(resultsDiv, ticker, parsed, fx);
+      return { ticker, parsed, fx };
     } else {
       resultsDiv.innerHTML = `<div style="font-size:11px;color:var(--orange);padding:6px 10px;background:rgba(223,87,53,.08);border:1px solid rgba(223,87,53,.32);border-radius:8px;margin-top:2px">
-        ✗ <strong>${ticker}</strong> liefert keinen Kurs — Ticker prüfen oder anderen versuchen.
+        ✗ <strong>${escapeHtml(ticker)}</strong> liefert keinen Kurs — Ticker prüfen oder anderen versuchen.
       </div>`;
+      return null;
     }
   } catch(e){
     resultsDiv.innerHTML = `<div style="font-size:11px;color:var(--orange);padding:6px 10px;background:rgba(223,87,53,.08);border:1px solid rgba(223,87,53,.32);border-radius:8px;margin-top:2px">
-      ✗ Prüfung fehlgeschlagen: ${e.message}
+      ✗ Prüfung fehlgeschlagen: ${escapeHtml(e.message)}
     </div>`;
+    return null;
   } finally {
     btn.classList.remove('loading');
     btn.innerHTML = '✓ Ticker prüfen';
   }
+}
+async function validateTicker(){
+  return validateTickerField('watchTicker','tickerResults','tickerSearchBtn');
+}
+async function validateBuyTicker(){
+  return validateTickerField('buyTicker','buyTickerResults','buyTickerSearchBtn');
 }
 
 function selectTicker(symbol, name){
