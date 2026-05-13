@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
-<title>Folio.invest · Privates Depot v5.8</title>
+<title>Folio.invest · Privates Depot v6.5</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=DM+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -64,6 +64,8 @@ body.theme-original.page-pflege .pflege-modal{background:#fff}
 .sec-n { color: var(--orange); }
 .mode-theme{display:flex;align-items:center;justify-content:center;gap:8px}
 .mode-tools{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+.update-stamp{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap;margin-right:4px}
+.update-stamp strong{color:var(--text-soft);font-weight:800}
 .mode-sep{width:56px}
 .push-right{margin-left:0}
 @media (max-width: 980px){
@@ -128,6 +130,8 @@ body.page-watchlist .positions-header-card .pos-col:nth-child(8),body.page-watch
 .pos-main-title{font-size:18px;font-weight:700;line-height:1.1;color:inherit;margin-bottom:12px;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pos-main-meta{display:flex;flex-wrap:wrap;gap:9px 14px;font-size:11px;color:var(--text-soft)}
 .pos-main-meta span{white-space:nowrap}
+.pos-shares{font-weight:800;font-size:12.5px;color:var(--text);letter-spacing:.01em}
+.positions-header-card .pos-shares{color:#111}
 .pos-value-top{font-size:16.5px;font-weight:700;line-height:1.05;color:inherit;margin-bottom:8px;letter-spacing:-.02em}
 .pos-value-sub{font-size:12.5px;color:var(--text-soft);line-height:1.2}
 .positions-header-card .pos-value-sub{color:#333}
@@ -319,6 +323,11 @@ body.theme-dark .pflege-note{color:#9b9ea2}
 
 body.page-watchlist .positions-summary-card{display:none !important;}
 
+/* v6.4: Verkaufte Positionen – leere schwarze Summenblöcke */
+.positions-summary-card .sold-summary-empty{background:#000 !important;color:transparent !important;}
+.positions-summary-card .sold-summary-empty *{display:none !important;}
+body.theme-original .positions-summary-card .sold-summary-empty{background:#000 !important;}
+
 
 
 /* Folio-Invest v5.8: Pflege als eigene Seite */
@@ -477,6 +486,7 @@ function resetPin(){
 <button class="mode-toggle" id="themeDarkBtn" onclick="setTheme('dark')" type="button">Dark</button>
 </div>
 <div class="mode-tools">
+<span class="update-stamp" id="marketStampTop">Stand: –</span>
 <button class="mode-toggle" id="detailsBtn" onclick="toggleDetails()" type="button">Details</button>
 <button class="mode-toggle" id="historischBtn" onclick="toggleHistoricalMode()" type="button">Historisch</button>
 <button class="icon-btn refresh-btn push-right" id="refreshBtn" onclick="refreshMarketData()" title="Aktualisieren" type="button">↻</button>
@@ -733,6 +743,17 @@ function fp(v){const n=Number(v||0);const s=n>=0?'+':''; return s+f(n*100,2)+'%'
 function cl(v){return Number(v||0)>=0?'pos':'neg'}
 function formatStamp(dateStr){ if(!dateStr) return '–'; const d = new Date(dateStr); return d.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(',', ' ·'); }
 function formatShortDate(dateStr){ if(!dateStr) return '–'; const d = new Date(dateStr); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'}); }
+function formatShortDateOrBlank(dateStr){ if(!dateStr) return ''; const d = new Date(dateStr); if(Number.isNaN(d.getTime())) return ''; return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'}); }
+function purchaseDateOf(row){
+  const dates = (row.lots||[]).map(l=>l && l.date).filter(Boolean).sort();
+  return dates.length ? dates[0] : '';
+}
+function updateMarketStampTop(){
+  const el = document.getElementById('marketStampTop');
+  if(!el) return;
+  el.innerHTML = lastMarketUpdate ? `Stand: <strong>${formatStamp(lastMarketUpdate)}</strong>` : 'Stand: –';
+}
+
 function compactCurrency(v){ return f(v)+' €'; }
 function fmtKgv(v){ return v != null && isFinite(Number(v)) ? f(Number(v), 2) : '–'; }
 function kgvTone(v){ const n = Number(v); if(!Number.isFinite(n)) return 'kgv-na'; if(n < 20) return 'kgv-low'; if(n <= 30) return 'kgv-mid'; return 'kgv-high'; }
@@ -1185,9 +1206,12 @@ async function fetchHistoryWithFallback(tickers) {
   return null;
 }
 function allRelevantWkns(){
+  // Wichtig: Auch verkaufte Positionen müssen geladen werden.
+  // Sonst fallen Livekurs und Historie im Verkaufsbereich auf Verkaufskurs/leer zurück.
   return [...new Set([
-    ...appState.active.map(p=>p.wkn),
-    ...appState.watchlist.map(w=>w.wkn)
+    ...(appState.active || []).map(p=>p.wkn),
+    ...(appState.watchlist || []).map(w=>w.wkn),
+    ...(appState.sold || []).map(s=>s.wkn)
   ])];
 }
 async function loadKurse() {
@@ -1331,12 +1355,15 @@ function rowsFromPortfolio(list){
 function rowsFromSold(){
   const rows = appState.sold.map(s=>{
     const refValue = s.refPrice * s.shares;
-    const currentValue = s.sellPrice * s.shares;
-    const diffAbs = currentValue - refValue;
+    const saleValue = s.sellPrice * s.shares;
+    const diffAbs = saleValue - refValue;
     const diffPct = refValue ? diffAbs / refValue : 0;
     const soldToday = s.sellDate === todayIso() ? diffAbs : 0;
-    const hist = calcHistoricalMetrics(historicalData[s.wkn], s.sellPrice, s.shares);
-    return { ...s, lots:[{shares:s.shares,price:s.refPrice,date:s.sellDate}], refValue, refPrice:s.refPrice, currentPrice:s.sellPrice, currentValue, prevValue:currentValue, dayAbs:soldToday, dayPct:0, diffAbs, diffPct, ...hist };
+    const marketPrice = liveKurse[s.wkn] ?? s.sellPrice;
+    const marketValue = marketPrice * s.shares;
+    const sinceSalePct = s.sellPrice ? (marketPrice / s.sellPrice) - 1 : 0;
+    const hist = calcHistoricalMetrics(historicalData[s.wkn], marketPrice, s.shares);
+    return { ...s, lots:[{shares:s.shares,price:s.refPrice,date:s.sellDate}], refValue, refPrice:s.refPrice, sellPrice:s.sellPrice, currentPrice:s.sellPrice, currentValue:saleValue, saleValue, marketPrice, marketValue, sinceSalePct, prevValue:saleValue, dayAbs:soldToday, dayPct:0, diffAbs, diffPct, ...hist };
   });
   const total = rows.reduce((s,r)=>s+r.currentValue,0);
   let running = 0;
@@ -1407,6 +1434,7 @@ function modeNoteText(){
       : 'Aktive Positionen oben, verkaufte Positionen separat darunter – Gesamtgewinn heute und YTD über beide Bereiche');
 }
 function renderPositions(rows, type='overview'){
+  updateMarketStampTop();
   const wrap = document.getElementById('positionsWrap');
   document.getElementById('detailsBtn').textContent = detailMode ? 'Home' : 'Details';
   document.getElementById('historischBtn').classList.toggle('active', historicalMode);
@@ -1424,7 +1452,7 @@ function renderPositions(rows, type='overview'){
     const stamp = lastMarketUpdate ? formatStamp(lastMarketUpdate) : 'Historische Daten';
     const header = type==='watchlist'
       ? `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier', false)}</div><div class="pos-head-sub">WKN · Watchlist · ${stamp}</div></div><div class="pos-col neutral"><div class="pos-head-main">Wert aktuell</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdBelowPct','YTD High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('below12mPct','12M High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdPotential','Potenzial', false)}</div><div class="pos-head-sub">YTD / 12M in € · Upside %</div></div><div class="pos-col neutral"><div class="pos-head-main">KGV</div><div class="pos-head-sub">aktuell</div></div></div></div>`
-      : `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier', false)}</div><div class="pos-head-sub">WKN · Anzahl · ${stamp}</div></div><div class="pos-col neutral"><div class="pos-head-main">Wert aktuell</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdBelowPct','YTD High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('below12mPct','12M High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdPotential','Potenzial', false)}</div><div class="pos-head-sub">YTD / 12M in € · Upside %</div></div><div class="pos-col neutral"><div class="pos-head-main">KGV</div><div class="pos-head-sub">aktuell</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
+      : `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier', false)}</div><div class="pos-head-sub">Stück · WKN · Kaufdatum</div></div><div class="pos-col neutral"><div class="pos-head-main">Wert aktuell</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdBelowPct','YTD High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('below12mPct','12M High', false)}</div><div class="pos-head-sub">Abstand zum Hoch</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('ytdPotential','Potenzial', false)}</div><div class="pos-head-sub">YTD / 12M in € · Upside %</div></div><div class="pos-col neutral"><div class="pos-head-main">KGV</div><div class="pos-head-sub">aktuell</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
     const sortedRows = sortRows(rows);
     const fmtPct = v => v == null ? '–' : fp(v/100);
     const fmtNum = v => v == null ? '–' : f(v,2);
@@ -1434,7 +1462,7 @@ function renderPositions(rows, type='overview'){
       const tailCols = type==='watchlist'
         ? `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${f(r.currentPrice,2)}</div></div><div class="pos-col ${cl(r.ytdBelowPct || 0)}"><div class="pos-value-top">${fmtNum(r.ytdHigh)}</div><div class="pos-value-sub">${fmtPct(r.ytdBelowPct)}</div></div><div class="pos-col ${cl(r.below12mPct || 0)}"><div class="pos-value-top">${fmtNum(r.high12m)}</div><div class="pos-value-sub">${fmtPct(r.below12mPct)}</div></div><div class="pos-col neutral">${renderUpsideCol(r)}</div>${historicalKgvCol(r)}`
         : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${f(r.currentPrice,2)}</div></div><div class="pos-col ${cl(r.ytdBelowPct || 0)}"><div class="pos-value-top">${fmtNum(r.ytdHigh)}</div><div class="pos-value-sub">${fmtPct(r.ytdBelowPct)}</div></div><div class="pos-col ${cl(r.below12mPct || 0)}"><div class="pos-value-top">${fmtNum(r.high12m)}</div><div class="pos-value-sub">${fmtPct(r.below12mPct)}</div></div><div class="pos-col neutral">${renderUpsideCol(r)}</div>${historicalKgvCol(r)}${historicalShareCol(r)}`;
-      return `<article class="position-card ${idx % 2 === 0 ? 'light' : 'dark'}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${type==='watchlist' ? 'Watchlist' : `${f(r.shares,0)} Stck.`}</span><span>${stamp}</span></div></div>${tailCols}</div></article>`;
+      return `<article class="position-card ${idx % 2 === 0 ? 'light' : 'dark'}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta">${type==='watchlist' ? `<span>${r.wkn}</span><span>Watchlist</span><span>${stamp}</span>` : `<span class="pos-shares">${f(r.shares,0)} Stck.</span><span>${r.wkn}</span><span>${formatShortDateOrBlank(purchaseDateOf(r))}</span>`}</div></div>${tailCols}</div></article>`;
     }).join('');
     const sumYtdPotential = sortedRows.reduce((s,r)=>s+(Number(r.ytdPotential)||0),0);
     const sum12mPotential = sortedRows.reduce((s,r)=>s+(Number(r.potential12m)||0),0);
@@ -1464,15 +1492,15 @@ function renderPositions(rows, type='overview'){
   const stamp = lastMarketUpdate ? formatStamp(lastMarketUpdate) : `Referenzbasis ${yearLabel}`;
   const header = type==='watchlist'
     ? `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">Wertpapier</div><div class="pos-head-sub">WKN · Watchlist · Hinzugefügt</div></div><div class="pos-col"><div class="pos-head-main">Kurs aktuell</div><div class="pos-head-sub">Livekurs in €</div></div><div class="pos-col"><div class="pos-head-main">Kurs ${yearLabel}</div><div class="pos-head-sub">Bezugsbasis</div></div><div class="pos-col"><div class="pos-head-main">Veränd. heute</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">Veränd. YTD</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col neutral"><div class="pos-head-main">KGV</div><div class="pos-head-sub">aktuell</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`
-    : `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier')}</div><div class="pos-head-sub">WKN · Anzahl · Datum / Uhrzeit</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('currentValue','Wert aktuell')}</div><div class="pos-head-sub">Kurs aktuell</div></div><div class="pos-col"><div class="pos-head-main">Kurs aktuell</div><div class="pos-head-sub">Bezugsbasis</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('dayAbs','Veränd. heute')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('diffAbs','Veränd. YTD')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col neutral"><div class="pos-head-main">KGV</div><div class="pos-head-sub">aktuell</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
+    : `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('name','Wertpapier')}</div><div class="pos-head-sub">Stück · WKN · Kaufdatum</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('currentValue','Wert aktuell')}</div><div class="pos-head-sub">Kaufwert</div></div><div class="pos-col"><div class="pos-head-main">Kurs aktuell</div><div class="pos-head-sub">Kaufkurs</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('dayAbs','Veränd. heute')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col"><div class="pos-head-main">${renderSortButton('diffAbs','Veränd. YTD')}</div><div class="pos-head-sub">in € und %</div></div><div class="pos-col neutral"><div class="pos-head-main">KGV</div><div class="pos-head-sub">aktuell</div></div><div class="pos-col neutral"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
   const sortedRows = sortRows(rows);
   const cards = sortedRows.map((r,idx)=>{
     const tone = idx % 2 === 0 ? 'light' : 'dark';
     const subLeft = type==='watchlist' ? 'Watchlist' : `${f(r.shares,0)} Stck.`;
-    const metaStamp = type==='watchlist' ? formatShortDate(r.addedDate || getWatchAddedDate(r) || r.date) : stamp;
+    const metaStamp = type==='watchlist' ? formatShortDate(r.addedDate || getWatchAddedDate(r) || r.date) : formatShortDateOrBlank(purchaseDateOf(r));
     const valueCol = type==='watchlist'
       ? `<div class="pos-col neutral"><div class="pos-value-top">${f(r.currentPrice,2)}</div><div class="pos-value-sub">${r.isLive ? 'live' : 'Fallback'}</div></div>`
-      : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${f(r.currentPrice,2)}</div></div>`;
+      : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${compactCurrency(r.refValue)}</div></div>`;
     const priceCol = type==='watchlist'
       ? `<div class="pos-col neutral"><div class="pos-value-top">${f(r.refPrice,2)}</div><div class="pos-value-sub">${r.refSource === 'history' ? `Bezugsbasis` : 'Fallback-Basis'}</div></div>`
       : `<div class="pos-col neutral"><div class="pos-value-top">${f(r.currentPrice,2)}</div><div class="pos-value-sub">${f(r.refPrice,2)}</div></div>`;
@@ -1483,7 +1511,7 @@ function renderPositions(rows, type='overview'){
     const tailCols = type==='watchlist'
       ? `${valueCol}${priceCol}${dayCol}${diffCol}${kgvCol}${shareCol}`
       : `${valueCol}${priceCol}${dayCol}${diffCol}${kgvCol}${shareCol}`;
-    return `<article class="position-card ${tone}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${subLeft}</span><span>${metaStamp}</span></div></div>${tailCols}</div></article>`;
+    return `<article class="position-card ${tone}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta">${type==='watchlist' ? `<span>${r.wkn}</span><span>${subLeft}</span><span>${metaStamp}</span>` : `<span class="pos-shares">${subLeft}</span><span>${r.wkn}</span><span>${metaStamp}</span>`}</div></div>${tailCols}</div></article>`;
   }).join('');
   const totalCurrent = sortedRows.reduce((s,r)=>s+r.currentValue,0);
   const totalRef = sortedRows.reduce((s,r)=>s+r.refValue,0);
@@ -1495,7 +1523,7 @@ function renderPositions(rows, type='overview'){
   const summaryText = type === 'watchlist' ? 'Aktuelle Sortierung · Watchlist' : 'Aktuelle Sortierung · Aktive Positionen';
   const summaryValueCol = type==='watchlist'
     ? `<div class="pos-col neutral"><div class="pos-value-top">${f(totalCurrent,2)}</div><div class="pos-value-sub">Livekurse in €</div></div>`
-    : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(totalCurrent)}</div><div class="pos-value-sub">${f(sortedRows.reduce((s,r)=>s+Number(r.currentPrice||0),0) / (sortedRows.length || 1),2)}</div></div>`;
+    : `<div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(totalCurrent)}</div><div class="pos-value-sub">${compactCurrency(totalRef)}</div></div>`;
   const summaryPriceCol = type==='watchlist'
     ? `<div class="pos-col neutral"><div class="pos-value-top">${f(totalRef,2)}</div><div class="pos-value-sub">Vergleichsbasis</div></div>`
     : `<div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div>`;
@@ -1521,16 +1549,17 @@ function renderSold(rows){
     return;
   }
   const sortedRows = sortRows(rows);
-  const stamp = 'Realisierte Verkäufe';
-  const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">Wertpapier</div><div class="pos-head-sub">WKN · Stück · Verkaufsdatum</div></div><div class="pos-col"><div class="pos-head-main">Erlös</div><div class="pos-head-sub">Einstand</div></div><div class="pos-col"><div class="pos-head-main">Verkaufskurs</div><div class="pos-head-sub">Einstandskurs</div></div><div class="pos-col"><div class="pos-head-main">Heute</div><div class="pos-head-sub">realisierter Effekt</div></div><div class="pos-col"><div class="pos-head-main">Gewinn YTD</div><div class="pos-head-sub">realisiert</div></div><div class="pos-col"><div class="pos-head-main">Anteil</div><div class="pos-head-sub">Kumuliert</div></div></div></div>`;
-  const cards = sortedRows.map((r,idx)=>`<article class="position-card ${idx % 2 === 0 ? 'light' : 'dark'}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span>${r.wkn}</span><span>${f(r.shares,0)} Stck.</span><span>${r.sellDate}</span></div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${compactCurrency(r.refValue)}</div></div><div class="pos-col neutral"><div class="pos-value-top">${f(r.currentPrice,2)}</div><div class="pos-value-sub">${f(r.refPrice,2)}</div></div><div class="pos-col ${cl(r.dayAbs)}"><div class="pos-value-top">${fc(r.dayAbs)}</div><div class="pos-value-sub">${stamp}</div></div><div class="pos-col ${cl(r.diffAbs)}"><div class="pos-value-top">${fc(r.diffAbs)}</div><div class="pos-value-sub">${fp(r.diffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">${f(r.share*100,2)}%</div><div class="pos-share-sub">${f(r.cumShare*100,2)}%</div></div></div></article>`).join('');
+  const fmtPctValue = v => Number.isFinite(Number(v)) ? fp(Number(v)) : '–';
+  const fmtHigh = v => Number.isFinite(Number(v)) ? f(Number(v),2) : '–';
+  const header = `<div class="positions-header-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>#</strong></div></div><div class="pos-col"><div class="pos-head-main">Wertpapier</div><div class="pos-head-sub">Stück · WKN · Verkaufsdatum</div></div><div class="pos-col"><div class="pos-head-main">Erlös</div><div class="pos-head-sub">Einstand</div></div><div class="pos-col"><div class="pos-head-main">Gewinn</div><div class="pos-head-sub">realisiert</div></div><div class="pos-col"><div class="pos-head-main">Verkaufskurs</div><div class="pos-head-sub">Einstandskurs</div></div><div class="pos-col"><div class="pos-head-main">Kurs aktuell</div><div class="pos-head-sub">Livekurs</div></div><div class="pos-col"><div class="pos-head-main">Seit Verkauf</div><div class="pos-head-sub">Kursveränderung</div></div><div class="pos-col"><div class="pos-head-main">12M High</div><div class="pos-head-sub">Potenzial</div></div></div></div>`;
+  const cards = sortedRows.map((r,idx)=>`<article class="position-card ${idx % 2 === 0 ? 'light' : 'dark'}"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>${idx + 1}</strong></div></div><div class="pos-col neutral"><div class="pos-main-title">${r.name}</div><div class="pos-main-meta"><span class="pos-shares">${f(r.shares,0)} Stck.</span><span>${r.wkn}</span><span>${formatShortDateOrBlank(r.sellDate)}</span></div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(r.currentValue)}</div><div class="pos-value-sub">${compactCurrency(r.refValue)}</div></div><div class="pos-col ${cl(r.diffAbs)}"><div class="pos-value-top">${fc(r.diffAbs)}</div><div class="pos-value-sub">${fp(r.diffPct)}</div></div><div class="pos-col neutral"><div class="pos-value-top">${f(r.sellPrice,2)}</div><div class="pos-value-sub">${f(r.refPrice,2)}</div></div><div class="pos-col neutral"><div class="pos-value-top">${f(r.marketPrice,2)}</div><div class="pos-value-sub">${compactCurrency(r.marketValue)}</div></div><div class="pos-col ${cl(r.sinceSalePct)}"><div class="pos-value-top">${fmtPctValue(r.sinceSalePct)}</div><div class="pos-value-sub">vs. Verkaufskurs</div></div><div class="pos-col ${cl((Number.isFinite(Number(r.marketPrice)) && Number(r.marketPrice) > 0 && Number.isFinite(Number(r.high12m)) && Number(r.high12m) > 0) ? (Number(r.high12m) / Number(r.marketPrice)) - 1 : 0)}"><div class="pos-value-top">${fmtHigh(r.high12m)}</div><div class="pos-value-sub">${(Number.isFinite(Number(r.marketPrice)) && Number(r.marketPrice) > 0 && Number.isFinite(Number(r.high12m)) && Number(r.high12m) > 0) ? fp((Number(r.high12m) / Number(r.marketPrice)) - 1) : '–'}</div></div></div></article>`).join('');
   const totalCurrent = sortedRows.reduce((s,r)=>s+r.currentValue,0);
   const totalRef = sortedRows.reduce((s,r)=>s+r.refValue,0);
-  const totalDayAbs = sortedRows.reduce((s,r)=>s+r.dayAbs,0);
   const totalDiffAbs = sortedRows.reduce((s,r)=>s+r.diffAbs,0);
   const totalDiffPct = totalRef ? totalDiffAbs/totalRef : 0;
-  wrap.innerHTML = header + cards + `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">Verkaufte Positionen laufendes Jahr</div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(totalCurrent)}</div><div class="pos-value-sub">${compactCurrency(totalRef)}</div></div><div class="pos-col neutral"><div class="pos-value-top">–</div><div class="pos-value-sub">–</div></div><div class="pos-col ${cl(totalDayAbs)}"><div class="pos-value-top">${fc(totalDayAbs)}</div><div class="pos-value-sub">–</div></div><div class="pos-col ${cl(totalDiffAbs)}"><div class="pos-value-top">${fc(totalDiffAbs)}</div><div class="pos-value-sub">${fp(totalDiffPct)}</div></div><div class="pos-col neutral"><div class="pos-share-top">100,00%</div><div class="pos-share-sub">100,00%</div></div></div>`;
+  wrap.innerHTML = header + cards + `<div class="positions-summary-card"><div class="pos-grid"><div class="pos-col pos-rank"><div class="pos-rank-badge"><strong>Σ</strong></div></div><div class="pos-col"><div class="positions-summary-label">Summe</div><div class="positions-summary-sub">Verkaufte Positionen laufendes Jahr</div></div><div class="pos-col neutral"><div class="pos-value-top">${compactCurrency(totalCurrent)}</div><div class="pos-value-sub">${compactCurrency(totalRef)}</div></div><div class="pos-col ${cl(totalDiffAbs)}"><div class="pos-value-top">${fc(totalDiffAbs)}</div><div class="pos-value-sub">${fp(totalDiffPct)}</div></div><div class="pos-col sold-summary-empty"></div><div class="pos-col sold-summary-empty"></div><div class="pos-col sold-summary-empty"></div><div class="pos-col sold-summary-empty"></div></div>`;
 }
+
 function group(rows,key,topN=8){
   const total = rows.reduce((s,r)=>s+r.currentValue,0);
   const map = new Map();
