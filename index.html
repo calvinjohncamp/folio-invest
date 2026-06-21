@@ -2763,6 +2763,43 @@ function neoChartSvg(series){
     +'<polyline fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="'+pts+'"/>'
     +'<circle cx="'+lx+'" cy="'+ly+'" r="3.5" fill="'+col+'"/>'+xlab+'</svg>';
 }
+// Zeitgewichtetes Durchschnittskapital des laufenden Jahres (Bezugsbasis für die YTD-%).
+// Rekonstruiert das eingesetzte Kapital (Einstand) tagesgenau aus den Transaktionen:
+// Startdepot ab 1.1., jeder Kauf erhöht, jeder Verkauf senkt um den jeweiligen Einstand.
+// Läuft automatisch in jedem Jahr über dessen 12 Monate (1.1. bis heute bzw. bis 31.12.).
+function avgDeployedCapital(){
+  const year = getCurrentYear();
+  const dayMs = 86400000;
+  const startOfYear = new Date(year, 0, 1);
+  const now = new Date();
+  const endDate = now.getFullYear() > year ? new Date(year, 11, 31) : now;
+  const totalDays = Math.max(1, (endDate - startOfYear) / dayMs);
+  const parse = s => { const p = String(s||'').split('-').map(Number); return (p[0]&&p[1]&&p[2]) ? new Date(p[0], p[1]-1, p[2]) : startOfYear; };
+  let cap = 0;
+  const events = [];
+  const soldPool = (appState.sold||[]).map(s=>({wkn:s.wkn, shares:Number(s.shares||0), sellDate:s.sellDate, basis:Number(s.refPrice||0)*Number(s.shares||0), used:false}));
+  (appState.transactions||[]).forEach(tx=>{
+    const amt = Number(tx.amount != null ? tx.amount : Number(tx.shares||0)*Number(tx.price||0)) || 0;
+    if(tx.type==='START'){ cap += amt; return; }
+    if(tx.type==='KAUF'){ events.push({t:parse(tx.date), d:+amt}); return; }
+    if(tx.type==='VERKAUF'){
+      const m = soldPool.find(s=>!s.used && s.wkn===tx.wkn && Math.abs(s.shares-Number(tx.shares||0))<1e-6 && s.sellDate===tx.date)
+             || soldPool.find(s=>!s.used && s.wkn===tx.wkn);
+      const basis = m ? m.basis : amt;
+      if(m) m.used = true;
+      events.push({t:parse(tx.date), d:-basis});
+    }
+  });
+  events.sort((a,b)=>a.t-b.t);
+  let prev = startOfYear, area = 0;
+  events.forEach(ev=>{
+    const t = ev.t < startOfYear ? startOfYear : (ev.t > endDate ? endDate : ev.t);
+    area += cap * Math.max(0, (t - prev)/dayMs);
+    prev = t; cap += ev.d;
+  });
+  area += cap * Math.max(0, (endDate - prev)/dayMs);
+  return area / totalDays;
+}
 function renderKpis(activeRows, soldRows){
   const neoTop=document.getElementById('neoTop'); if(!neoTop) return;
   const total=activeRows.reduce((s,r)=>s+r.currentValue,0);
@@ -2770,7 +2807,8 @@ function renderKpis(activeRows, soldRows){
   const soldTotal=soldRows.reduce((s,r)=>s+r.currentValue,0);
   const soldRef=soldRows.reduce((s,r)=>s+r.refValue,0);
   const diff=(total-ref)+(soldTotal-soldRef);
-  const diffPct=(ref+soldRef)?diff/(ref+soldRef):0;
+  const avgCap=avgDeployedCapital();
+  const diffPct=avgCap>0?diff/avgCap:((ref+soldRef)?diff/(ref+soldRef):0);
   const dayAbs=activeRows.reduce((s,r)=>s+r.dayAbs,0)+soldRows.reduce((s,r)=>s+r.dayAbs,0);
   const prevTotal=activeRows.reduce((s,r)=>s+r.prevValue,0);
   const dayPct=prevTotal?dayAbs/prevTotal:0;
