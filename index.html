@@ -60,17 +60,19 @@ body.theme-original.page-pflege .pflege-modal{background:#fff}
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 .content { max-width: 1400px; margin: 0 auto; padding: 20px 24px 40px; }
 .sec-t { font-size: 9px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--text-dim); padding-bottom: 10px; border-bottom: 1px solid var(--line-2); margin-bottom: 16px; }
-.sec-t.mode-row { display:grid; grid-template-columns:minmax(280px,1fr) auto minmax(280px,1fr); align-items:center; gap:12px; }
+.sec-t.mode-row { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; }
 .sec-n { color: var(--orange); }
 .mode-theme{display:flex;align-items:center;justify-content:center;gap:8px}
+.mode-center{display:flex;align-items:center;justify-content:space-evenly;flex-wrap:wrap;gap:14px;width:100%}
 .mode-tools{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:8px}
 .update-stamp{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap;margin-right:4px}
 .update-stamp strong{color:var(--text-soft);font-weight:800}
 .mode-sep{width:56px}
 .push-right{margin-left:0}
-@media (max-width: 980px){
+@media (max-width: 640px){
   .sec-t.mode-row{grid-template-columns:1fr;align-items:flex-start}
   .mode-theme{justify-content:flex-start}
+  .mode-center{justify-content:flex-start}
   .mode-tools{justify-content:flex-start}
   .push-right{margin-left:0}
 }
@@ -483,13 +485,15 @@ function resetPin(){
 <div class="kpi-grid" id="kpiGrid"></div>
 <div class="sec-t mode-row" id="positionsSection">
 <span id="positionsSectionLabel"><span class="sec-n">2 ·</span> Positionen — Gesamtdepot</span>
+<div class="mode-center">
 <div class="mode-theme">
 <button class="mode-toggle" id="themeOriginalBtn" onclick="setTheme('original')" type="button">Original</button>
 <button class="mode-toggle" id="themeDarkBtn" onclick="setTheme('dark')" type="button">Dark</button>
 </div>
-<div class="mode-theme" style="margin-left:14px">
+<div class="mode-theme">
 <button class="mode-toggle active" id="perfTodayBtn" onclick="setPerfMode('today')" type="button">Heute</button>
 <button class="mode-toggle" id="perfYtdBtn" onclick="setPerfMode('ytd')" type="button">YTD</button>
+</div>
 </div>
 <div class="mode-tools">
 <span class="update-stamp" id="marketStampTop">Stand: –</span>
@@ -2811,18 +2815,21 @@ function renderPositions(rows, type){
     const dp=isT?r.dayPct:r.diffPct, da=isT?r.dayAbs:r.diffAbs;
     return '<div class="neo-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+(r.isLive?'':' · kein Live-Kurs')+'</div></div>'+anteil+twoLine(f(r.currentPrice,2)+' €',f(r.refPrice,2)+' €')+twoLine(f(r.currentValue,0)+' €',f(r.refValue,0)+' €')+chgCell(dp,da)+'</div>';
   }).join('');
-  wrap.innerHTML='<div class="neo-list">'+head+body+'</div>';
+  const totChg=sorted.reduce((s,r)=>s+(isT?r.dayAbs:r.diffAbs),0);
+  const footLabel='Veränderung aktuelle Positionen '+(isT?'heute':'YTD');
+  const foot='<div class="neo-row" style="'+gt+';font-weight:700"><div class="neo-name">'+footLabel+'</div><div></div><div></div><div></div><div style="text-align:right;color:'+(totChg>=0?'var(--success)':'var(--orange)')+'">'+fc(totChg)+'</div></div>';
+  wrap.innerHTML='<div class="neo-list">'+head+body+foot+'</div>';
 }
 function renderSold(rows){
   const wrap=document.getElementById('soldWrap'); if(!wrap) return;
   if(!rows.length){ wrap.innerHTML='<div class="neo-card" style="text-align:center;color:var(--text-muted)">Noch keine Verkäufe im laufenden Jahr.</div>'; return; }
   const sorted=[...rows].sort((a,b)=>String(b.sellDate||'').localeCompare(String(a.sellDate||'')));
   const gt='grid-template-columns:2.2fr 1fr 1.2fr 1.05fr';
-  const head='<div class="neo-row-h" style="display:grid;'+gt+';gap:10px"><span>Verkauft</span><span style="text-align:right">Kurs aktuell</span><span style="text-align:right">Kauf / Verkauf</span><span style="text-align:right">realisiert</span></div>';
+  const head='<div class="neo-row-h" style="display:grid;'+gt+';gap:10px"><span>Verkauft</span><span style="text-align:right">Kurs aktuell</span><span style="text-align:right">Verkauf / Kauf</span><span style="text-align:right">realisiert</span></div>';
   const body=sorted.map(r=>{
     const col=r.diffAbs>=0?'var(--success)':'var(--orange)';
     const akt='<div style="text-align:right;line-height:1.3"><div style="font-size:14px;font-weight:600;color:var(--text)">'+f(r.marketPrice,2)+' €</div><div style="font-size:11px;color:var(--text-muted)">aktuell</div></div>';
-    const kv='<div style="text-align:right;line-height:1.3"><div style="font-size:13px;color:var(--text)">'+f(r.refPrice,2)+' €</div><div style="font-size:13px;color:var(--text-muted)">'+f(r.sellPrice,2)+' €</div></div>';
+    const kv='<div style="text-align:right;line-height:1.3"><div style="font-size:13px;color:var(--text)">'+f(r.sellPrice,2)+' €</div><div style="font-size:13px;color:var(--text-muted)">'+f(r.refPrice,2)+' €</div></div>';
     const real='<div style="text-align:right;line-height:1.3"><div style="font-size:14px;font-weight:700;color:'+col+'">'+fp(r.diffPct)+'</div><div style="font-size:11px;font-weight:600;color:'+col+'">'+fc(r.diffAbs)+'</div></div>';
     const meta=f(r.shares,0)+' Stück · '+escapeHtml(r.wkn||'')+' · '+formatShortDate(r.sellDate);
     return '<div class="neo-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+'</div></div>'+akt+kv+real+'</div>';
