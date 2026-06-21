@@ -691,6 +691,7 @@ const CF_WORKER = 'https://wax-kurse.calvinjohncamp.workers.dev';
 const CF_HISTORY_WORKER = 'https://jk-invest.calvinjohncamp.workers.dev';
 const CF_SEARCH_WORKER = 'https://lively-bread-ee05jk-invest-search.calvinjohncamp.workers.dev';
 const STORAGE_KEY = 'folio-invest-state-v3';
+const STORAGE_TS_KEY = 'folio-invest-state-v3-updated';
 const DEFAULT_META = { category:'Nicht zugeordnet', country:'Nicht zugeordnet', exchange:'–' };
 const THEME_STORAGE_KEY = 'folio-invest-theme';
 let currentTheme = localStorage.getItem(THEME_STORAGE_KEY) === 'original' ? 'original' : 'dark';
@@ -917,7 +918,8 @@ function loadLocalState(){
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return null;
     const state = normalizeLoadedState(JSON.parse(raw));
-    return { state, source:'local' };
+    const updatedAt = localStorage.getItem(STORAGE_TS_KEY) || null;
+    return { state, updatedAt, source:'local' };
   } catch(e) {
     console.warn('Lokaler State konnte nicht geladen werden', e);
     return null;
@@ -945,7 +947,7 @@ async function loadCloudState(){
   const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
   return { state: normalizeLoadedState(parsed), updatedAt: rows[0].updated_at || null, source:'cloud' };
 }
-async function saveCloudState(){
+async function saveCloudState(ts){
   if(!appState?.meta?.year) return false;
   let stateSnapshot;
   try {
@@ -966,7 +968,7 @@ async function saveCloudState(){
     app: SUPABASE_APP,
     year: Number(getCurrentYear()),
     state_json: stateJsonStr,
-    updated_at: new Date().toISOString()
+    updated_at: ts || new Date().toISOString()
   };
   const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`;
   const headers = {
@@ -1006,6 +1008,9 @@ async function saveCloudState(){
     const txt = await r.text();
     throw new Error(`Supabase ${exists?'PATCH':'INSERT'} ${r.status}: ${txt}`);
   }
+  // Lokalen Zeitstempel an den erfolgreich gespeicherten Cloud-Stand angleichen,
+  // damit beim nächsten Laden local und cloud denselben Stand-Zeitpunkt tragen.
+  try { localStorage.setItem(STORAGE_TS_KEY, row.updated_at); } catch(e){}
   return true;
 }
 function applyCustomTickers(){
@@ -1021,30 +1026,32 @@ function applyCustomTickers(){
 async function loadState(){
   initSupabase();
   const local = loadLocalState();
-  let cloud = null;
+  let cloud = null, cloudError = false;
   try {
     cloud = await loadCloudState();
   } catch(e) {
+    cloudError = true;
     console.warn('Cloud-State konnte nicht geladen werden', e);
   }
 
   if(cloud?.state && local?.state){
-    const cloudScore = stateScore(cloud.state);
-    const localScore = stateScore(local.state);
-    const chosen = localScore > cloudScore ? local.state : cloud.state;
-    appState = chosen;
+    // Neuere Version gewinnt anhand des Zeitstempels. Bei Gleichstand oder
+    // fehlendem lokalen Stempel gewinnt die Cloud (gemeinsame Wahrheitsquelle).
+    // Ein veralteter lokaler Stand wird NIE automatisch in die Cloud zurückgeschrieben.
+    const localTs = local.updatedAt ? Date.parse(local.updatedAt) : 0;
+    const cloudTs = cloud.updatedAt ? Date.parse(cloud.updatedAt) : 0;
+    const useLocal = localTs > cloudTs;
+    appState = useLocal ? local.state : cloud.state;
     appState.meta.year = getCurrentYear();
     applyCustomTickers();
     const repairedBitcoinGhost = cleanupOrphanBitcoinPosition(appState);
     currentStorageMode = 'Cloud + Gerät';
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
+    localStorage.setItem(STORAGE_TS_KEY, (useLocal ? local.updatedAt : cloud.updatedAt) || new Date().toISOString());
     if(repairedBitcoinGhost){ try { await saveCloudState(); } catch(e){ console.warn('Bitcoin-Geisterposition konnte nicht in Cloud bereinigt werden', e); } }
-    if(chosen === local.state && localScore > cloudScore){
-      try {
-        await saveCloudState();
-      } catch(e) {
-        console.warn('Lokaler State konnte nicht in die Cloud gespiegelt werden', e);
-      }
+    else if(useLocal){
+      // Lokaler Stand ist nachweislich neuer (z. B. Offline-Änderung) → hochspiegeln.
+      try { await saveCloudState(local.updatedAt); } catch(e){ console.warn('Lokaler State konnte nicht in die Cloud gespiegelt werden', e); }
     }
     return;
   }
@@ -1056,6 +1063,7 @@ async function loadState(){
     const repairedBitcoinGhost = cleanupOrphanBitcoinPosition(appState);
     currentStorageMode = 'Cloud + Gerät';
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
+    localStorage.setItem(STORAGE_TS_KEY, cloud.updatedAt || new Date().toISOString());
     if(repairedBitcoinGhost){ try { await saveCloudState(); } catch(e){ console.warn('Bitcoin-Geisterposition konnte nicht in Cloud bereinigt werden', e); } }
     return;
   }
@@ -1065,9 +1073,16 @@ async function loadState(){
     appState.meta.year = getCurrentYear();
     applyCustomTickers();
     cleanupOrphanBitcoinPosition(appState);
+    if(cloudError){
+      // Cloud nur vorübergehend nicht erreichbar – lokalen Stand NICHT hochspiegeln,
+      // sonst könnte ein veralteter Stand einen neueren Cloud-Stand überschreiben.
+      currentStorageMode = 'Nur Gerät (Cloud nicht erreichbar)';
+      return;
+    }
+    // Cloud ist nachweislich leer → lokalen Stand als Erstbefüllung hochladen.
     currentStorageMode = 'Gerät';
     try {
-      const saved = await saveCloudState();
+      const saved = await saveCloudState(local.updatedAt);
       if(saved) currentStorageMode = 'Cloud + Gerät';
     } catch(e) {
       console.warn('Lokaler State konnte nicht in die Cloud gespiegelt werden', e);
@@ -1078,13 +1093,16 @@ async function loadState(){
   appState = defaultState();
   currentStorageMode = 'Gerät';
   localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
+  localStorage.setItem(STORAGE_TS_KEY, new Date().toISOString());
   console.warn('Weder Cloud- noch lokaler State gefunden – Default-State nur lokal gesetzt, kein automatisches Cloud-Überschreiben.');
 }
 async function saveState(){
+  const now = new Date().toISOString();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
+  localStorage.setItem(STORAGE_TS_KEY, now);
   currentStorageMode = 'Gerät';
   try {
-    const saved = await saveCloudState();
+    const saved = await saveCloudState(now);
     if(saved) currentStorageMode = 'Cloud + Gerät';
   } catch(e) {
     console.error('Cloud-Speichern fehlgeschlagen', e);
