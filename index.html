@@ -486,14 +486,9 @@ function resetPin(){
 <div class="sec-t mode-row" id="positionsSection">
 <span id="positionsSectionLabel"><span class="sec-n">2 ·</span> Positionen — Gesamtdepot</span>
 <div class="mode-center">
-<div class="mode-theme">
-<button class="mode-toggle" id="themeOriginalBtn" onclick="setTheme('original')" type="button">Original</button>
-<button class="mode-toggle" id="themeDarkBtn" onclick="setTheme('dark')" type="button">Dark</button>
-</div>
-<div class="mode-theme">
-<button class="mode-toggle active" id="perfTodayBtn" onclick="setPerfMode('today')" type="button">Heute</button>
-<button class="mode-toggle" id="perfYtdBtn" onclick="setPerfMode('ytd')" type="button">YTD</button>
-</div>
+<button class="mode-toggle active" id="themeToggleBtn" onclick="toggleTheme()" type="button">Dark</button>
+<button class="mode-toggle active" id="perfToggleBtn" onclick="togglePerf()" type="button">Heute</button>
+<button class="mode-toggle active" id="analysisToggleBtn" onclick="toggleAnalysis()" type="button">Potential</button>
 </div>
 <div class="mode-tools">
 <span class="update-stamp" id="marketStampTop">Stand: –</span>
@@ -1299,18 +1294,20 @@ function getWatchAddedDate(w){
 }
 function calcHistoricalMetrics(prices, currentPrice, shares) {
   if (!Array.isArray(prices) || !prices.length || !Number.isFinite(currentPrice) || !currentPrice) {
-    return { ytdHigh:null, high12m:null, ytdBelowPct:null, below12mPct:null, ytdPotential:null, potential12m:null };
+    return { ytdHigh:null, high12m:null, low12m:null, ytdBelowPct:null, below12mPct:null, ytdPotential:null, potential12m:null };
   }
   const yearStart = new Date(new Date().getFullYear(), 0, 1);
   const ytdPrices = prices.filter(p => new Date(p.date) >= yearStart);
   const ytdHigh = ytdPrices.length ? Math.max(...ytdPrices.map(p => p.close)) : null;
   const high12m = Math.max(...prices.map(p => p.close));
+  const low12m = Math.min(...prices.map(p => p.close));
   const belowPct = high => (Number.isFinite(high) && high > 0) ? ((currentPrice / high) - 1) * 100 : null;
   const potential = high => (Number.isFinite(high) && Number.isFinite(shares)) ? (high - currentPrice) * shares : null;
   const upsidePct = high => (Number.isFinite(high) && high > 0 && currentPrice > 0) ? ((high / currentPrice) - 1) * 100 : null;
   return {
     ytdHigh,
     high12m,
+    low12m,
     ytdBelowPct: belowPct(ytdHigh),
     below12mPct: belowPct(high12m),
     ytdPotential: potential(ytdHigh),
@@ -2491,7 +2488,7 @@ function marketStatusText(){
   const fxLoaded=Object.keys(fxRates).length;
   const now=formatStamp(lastMarketUpdate);
   const miss=missingKurse();
-  const missTxt=miss.length?' ⚠ fehlt: '+miss.map(w=>securityNameByWkn(w)+' ('+w+')').join(', '):'';
+  const missTxt=miss.length?' › fehlt: '+miss.map(w=>securityNameByWkn(w)+' ('+w+')').join(', '):'';
   return `Online · ${loaded}/${total} Kurse${missTxt} · ${historyLoaded}/${total} Historien · ${fxLoaded} Währungen · Stand ${now}`;
 }
 // Gezielter Nachlade-Versuch nur für die fehlenden Titel (ohne die bereits geladenen zu verwerfen)
@@ -2554,10 +2551,7 @@ async function refreshMarketData() {
 function applyTheme(){
   document.body.classList.toggle('theme-original', currentTheme === 'original');
   document.body.classList.toggle('theme-dark', currentTheme !== 'original');
-  const origBtn = document.getElementById('themeOriginalBtn');
-  const darkBtn = document.getElementById('themeDarkBtn');
-  if(origBtn) origBtn.classList.toggle('active', currentTheme === 'original');
-  if(darkBtn) darkBtn.classList.toggle('active', currentTheme !== 'original');
+  try{ updateModeButtons(); }catch(e){}
 }
 function setTheme(theme){
   currentTheme = theme === 'original' ? 'original' : 'dark';
@@ -2962,6 +2956,25 @@ function renderPositions(rows, type){
     }).join('');
     wrap.innerHTML='<div class="neo-list">'+head+body+'</div>'; return;
   }
+  if(analysisMode){
+    const gt='grid-template-columns:2fr 1fr 1.1fr 1.2fr 1.2fr';
+    const head='<div class="neo-row-h" style="display:grid;'+gt+';gap:10px"><span>Position</span><span style="text-align:right">Kurs akt. / KGV</span><span style="text-align:right">52 Wo. Hoch / Tief</span><span style="text-align:right">Potential 52W-Hoch</span><span style="text-align:right">Risiko 52W-Tief</span></div>';
+    const body=sorted.map(r=>{
+      const cp=Number(r.currentPrice)||0, hi=Number(r.high12m), lo=Number(r.low12m), sh=Number(r.shares)||0;
+      const kgv=(r.kgv!=null && isFinite(Number(r.kgv)))? f(Number(r.kgv),1) : '–';
+      const hasHi=isFinite(hi)&&hi>0, hasLo=isFinite(lo)&&lo>0;
+      const upR=(cp>0&&hasHi)?(hi/cp-1):null, upE=hasHi?(hi-cp)*sh:null;
+      const dnR=(cp>0&&hasLo)?(lo/cp-1):null, dnE=hasLo?(lo-cp)*sh:null;
+      const meta=escapeHtml(r.wkn||'')+' · '+f(sh,0)+' Stk.';
+      return '<div class="neo-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+(r.isLive?'':' · kein Live-Kurs')+'</div></div>'
+        +twoLine(f(cp,2)+' €', kgv)
+        +twoLine(hasHi?f(hi,2)+' €':'–', hasLo?f(lo,2)+' €':'–')
+        +(upR!=null?chgCell(upR,upE):oneLine('–'))
+        +(dnR!=null?chgCell(dnR,dnE):oneLine('–'))
+        +'</div>';
+    }).join('');
+    wrap.innerHTML='<div class="neo-list">'+head+body+'</div>'; return;
+  }
   const maxShare=Math.max(...sorted.map(r=>r.share||0),0.0001);
   const gt='grid-template-columns:2.1fr .7fr 1fr 1.25fr 1.05fr';
   const chgHead=isT?'Veränderung heute':'Veränderung YTD';
@@ -2998,8 +3011,21 @@ function renderSold(rows){
 }
 
 let perfMode='today';
-function updatePerfModeButtons(){ const t=document.getElementById('perfTodayBtn'),y=document.getElementById('perfYtdBtn'); if(t)t.classList.toggle('active',perfMode==='today'); if(y)y.classList.toggle('active',perfMode==='ytd'); }
-function setPerfMode(m){ perfMode=(m==='ytd')?'ytd':'today'; updatePerfModeButtons(); render(); }
+let analysisMode=false;
+// Drei Einzel-Toggles: zeigen jeweils den aktuellen Zustand (orange = Dark/Heute/Potential, schwarz = Original/YTD/aktuell)
+function updateModeButtons(){
+  const tb=document.getElementById('themeToggleBtn');
+  if(tb){ tb.textContent=currentTheme==='dark'?'Dark':'Original'; tb.classList.toggle('active', currentTheme==='dark'); }
+  const pb=document.getElementById('perfToggleBtn');
+  if(pb){ pb.textContent=perfMode==='today'?'Heute':'YTD'; pb.classList.toggle('active', perfMode==='today'); }
+  const ab=document.getElementById('analysisToggleBtn');
+  if(ab){ ab.textContent=analysisMode?'aktuell':'Potential'; ab.classList.toggle('active', !analysisMode); }
+}
+function updatePerfModeButtons(){ updateModeButtons(); }
+function toggleTheme(){ setTheme(currentTheme==='dark'?'original':'dark'); updateModeButtons(); }
+function togglePerf(){ perfMode=(perfMode==='today')?'ytd':'today'; updateModeButtons(); render(); }
+function toggleAnalysis(){ analysisMode=!analysisMode; updateModeButtons(); render(); }
+function setPerfMode(m){ perfMode=(m==='ytd')?'ytd':'today'; updateModeButtons(); render(); }
 
 bootstrapApp();
 </script>
