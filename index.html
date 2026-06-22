@@ -2476,6 +2476,45 @@ async function applyYearRolloverIfNeeded(){
   await saveState();
   return true;
 }
+// Welche relevanten Titel haben aktuell KEINEN Live-Kurs?
+function missingKurse(){ return allRelevantWkns().filter(w=>liveKurse[w]==null); }
+// Lesbarer Name zu einer WKN (aus Bestand/Watchlist/Verkäufen bzw. Stammdaten)
+function securityNameByWkn(wkn){
+  const p=(appState.active||[]).find(x=>x.wkn===wkn)||(appState.watchlist||[]).find(x=>x.wkn===wkn)||(appState.sold||[]).find(x=>x.wkn===wkn);
+  return cleanSecurityName(wkn, p?.name) || SECURITY_MASTER[wkn]?.name || wkn;
+}
+// Statuszeile inkl. namentlicher Nennung fehlender Kurse
+function marketStatusText(){
+  const total=allRelevantWkns().length;
+  const loaded=Object.keys(liveKurse).length;
+  const historyLoaded=Object.keys(historicalData).length;
+  const fxLoaded=Object.keys(fxRates).length;
+  const now=formatStamp(lastMarketUpdate);
+  const miss=missingKurse();
+  const missTxt=miss.length?' ⚠ fehlt: '+miss.map(w=>securityNameByWkn(w)+' ('+w+')').join(', '):'';
+  return `Online · ${loaded}/${total} Kurse${missTxt} · ${historyLoaded}/${total} Historien · ${fxLoaded} Währungen · Stand ${now}`;
+}
+// Gezielter Nachlade-Versuch nur für die fehlenden Titel (ohne die bereits geladenen zu verwerfen)
+async function retryMissingKurse(){
+  const miss=missingKurse();
+  if(!miss.length) return;
+  await Promise.all(miss.map(async wkn=>{
+    const info=TICKER_MAP[wkn]; if(!info) return;
+    const quote=await fetchTickerWithFallback(info.tickers);
+    if(quote&&quote.price){
+      const fx=inferFxFromTicker(info.tickers?.[0], quote.currency||info.fx);
+      info.fx=fx;
+      if(appState?.customTickers?.[wkn]) appState.customTickers[wkn].fx=fx;
+      liveKurse[wkn]=toEUR(quote.price, fx);
+      prevKurse[wkn]=toEUR(quote.prev||quote.price, fx);
+      liveKgv[wkn]=quote.trailingPE!=null&&isFinite(Number(quote.trailingPE))?Number(quote.trailingPE):null;
+    }
+    if(!historicalData[wkn]){
+      const history=await fetchHistoryWithFallback(info.tickers);
+      if(history&&history.prices?.length) historicalData[wkn]=history.prices.map(row=>({...row, close:toEUR(row.close, info.fx)}));
+    }
+  }));
+}
 async function refreshMarketData() {
   if (marketRefreshRunning) return;
   setRefreshButtonsLoading(true);
@@ -2494,14 +2533,15 @@ async function refreshMarketData() {
       Object.keys(historicalData).forEach(k=>delete historicalData[k]);
       await loadKurse();
     }
-    const loaded = Object.keys(liveKurse).length;
-    const total = allRelevantWkns().length;
-    const historyLoaded = Object.keys(historicalData).length;
-    const fxLoaded = Object.keys(fxRates).length;
+    // Einmaliger gezielter Nachlade-Versuch für fehlende Kurse (fängt transiente Aussetzer ab)
+    if(missingKurse().length){
+      setStatus('Lade fehlende Kurse nach…');
+      await new Promise(r=>setTimeout(r,1500));
+      await retryMissingKurse();
+    }
     lastMarketUpdate = new Date();
     currentSort = historicalMode ? { key: 'ytdPotential', dir: 'desc' } : { key: 'currentValue', dir: 'desc' };
-    const now = formatStamp(lastMarketUpdate);
-    setStatus(`Online · ${loaded}/${total} Kurse · ${historyLoaded}/${total} Historien · ${fxLoaded} Währungen · Stand ${now}`);
+    setStatus(marketStatusText());
     render();
   } catch (e) {
     console.error('Refresh fehlgeschlagen', e);
