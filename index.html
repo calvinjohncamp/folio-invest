@@ -699,9 +699,9 @@ body:not(.theme-original) #analysisToggleBtn.mode-toggle:hover{
   border-color:#3A5560;
   color:#E4EEF0;
 }
-</style>
 
-<style id="folioButtonHoverFix">
+/* ===================== Button-Hover-Fix (ehem. v6.7) ===================== */
+
 body.theme-dark #themeToggleBtn.mode-toggle:hover,
 body.theme-dark #perfToggleBtn.mode-toggle:hover,
 body.theme-dark #analysisToggleBtn.mode-toggle:hover,
@@ -713,20 +713,17 @@ body:not(.theme-original) #analysisToggleBtn.mode-toggle:hover,
   border-color:#FF7A00 !important;
   color:#16232A !important;
 }
-</style>
 
+/* ===================== Logo-/Header-Größe ===================== */
 
-<style id="folioLogoSizeFix">
 .hd{height:78px !important}
 .hd-inner{height:78px !important}
 .hd-logo img{height:62px !important}
 .nav{top:78px !important}
 .statusbar{top:115px !important}
-</style>
 
+/* ===================== Light-Mode (Hybrid, ehem. v6.12) ===================== */
 
-
-<style id="folioLightModeV612">
 /* Folio.invest v6.12 – Hybrid Light Mode: dunkler Marken-Header, heller Arbeitsbereich */
 body.theme-original{
   --brand-green:#075056;
@@ -1005,21 +1002,18 @@ body.theme-original .rollover-modal ul{color:#43545C !important}
   body.theme-original .pos-col:nth-child(7),
   body.theme-original .pos-col:nth-child(8){border-top-color:#D9E1E3 !important}
 }
-</style>
 
+/* ===================== Feinschliff Tabellen/Karten (ehem. v6.14) ===================== */
 
-<style id="v614Tweaks">
 thead th{font-size:10px!important;font-weight:800!important;letter-spacing:.12em!important}
 .position-card .pos-col{padding-top:16px!important;padding-bottom:15px!important}
 .pos-col.pos .pos-value-top,.pos-col.neg .pos-value-top{font-size:22px!important;font-weight:800!important}
 .pos-col.pos .pos-value-sub,.pos-col.neg .pos-value-sub{font-size:12px!important;opacity:.9}
 .refresh-btn{font-size:18px!important}
 body.theme-original thead th{background:#E7EEF1!important}
-</style>
 
+/* ===================== Visuelles Upgrade (ehem. v6.16) ===================== */
 
-
-<style id="v615VisualUpgrade">
 /* Folio.invest v6.16 – alte Kopfzeile wiederhergestellt, Light-Mode-Look aus v6.15 bleibt */
 /* Hauptbereich: mehr Gewicht für Depotwert, mehr Raum für Chart */
 .neo-hero{grid-template-columns:.76fr 1.24fr!important;gap:16px!important}
@@ -1102,6 +1096,40 @@ thead th{font-size:11px!important;font-weight:800!important;letter-spacing:.11em
 
 @media(max-width:720px){
   .neo-row{padding:15px 16px!important}
+}
+
+/* ===================== Theme-Umschalter dezent (Light/Dark) ===================== */
+
+/* Theme-Umschalter (Light/Dark) bewusst dezent: nur Nebenfunktion, nicht so
+   prominent wie die Haupt-Toggles Heute/Potential. Kleiner, nicht fett,
+   schlankerer Rahmen statt Pille. */
+body #themeToggleBtn.mode-toggle,
+body.theme-dark #themeToggleBtn.mode-toggle,
+body.theme-dark #themeToggleBtn.mode-toggle.active,
+body:not(.theme-original) #themeToggleBtn.mode-toggle,
+body:not(.theme-original) #themeToggleBtn.mode-toggle.active,
+body.theme-original #themeToggleBtn.mode-toggle,
+body.theme-original #themeToggleBtn.mode-toggle.active{
+  font-size:10px;
+  font-weight:500;
+  letter-spacing:.03em;
+  text-transform:none;
+  padding:3px 9px;
+  border-radius:8px;
+  background:transparent;
+  border:1px solid var(--line-2);
+  color:var(--text-muted);
+  box-shadow:none;
+  opacity:.85;
+}
+body #themeToggleBtn.mode-toggle:hover,
+body.theme-dark #themeToggleBtn.mode-toggle:hover,
+body:not(.theme-original) #themeToggleBtn.mode-toggle:hover,
+body.theme-original #themeToggleBtn.mode-toggle:hover{
+  background:var(--card-2)!important;
+  border-color:var(--line-2)!important;
+  color:var(--text)!important;
+  opacity:1;
 }
 </style>
 
@@ -1220,7 +1248,7 @@ function resetPin(){
 <div class="mode-center">
 <button class="mode-toggle active" id="perfToggleBtn" onclick="togglePerf()" type="button">YTD</button>
 <button class="mode-toggle active" id="analysisToggleBtn" onclick="toggleAnalysis()" type="button">Potential</button>
-<button class="mode-toggle active" id="themeToggleBtn" onclick="toggleTheme()" type="button">Original</button>
+<button class="mode-toggle mode-toggle-mini" id="themeToggleBtn" onclick="toggleTheme()" type="button">Light</button>
 </div>
 <div class="mode-tools">
 <span class="update-stamp" id="marketStampTop">Stand: –</span>
@@ -1448,23 +1476,23 @@ const TICKER_MAP = {
   'EWG2LD': { tickers:['EWG2.SG'], fx:'EUR' },
   'A0F5UH': { tickers:['A0F5UH.DE','ISPA.DE'], fx:'EUR' },
   'A1T8FV': { tickers:['VGWD.DE'], fx:'EUR' },
-  '852549': { tickers:['XOM'], fx:'USD' },
-  '853260': { tickers:['JNJ'], fx:'USD' },
-  '850663': { tickers:['KO'], fx:'USD' },
+  '852549': { tickers:['XONA.DE'], fx:'EUR' },
+  '853260': { tickers:['JNJ.DE'], fx:'EUR' },
+  '850663': { tickers:['CCC3.DE'], fx:'EUR' },
   '263530': { tickers:['EXSA.DE','263530.DE'], fx:'EUR' },
   'A0YEDJ': { tickers:['SXRT.DE'], fx:'EUR' },
-  'A14Y6F': { tickers:['GOOGL'], fx:'USD' },
+  'A14Y6F': { tickers:['ABEA.DE'], fx:'EUR' },
   'A2JAHJ': { tickers:['VDIV.DE'], fx:'EUR' },
-  '856958': { tickers:['MCD'], fx:'USD' },
-  '852009': { tickers:['PFE'], fx:'USD' },
-  '906866': { tickers:['AMZN'], fx:'USD' },
+  '856958': { tickers:['MDO.DE'], fx:'EUR' },
+  '852009': { tickers:['PFE.DE'], fx:'EUR' },
+  '906866': { tickers:['AMZ.DE'], fx:'EUR' },
   'A0YEDG': { tickers:['SXR8.DE'], fx:'EUR' },
-  '852062': { tickers:['PG'], fx:'USD' },
-  '865985': { tickers:['AAPL'], fx:'USD' },
-  '918422': { tickers:['NVDA'], fx:'USD' },
-  '870747': { tickers:['MSFT'], fx:'USD' },
-  'A2JG9Z': { tickers:['AVGO'], fx:'USD' },
-  'A0YJQ2': { tickers:['BRK-B'], fx:'USD' },
+  '852062': { tickers:['PRG.DE'], fx:'EUR' },
+  '865985': { tickers:['APC.DE'], fx:'EUR' },
+  '918422': { tickers:['NVD.DE'], fx:'EUR' },
+  '870747': { tickers:['MSF.DE'], fx:'EUR' },
+  'A2JG9Z': { tickers:['1YD.DE'], fx:'EUR' },
+  'A0YJQ2': { tickers:['BRYN.DE'], fx:'EUR' },
   'A4A59K': { tickers:['IB1T.DE'], fx:'EUR' }
 };
 const SECURITY_MASTER = Object.fromEntries(BASE_PORTFOLIO.map(p => [p.wkn, {name:p.name, meta:p.meta}]));
@@ -3761,7 +3789,7 @@ let analysisMode=false;
 function updateModeButtons(){
   const tb=document.getElementById('themeToggleBtn');
   // Button zeigt immer das Ziel der Umschaltung, nicht den aktuellen Zustand
-  if(tb){ tb.textContent=currentTheme==='dark'?'Original':'Dark'; tb.classList.toggle('active', currentTheme==='dark'); }
+  if(tb){ tb.textContent=currentTheme==='dark'?'Light':'Dark'; tb.classList.toggle('active', currentTheme==='dark'); }
   const pb=document.getElementById('perfToggleBtn');
   // Heute ist voreingestellt, deshalb bietet der Button YTD als Ziel an
   if(pb){ pb.textContent=perfMode==='today'?'YTD':'Heute'; pb.classList.toggle('active', perfMode==='today'); }
