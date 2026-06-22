@@ -63,7 +63,8 @@ body.theme-original.page-pflege .pflege-modal{background:#fff}
 .sec-t.mode-row { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; }
 .sec-n { color: var(--orange); }
 .mode-theme{display:flex;align-items:center;justify-content:center;gap:8px}
-.mode-center{display:flex;align-items:center;justify-content:space-evenly;flex-wrap:wrap;gap:14px;width:100%}
+.mode-center{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:7px;width:100%}
+.mode-center #themeToggleBtn{margin-left:auto;margin-right:16px}
 .mode-tools{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:8px}
 .update-stamp{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap;margin-right:4px}
 .update-stamp strong{color:var(--text-soft);font-weight:800}
@@ -1251,7 +1252,6 @@ function resetPin(){
 <button class="mode-toggle mode-toggle-mini" id="themeToggleBtn" onclick="toggleTheme()" type="button">Light</button>
 </div>
 <div class="mode-tools">
-<span class="update-stamp" id="marketStampTop">Stand: –</span>
 <button class="mode-toggle" id="detailsBtn" onclick="toggleDetails()" type="button">Details</button>
 <button class="mode-toggle" id="historischBtn" onclick="toggleHistoricalMode()" type="button">Historisch</button>
 <button class="icon-btn refresh-btn push-right" id="refreshBtn" onclick="refreshMarketData()" title="Aktualisieren" type="button">↻</button>
@@ -3867,6 +3867,19 @@ document.addEventListener('DOMContentLoaded', function(){
   background:#FF7A00 !important;
   border-color:#FF7A00 !important;
   color:#16232A !important;
+}
+
+/* YTD-Button dauerhaft orange hervorgehoben (überschreibt v6.7-Dunkel-Override) */
+body.theme-dark #perfToggleBtn.mode-toggle,
+body:not(.theme-original) #perfToggleBtn.mode-toggle,
+body.theme-original #perfToggleBtn.mode-toggle,
+body.theme-dark #perfToggleBtn.mode-toggle.active,
+body:not(.theme-original) #perfToggleBtn.mode-toggle.active,
+body.theme-original #perfToggleBtn.mode-toggle.active{
+  background:#FF7A00 !important;
+  border-color:#FF7A00 !important;
+  color:#16232A !important;
+  box-shadow:0 0 0 3px rgba(255,122,0,.13) !important;
 }
 
 </style>
