@@ -852,7 +852,8 @@ function serializeState(){
     watchlist: (appState.watchlist||[]).filter(Boolean),
     transactions: (appState.transactions||[]).filter(Boolean),
     customTickers: appState.customTickers || {},
-    customSecurityMaster: appState.customSecurityMaster || {}
+    customSecurityMaster: appState.customSecurityMaster || {},
+    valueHistory: (appState.valueHistory||[]).filter(Boolean)
   };
   return clone(clean);
 }
@@ -906,7 +907,8 @@ function normalizeLoadedState(parsed){
     watchlist:(parsed?.watchlist||[]).map(normalizeWatch),
     transactions:(parsed?.transactions||[]).map(t=>({...t, shares:Number(t?.shares||0), price:Number(t?.price||0), amount:Number(t?.amount||0)})),
     customTickers: parsed?.customTickers || {},
-    customSecurityMaster: parsed?.customSecurityMaster || {}
+    customSecurityMaster: parsed?.customSecurityMaster || {},
+    valueHistory: Array.isArray(parsed?.valueHistory) ? parsed.valueHistory.filter(Boolean) : []
   });
 }
 function defaultState(){
@@ -2800,6 +2802,60 @@ function avgDeployedCapital(){
   area += cap * Math.max(0, (endDate - prev)/dayMs);
   return area / totalDays;
 }
+// Täglicher Snapshot des echten Stands (Depotwert + YTD-Gewinn) – baut die echte Zukunfts-Kurve auf.
+// Innerhalb eines Tages wird der Punkt nur in-memory aktualisiert (kein Save-Spam); gespeichert wird
+// einmal pro neuem Tag.
+function recordDailySnapshot(value, gain){
+  if(!appState) return;
+  if(!Array.isArray(appState.valueHistory)) appState.valueHistory=[];
+  const today=todayIso();
+  const last=appState.valueHistory[appState.valueHistory.length-1];
+  if(last && last.date===today){ last.value=Math.round(value); last.gain=Math.round(gain); return; }
+  appState.valueHistory.push({date:today, value:Math.round(value), gain:Math.round(gain)});
+  try{ saveState(); }catch(e){}
+}
+// Rückwirkende Rekonstruktion des YTD-Gewinns je Handelstag aus Transaktionen + Kurshistorien:
+// echte Stückzahlen pro Tag + realisierte Gewinne an den Verkaufstagen (Best-effort; verkaufte Titel
+// ohne Kurshistorie fließen nur über ihren realisierten Gewinn ein).
+function reconstructGainSeries(){
+  const year=String(getCurrentYear());
+  const dateSet=new Set();
+  Object.keys(historicalData).forEach(w=>{(historicalData[w]||[]).forEach(p=>{ if(p&&p.date&&String(p.date).slice(0,4)===year) dateSet.add(p.date); });});
+  const dates=[...dateSet].sort();
+  if(dates.length<2) return [];
+  const tracked=new Set(Object.keys(historicalData).filter(w=>(historicalData[w]||[]).length));
+  const hist={}; tracked.forEach(w=>{ hist[w]=[...(historicalData[w]||[])].sort((a,b)=>String(a.date).localeCompare(String(b.date))); });
+  const priceAt=(w,d)=>{ const h=hist[w]; if(!h) return null; let c=null; for(let i=0;i<h.length;i++){ if(h[i].date<=d) c=h[i].close; else break; } return c; };
+  const txByWkn={}; (appState.transactions||[]).forEach(t=>{ if(!t||!tracked.has(t.wkn)) return; (txByWkn[t.wkn]=txByWkn[t.wkn]||[]).push(t); });
+  const sharesAt=(w,d)=>{ let s=0; (txByWkn[w]||[]).forEach(t=>{ if(String(t.date)<=d){ if(t.type==='START'||t.type==='KAUF') s+=Number(t.shares||0); else if(t.type==='VERKAUF') s-=Number(t.shares||0); } }); return s; };
+  const soldPool=(appState.sold||[]).map(s=>({wkn:s.wkn,shares:Number(s.shares||0),sellDate:s.sellDate,basis:Number(s.refPrice||0)*Number(s.shares||0),used:false}));
+  const costEvents=[];
+  (appState.transactions||[]).forEach(t=>{
+    if(!t||!tracked.has(t.wkn)) return;
+    const amt=Number(t.amount!=null?t.amount:Number(t.shares||0)*Number(t.price||0))||0;
+    if(t.type==='START'||t.type==='KAUF'){ costEvents.push({date:String(t.date),delta:+amt}); }
+    else if(t.type==='VERKAUF'){
+      const m=soldPool.find(s=>!s.used&&s.wkn===t.wkn&&Math.abs(s.shares-Number(t.shares||0))<1e-6&&s.sellDate===t.date)||soldPool.find(s=>!s.used&&s.wkn===t.wkn);
+      const basis=m?m.basis:amt; if(m)m.used=true;
+      costEvents.push({date:String(t.date),delta:-basis});
+    }
+  });
+  const deployedAt=d=>{ let c=0; costEvents.forEach(e=>{ if(e.date<=d||e.date.slice(0,4)<year) c+=e.delta; }); return c; };
+  const realizedAt=d=>{ let r=0; (appState.sold||[]).forEach(s=>{ if(s&&String(s.sellDate)<=d) r+=(Number(s.sellPrice||0)-Number(s.refPrice||0))*Number(s.shares||0); }); return r; };
+  return dates.map(d=>{
+    let mv=0; tracked.forEach(w=>{ const pr=priceAt(w,d); const sh=sharesAt(w,d); if(pr!=null&&sh) mv+=pr*sh; });
+    return {date:d, value:(mv-deployedAt(d))+realizedAt(d)};
+  });
+}
+// Chart-Datenreihe: gespeicherte Tages-Snapshots haben Vorrang (echte Werte), Lücken davor füllt die Rekonstruktion.
+function buildGainHistory(){
+  const year=String(getCurrentYear());
+  const byDate={};
+  byDate[year+'-01-01']={date:year+'-01-01', value:0};
+  reconstructGainSeries().forEach(p=>{ byDate[p.date]={date:p.date, value:p.value}; });
+  (appState.valueHistory||[]).forEach(p=>{ if(p&&String(p.date).slice(0,4)===year) byDate[p.date]={date:p.date, value:Math.round(Number(p.gain||0))}; });
+  return Object.values(byDate).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+}
 function renderKpis(activeRows, soldRows){
   const neoTop=document.getElementById('neoTop'); if(!neoTop) return;
   const total=activeRows.reduce((s,r)=>s+r.currentValue,0);
@@ -2813,9 +2869,8 @@ function renderKpis(activeRows, soldRows){
   const prevTotal=activeRows.reduce((s,r)=>s+r.prevValue,0);
   const dayPct=prevTotal?dayAbs/prevTotal:0;
   const year=getCurrentYear();
-  const series=neoYearSeries(activeRows);
-  const refGain=activeRows.filter(r=>(historicalData[r.wkn]||[]).length).reduce((s,r)=>s+r.refValue,0);
-  const gainSeries=series.map(p=>({date:p.date, value:p.value-refGain}));
+  if(lastMarketUpdate) recordDailySnapshot(total, diff);
+  const gainSeries=buildGainHistory();
   const isT=perfMode!=='ytd';
   const perfV=isT?dayPct:diffPct, chgV=isT?dayAbs:diff;
   const perfLabel=isT?'Performance heute':'Performance YTD';
@@ -2844,11 +2899,11 @@ function renderPositions(rows, type){
   if(!rows.length){ wrap.innerHTML='<div class="neo-card" style="text-align:center;color:var(--text-muted)">Keine Positionen.</div>'; return; }
   const isWatch=(type==='watchlist'); const isT=perfMode!=='ytd';
   const sorted=sortRows(rows);
-  const oneLine=(t)=>'<div style="text-align:right;font-size:14px;font-weight:600;color:var(--text)">'+t+'</div>';
-  const twoLine=(t,b)=>'<div style="text-align:right;line-height:1.3"><div style="font-size:14px;font-weight:600;color:var(--text)">'+t+'</div><div style="font-size:11px;color:var(--text-muted)">'+b+'</div></div>';
-  const pctCell=(p)=>{ const c=p>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;font-size:14px;font-weight:700;color:'+c+'">'+fp(p)+'</div>'; };
-  const eurCell=(a)=>{ const c=a>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;font-size:13px;font-weight:600;color:'+c+'">'+fc(a)+'</div>'; };
-  const chgCell=(p,a)=>{ const c=a>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;line-height:1.3"><div style="font-size:14px;font-weight:700;color:'+c+'">'+fp(p)+'</div><div style="font-size:11px;font-weight:600;color:'+c+'">'+fc(a)+'</div></div>'; };
+  const oneLine=(t)=>'<div style="text-align:right;font-size:16px;font-weight:600;color:var(--text)">'+t+'</div>';
+  const twoLine=(t,b)=>'<div style="text-align:right;line-height:1.3"><div style="font-size:16px;font-weight:600;color:var(--text)">'+t+'</div><div style="font-size:12.5px;color:var(--text-muted)">'+b+'</div></div>';
+  const pctCell=(p)=>{ const c=p>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;font-size:16px;font-weight:700;color:'+c+'">'+fp(p)+'</div>'; };
+  const eurCell=(a)=>{ const c=a>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;font-size:14px;font-weight:600;color:'+c+'">'+fc(a)+'</div>'; };
+  const chgCell=(p,a)=>{ const c=a>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;line-height:1.3"><div style="font-size:16px;font-weight:700;color:'+c+'">'+fp(p)+'</div><div style="font-size:12.5px;font-weight:600;color:'+c+'">'+fc(a)+'</div></div>'; };
   if(isWatch){
     const aH=isT?'Kurs gestern':'Kurs 1.1.';
     const gt='grid-template-columns:2fr 1fr 1fr .9fr 1fr';
@@ -2903,7 +2958,7 @@ bootstrapApp();
 </script>
 
 <style id="neoStyle">
-.content{max-width:1080px}
+.content{max-width:1320px}
 #overviewTitle,#kpiGrid,#structureTitle,#structureGrid,#modeNote,#detailsBtn,#historischBtn{display:none!important}
 .hidden{display:none!important}
 .sec-n{display:none}
@@ -2926,11 +2981,11 @@ bootstrapApp();
 .neo-kpi-v{font-size:21px;font-weight:700;color:var(--text)}
 .neo-kpi-v.pos{color:var(--success)}.neo-kpi-v.neg{color:var(--orange)}
 .neo-list{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.neo-row{display:grid;grid-template-columns:1.7fr 1.1fr .9fr .8fr;gap:12px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line)}
+.neo-row{display:grid;grid-template-columns:1.7fr 1.1fr .9fr .8fr;gap:12px;align-items:center;padding:17px 20px;border-bottom:1px solid var(--line)}
 .neo-row:last-child{border-bottom:none}
 .neo-row-h{font-size:11px;color:var(--text-muted);padding:11px 18px;border-bottom:1px solid var(--line)}
-.neo-name{font-size:15px;font-weight:600;color:var(--text)}
-.neo-meta{font-size:11px;color:var(--text-muted);margin-top:1px}
+.neo-name{font-size:16.5px;font-weight:600;color:var(--text)}
+.neo-meta{font-size:11.5px;color:var(--text-muted);margin-top:2px}
 .neo-bar{height:6px;background:var(--line);border-radius:999px;overflow:hidden}
 .neo-bar > i{display:block;height:100%;background:var(--orange);border-radius:999px}
 .neo-val{text-align:right;font-size:15px;color:var(--text)}
