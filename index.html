@@ -3419,7 +3419,7 @@ function render(){
     return;
   }
   renderKpis(activeRows, soldRows);
-  renderPositions(activeRows, 'overview');
+  renderPositions(activeRows, 'overview', soldRows);
   soldSection.classList.add('hidden');
   renderStructure(activeRows);
 }
@@ -3708,7 +3708,7 @@ function renderKpis(activeRows, soldRows){
      +'<div class="neo-kpi"><div class="neo-kpi-l">'+chgLabel+'</div><div class="neo-kpi-v '+cl(chgV)+'">'+fc(chgV)+'</div></div>'
      +'<div class="neo-kpi"><div class="neo-kpi-l">Positionen</div><div class="neo-kpi-v">'+activeRows.length+'</div></div></div>';
 }
-function renderPositions(rows, type){
+function renderPositions(rows, type, soldRows){
   const wrap=document.getElementById('positionsWrap'); if(!wrap) return;
   if(!rows.length){ wrap.innerHTML='<div class="neo-card" style="text-align:center;color:var(--text-muted)">Keine Positionen.</div>'; return; }
   const isWatch=(type==='watchlist'); const isT=perfMode!=='ytd';
@@ -3762,7 +3762,12 @@ function renderPositions(rows, type){
   const totChg=sorted.reduce((s,r)=>s+(isT?r.dayAbs:r.diffAbs),0);
   const footLabel='Veränderung aktuelle Positionen '+(isT?'heute':'YTD');
   const foot='<div class="neo-row" style="'+gt+';font-weight:700"><div class="neo-name">'+footLabel+'</div><div></div><div></div><div></div><div style="text-align:right;color:'+(totChg>=0?'var(--success)':'var(--orange)')+'">'+fc(totChg)+'</div></div>';
-  wrap.innerHTML='<div class="neo-list">'+head+body+foot+'</div>';
+  // Zweite Summenzeile: realisierte Verkäufe. Zusammen mit der Zeile darüber ergibt sich der obere Wert "Veränderung heute/YTD".
+  // Bewusst nur die Summenzahl (kein Erlös/Einstand), damit die Zeile gleich hoch bleibt wie "Veränderung aktuelle Positionen".
+  const realChg=(soldRows||[]).reduce((s,r)=>s+(isT?(Number(r.dayAbs)||0):(Number(r.diffAbs)||0)),0);
+  const realLabel=isT?'Heute realisiert':('Summe realisiert '+getCurrentYear());
+  const foot2='<div class="neo-row" style="'+gt+';font-weight:700"><div class="neo-name">'+realLabel+'</div><div></div><div></div><div></div><div style="text-align:right;color:'+(realChg>=0?'var(--success)':'var(--orange)')+'">'+fc(realChg)+'</div></div>';
+  wrap.innerHTML='<div class="neo-list">'+head+body+foot+foot2+'</div>';
 }
 function renderSold(rows){
   const wrap=document.getElementById('soldWrap'); if(!wrap) return;
