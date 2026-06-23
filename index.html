@@ -3767,24 +3767,38 @@ function renderPositions(rows, type){
 function renderSold(rows){
   const wrap=document.getElementById('soldWrap'); if(!wrap) return;
   if(!rows.length){ wrap.innerHTML='<div class="neo-card" style="text-align:center;color:var(--text-muted)">Noch keine Verkäufe im laufenden Jahr.</div>'; return; }
-  const sorted=[...rows].sort((a,b)=>String(b.sellDate||'').localeCompare(String(a.sellDate||'')));
-  const gt='grid-template-columns:2.2fr 1fr 1.2fr 1.05fr';
-  const head='<div class="neo-row-h" style="display:grid;'+gt+';gap:10px"><span>Verkauft</span><span style="text-align:right">Kurs aktuell</span><span style="text-align:right">Verkauf / Kauf</span><span style="text-align:right">realisiert</span></div>';
+  // Sortierung über den "realisiert"-Header: Datum (Standard) → € absteigend → € aufsteigend → Datum
+  const sorted=[...rows];
+  if(soldSort==='absdesc') sorted.sort((a,b)=>(Number(b.diffAbs)||0)-(Number(a.diffAbs)||0));
+  else if(soldSort==='absasc') sorted.sort((a,b)=>(Number(a.diffAbs)||0)-(Number(b.diffAbs)||0));
+  else sorted.sort((a,b)=>String(b.sellDate||'').localeCompare(String(a.sellDate||'')));
+  // Spiegelt 1:1 das Raster der Übersichts-Positionen (renderPositions): gleiche Spaltenbreiten,
+  // gleiche 16px-Zweizeiler, gleicher Anteil-Balken – hier bezogen auf das Verkaufsvolumen (Erlös).
+  const twoLine=(t,b)=>'<div style="text-align:right;line-height:1.32"><div style="font-size:16px;font-weight:600;color:var(--text)">'+t+'</div><div style="font-size:16px;color:var(--text-muted)">'+b+'</div></div>';
+  const chgCell=(p,a)=>{ const c=a>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;line-height:1.3"><div style="font-size:16px;font-weight:700;color:'+c+'">'+fp(p)+'</div><div style="font-size:12.5px;font-weight:600;color:'+c+'">'+fc(a)+'</div></div>'; };
+  const maxShare=Math.max(...sorted.map(r=>r.share||0),0.0001);
+  const gt='grid-template-columns:2.1fr .7fr 1fr 1.25fr 1.05fr';
+  const realArrow=soldSort==='absdesc'?'↓':(soldSort==='absasc'?'↑':'⇵');
+  const realHead='<span class="sort-head"><button class="sort-btn'+(soldSort!=='date'?' active':'')+'" type="button" onclick="toggleSoldSort()">realisiert <span class="sort-arrow">'+realArrow+'</span></button></span>';
+  const head='<div class="neo-row-h" style="display:grid;'+gt+';gap:10px"><span>Verkauft</span><span>Anteil</span><span style="text-align:right">Verkauf/Kauf</span><span style="text-align:right">Erlös/Einstand</span>'+realHead+'</div>';
   const body=sorted.map(r=>{
-    const col=r.diffAbs>=0?'var(--success)':'var(--orange)';
-    const akt='<div style="text-align:right;line-height:1.3"><div style="font-size:14px;font-weight:600;color:var(--text)">'+f(r.marketPrice,2)+' €</div><div style="font-size:11px;color:var(--text-muted)">aktuell</div></div>';
-    const kv='<div style="text-align:right;line-height:1.3"><div style="font-size:13px;color:var(--text)">'+f(r.sellPrice,2)+' €</div><div style="font-size:13px;color:var(--text-muted)">'+f(r.refPrice,2)+' €</div></div>';
-    const real='<div style="text-align:right;line-height:1.3"><div style="font-size:14px;font-weight:700;color:'+col+'">'+fp(r.diffPct)+'</div><div style="font-size:11px;font-weight:600;color:'+col+'">'+fc(r.diffAbs)+'</div></div>';
-    const meta=f(r.shares,0)+' Stück · '+escapeHtml(r.wkn||'')+' · '+formatShortDate(r.sellDate);
-    return '<div class="neo-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+'</div></div>'+akt+kv+real+'</div>';
+    const pct=r.share||0; const barW=Math.round((pct/maxShare)*100);
+    const meta=f(r.shares,0)+' Stk. · '+escapeHtml(r.wkn||'')+' · '+formatShortDate(r.sellDate);
+    const anteil='<div style="display:flex;flex-direction:column;gap:5px;justify-content:center"><span style="font-size:13px;font-weight:600;color:var(--text)">'+f(pct*100,1)+'%</span><div class="neo-bar"><i style="width:'+barW+'%"></i></div></div>';
+    return '<div class="neo-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+'</div></div>'+anteil+twoLine(f(r.sellPrice,2)+' €',f(r.refPrice,2)+' €')+twoLine(f(r.currentValue,0)+' €',f(r.refValue,0)+' €')+chgCell(r.diffPct,r.diffAbs)+'</div>';
   }).join('');
   const tot=sorted.reduce((s,r)=>s+r.diffAbs,0);
-  const foot='<div class="neo-row" style="'+gt+';font-weight:700"><div class="neo-name">Summe realisiert '+getCurrentYear()+'</div><div></div><div></div><div style="text-align:right;color:'+(tot>=0?'var(--success)':'var(--orange)')+'">'+fc(tot)+'</div></div>';
+  const totErloes=sorted.reduce((s,r)=>s+(r.currentValue||0),0);
+  const totEinstand=sorted.reduce((s,r)=>s+(r.refValue||0),0);
+  const foot='<div class="neo-row" style="'+gt+';font-weight:700"><div class="neo-name">Summe realisiert '+getCurrentYear()+'</div><div></div><div></div>'+twoLine(f(totErloes,0)+' €',f(totEinstand,0)+' €')+'<div style="text-align:right;color:'+(tot>=0?'var(--success)':'var(--orange)')+'">'+fc(tot)+'</div></div>';
   wrap.innerHTML='<div class="neo-list">'+head+body+foot+'</div>';
 }
 
 let perfMode='today';
 let analysisMode=false;
+// Verkaufsseite: Sortierung der realisierten Positionen – 'date' | 'absdesc' | 'absasc'
+let soldSort='date';
+function toggleSoldSort(){ soldSort = soldSort==='date' ? 'absdesc' : (soldSort==='absdesc' ? 'absasc' : 'date'); render(); }
 // Drei Einzel-Toggles: zeigen jeweils den aktuellen Zustand (orange = Dark/Heute/Potential, schwarz = Original/YTD/aktuell)
 function updateModeButtons(){
   const tb=document.getElementById('themeToggleBtn');
@@ -3867,19 +3881,6 @@ document.addEventListener('DOMContentLoaded', function(){
   background:#FF7A00 !important;
   border-color:#FF7A00 !important;
   color:#16232A !important;
-}
-
-/* YTD-Button dauerhaft orange hervorgehoben (überschreibt v6.7-Dunkel-Override) */
-body.theme-dark #perfToggleBtn.mode-toggle,
-body:not(.theme-original) #perfToggleBtn.mode-toggle,
-body.theme-original #perfToggleBtn.mode-toggle,
-body.theme-dark #perfToggleBtn.mode-toggle.active,
-body:not(.theme-original) #perfToggleBtn.mode-toggle.active,
-body.theme-original #perfToggleBtn.mode-toggle.active{
-  background:#FF7A00 !important;
-  border-color:#FF7A00 !important;
-  color:#16232A !important;
-  box-shadow:0 0 0 3px rgba(255,122,0,.13) !important;
 }
 
 </style>
