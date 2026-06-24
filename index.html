@@ -1654,9 +1654,17 @@ function cleanupOrphanBitcoinPosition(state){
   cleanupStateData(state);
   return before !== (state.active||[]).length;
 }
+// Eingefrorene Jahresstart-Depotwerte je Jahr: 2026 stammt manuell aus alten Excel-Übersichten
+// (kein In-App-Jahresabschluss davor). Ab dem ersten Jahresabschluss Ende 2026 wird der Wert
+// beim Rollover automatisch eingefroren (siehe freezeStartValue / applyYearRolloverIfNeeded).
+function seedStartValues(meta){
+  meta.startValues = (meta.startValues && typeof meta.startValues==='object') ? meta.startValues : {};
+  if(meta.startValues['2026']==null) meta.startValues['2026']=1830000;
+  return meta;
+}
 function normalizeLoadedState(parsed){
   return cleanupStateData({
-    meta: { year:Number(parsed?.meta?.year || getCurrentYear()) },
+    meta: seedStartValues({ year:Number(parsed?.meta?.year || getCurrentYear()), startValues: (parsed?.meta?.startValues && typeof parsed.meta.startValues==='object') ? parsed.meta.startValues : {} }),
     active:(parsed?.active||[]).filter(Boolean).map(normalizePosition),
     sold:(parsed?.sold||[]).map(normalizeSold),
     watchlist:(parsed?.watchlist||[]).map(normalizeWatch),
@@ -1668,7 +1676,7 @@ function normalizeLoadedState(parsed){
 }
 function defaultState(){
   const active = BASE_PORTFOLIO.map(normalizePosition);
-  return { meta:{year:getCurrentYear()}, active, sold:[], watchlist:[], transactions: seedTransactionsFromPortfolio(active), customTickers:{} };
+  return { meta:seedStartValues({year:getCurrentYear()}), active, sold:[], watchlist:[], transactions: seedTransactionsFromPortfolio(active), customTickers:{} };
 }
 function loadLocalState(){
   try {
@@ -3168,6 +3176,10 @@ async function startJahresabschluss() {
   newState.sold = [];
   newState.transactions = [];
   newState.meta.year = currentYear;
+  // Gesamtdepotwert aller übernommenen aktiven Positionen (Stück × 31.12.-Basis) für das neue Jahr einfrieren.
+  const carriedTotal = newState.active.reduce((s,p)=>s+(p.lots||[]).reduce((a,l)=>a+Number(l.shares||0)*Number(l.price||0),0),0);
+  newState.meta.startValues = Object.assign({}, newState.meta.startValues||{});
+  newState.meta.startValues[String(currentYear)] = Math.round(carriedTotal);
 
   _pendingRolloverState = newState;
 
@@ -3243,6 +3255,10 @@ async function applyYearRolloverIfNeeded(){
   appState.sold = [];
   appState.transactions = [];
   appState.meta.year = currentYear;
+  // Gesamtdepotwert aller übernommenen aktiven Positionen (Stück × 31.12.-Basis) für das neue Jahr einfrieren.
+  const carriedTotal = appState.active.reduce((s,p)=>s+(p.lots||[]).reduce((a,l)=>a+Number(l.shares||0)*Number(l.price||0),0),0);
+  appState.meta.startValues = Object.assign({}, appState.meta.startValues||{});
+  appState.meta.startValues[String(currentYear)] = Math.round(carriedTotal);
   await saveState();
   return true;
 }
@@ -3685,28 +3701,40 @@ function renderKpis(activeRows, soldRows){
   const year=getCurrentYear();
   if(lastMarketUpdate) recordDailySnapshot(total, diff);
   const gainSeries=buildGainHistory();
-  const isT=perfMode!=='ytd';
-  const perfV=isT?dayPct:diffPct, chgV=isT?dayAbs:diff;
-  const perfLabel=isT?'Performance heute':'Performance YTD';
-  const chgLabel=isT?'Veränderung heute':'Veränderung YTD';
+  // Echter Depotwert zum Jahresstart (01.01.): Wert ALLER am 1.1. gehaltenen Papiere zum 31.12.-Schlusskurs.
+  // Übernahme-Bestände tragen Lots datiert auf den 31.12. des Vorjahres; 2026 gekaufte Lots tragen ihr echtes
+  // Kaufdatum und zählen deshalb NICHT zum Jahresstart. Unterjährig verkaufte Papiere fließen über ihre
+  // 31.12.-Basis (sold.refValue) wieder ein. (Im laufenden Jahr ge- und wieder verkaufte Titel sind nach
+  // Rollover-Reset datentechnisch nicht mehr abgrenzbar und werden – selten – mit ihrer Basis mitgezählt.)
+  // Depotwert zum Jahresstart: bevorzugt der eingefrorene Wert (2026 manuell aus Excel, ab 2027
+  // beim Jahresabschluss automatisch eingefroren). Fallback nur, falls noch kein Wert hinterlegt ist.
+  const frozenStart = (appState.meta && appState.meta.startValues) ? appState.meta.startValues[String(year)] : null;
+  let yearStartValue;
+  if(frozenStart!=null){
+    yearStartValue = Number(frozenStart);
+  } else {
+    const yearStartIso = year + '-01-01';
+    yearStartValue = soldRef;
+    (appState.active||[]).forEach(p => (p.lots||[]).forEach(l => {
+      if(String(l.date||'') < yearStartIso) yearStartValue += Number(l.shares||0) * Number(l.price||0);
+    }));
+  }
   neoTop.innerHTML=
-   '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:18px 0 2px">'
-     +'<div style="font-size:12px;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase">Mein Depot</div>'
-     +'<div class="neo-yearpill">Börsenjahr '+year+'</div></div>'
-   +'<div class="neo-hero">'
-     +'<div class="neo-card" style="display:flex;flex-direction:column;justify-content:center">'
-       +'<div class="neo-hero-label">Depotwert heute</div>'
-       +'<div class="neo-hero-val">'+f(total,0)+' €</div>'
-       +'<div><span class="neo-pill '+cl(diffPct)+'">'+fp(diffPct)+' seit 1.1.</span></div>'
-       +'<div class="neo-sub">'+fc(diff)+' im Jahr '+year+'</div></div>'
-     +'<div class="neo-card">'
-       +'<div class="neo-chart-head"><span>Gewinn / Verlust '+year+'</span><span>seit 1.1.</span></div>'
-       +neoChartSvg(gainSeries)+'</div></div>'
-   +'<div class="neo-kpis">'
-     +'<div class="neo-kpi"><div class="neo-kpi-l">Wert 1.1.'+year+'</div><div class="neo-kpi-v">'+f(ref,0)+' €</div></div>'
-     +'<div class="neo-kpi"><div class="neo-kpi-l">'+perfLabel+'</div><div class="neo-kpi-v '+cl(perfV)+'">'+fp(perfV)+'</div></div>'
-     +'<div class="neo-kpi"><div class="neo-kpi-l">'+chgLabel+'</div><div class="neo-kpi-v '+cl(chgV)+'">'+fc(chgV)+'</div></div>'
-     +'<div class="neo-kpi"><div class="neo-kpi-l">Positionen</div><div class="neo-kpi-v">'+activeRows.length+'</div></div></div>';
+   '<div class="dh">'
+   +'<div class="dh-top"><div class="dh-eyebrow">Mein Depot</div><div class="dh-yearpill">Börsenjahr '+year+'</div></div>'
+   +'<div class="dh-hero">'
+     +'<div class="dh-card dh-values">'
+       +'<div class="dh-val-block top"><div class="dh-bigval dh-bigval-xl">'+f(total,0)+' €</div><div class="dh-biglabel">Depotwert aktuell</div></div>'
+       +'<div class="dh-val-block bottom"><div class="dh-bigval">'+f(ref,0)+' €</div><div class="dh-biglabel">Kursbasis</div></div></div>'
+     +'<div class="dh-card dh-chartcard">'
+       +'<div class="dh-chart-head"><span>Gewinn / Verlust '+year+'</span><span>seit 1.1.</span></div>'
+       +'<div class="dh-chart-body">'+neoChartSvg(gainSeries)+'</div></div></div>'
+   +'<div class="dh-kpis">'
+     +'<div class="dh-kpi"><div class="dh-kpi-l">YTD</div><div class="dh-kpi-pct '+cl(diffPct)+'">'+fp(diffPct)+'</div><div class="dh-kpi-abs '+cl(diff)+'">'+fc(diff)+'</div></div>'
+     +'<div class="dh-kpi"><div class="dh-kpi-l">Heute</div><div class="dh-kpi-pct '+cl(dayPct)+'">'+fp(dayPct)+'</div><div class="dh-kpi-abs '+cl(dayAbs)+'">'+fc(dayAbs)+'</div></div>'
+     +'<div class="dh-kpi"><div class="dh-kpi-l">Depotwert 01.01.'+year+'</div><div class="dh-kpi-pct">'+f(yearStartValue,0)+' €</div></div>'
+     +'<div class="dh-kpi"><div class="dh-kpi-l">Aktuelle Positionen</div><div class="dh-kpi-pct">'+activeRows.length+'</div></div></div>'
+   +'</div>';
 }
 function renderPositions(rows, type, soldRows){
   const wrap=document.getElementById('positionsWrap'); if(!wrap) return;
@@ -3748,26 +3776,74 @@ function renderPositions(rows, type, soldRows){
     }).join('');
     wrap.innerHTML='<div class="neo-list">'+head+body+'</div>'; return;
   }
-  const maxShare=Math.max(...sorted.map(r=>r.share||0),0.0001);
-  const gt='grid-template-columns:2.1fr .7fr 1fr 1.25fr 1.05fr';
-  const chgHead=isT?'Veränderung heute':'Veränderung YTD';
-  const head='<div class="neo-row-h" style="display:grid;'+gt+';gap:10px"><span>Position</span><span>Anteil</span><span style="text-align:right">Kurs akt./Kauf</span><span style="text-align:right">Wert akt./Kauf</span><span style="text-align:right">'+chgHead+'</span></div>';
-  const body=sorted.map(r=>{
-    const pct=r.share||0; const barW=Math.round((pct/maxShare)*100);
-    const meta=escapeHtml(r.wkn||'')+' · '+f(r.shares,0)+' Stk.';
-    const anteil='<div style="display:flex;flex-direction:column;gap:5px;justify-content:center"><span style="font-size:13px;font-weight:600;color:var(--text)">'+f(pct*100,1)+'%</span><div class="neo-bar"><i style="width:'+barW+'%"></i></div></div>';
-    const dp=isT?r.dayPct:r.diffPct, da=isT?r.dayAbs:r.diffAbs;
-    return '<div class="neo-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+(r.isLive?'':' · kein Live-Kurs')+'</div></div>'+anteil+twoLine(f(r.currentPrice,2)+' €',f(r.refPrice,2)+' €')+twoLine(f(r.currentValue,0)+' €',f(r.refValue,0)+' €')+chgCell(dp,da)+'</div>';
+  // === Übersicht im WAX-Einzeldepot-Look: YTD und Heute parallel als eigene Spalten (kein Umschalter mehr) ===
+  const yearStartIso=getCurrentYear()+'-01-01';
+  const head='<div class="dc-head"><div class="dc-grid dc-grid-pos6">'
+    +'<div class="dc-col dc-name"><div class="dc-hmain">Position</div></div>'
+    +'<div class="dc-col dc-share"><div class="dc-hmain">Anteil</div></div>'
+    +'<div class="dc-col"><div class="dc-hmain">YTD</div></div>'
+    +'<div class="dc-col"><div class="dc-hmain">Heute</div></div>'
+    +'<div class="dc-col"><div class="dc-hmain">Kurs akt./Kauf</div></div>'
+    +'<div class="dc-col"><div class="dc-hmain">Wert akt./Kauf</div></div>'
+    +'</div></div>';
+  const body=sorted.map((r,idx)=>{
+    const pct=r.share||0; const barW=Math.min(pct*100,100).toFixed(1);
+    const curYearLots=(r.lots||[]).filter(l=>String(l.date||'')>=yearStartIso).map(l=>l.date).sort();
+    const newBadge=curYearLots.length?'<span class="dc-badge-new">NEU '+formatShortDate(curYearLots[curYearLots.length-1])+'</span>':'';
+    const noLive=r.isLive?'':'<span>kein Live-Kurs</span>';
+    return '<article class="dc-card '+(idx%2?'alt':'')+'"><div class="dc-grid dc-grid-pos6">'
+      +'<div class="dc-col dc-name"><div class="dc-title">'+escapeHtml(r.name)+'</div><div class="dc-meta"><span>'+escapeHtml(r.wkn||'')+'</span><span>'+f(r.shares,0)+' Stk.</span>'+newBadge+noLive+'</div></div>'
+      +'<div class="dc-col dc-share"><div class="dc-share-top">'+f(pct*100,1)+'%</div><div class="dc-bar"><div class="dc-bar-fill" style="width:'+barW+'%"></div></div></div>'
+      +'<div class="dc-col '+cl(r.diffAbs)+'"><div class="dc-top">'+fp(r.diffPct)+'</div><div class="dc-sub">'+fc(r.diffAbs)+'</div></div>'
+      +'<div class="dc-col '+cl(r.dayAbs)+'"><div class="dc-top">'+fp(r.dayPct)+'</div><div class="dc-sub">'+fc(r.dayAbs)+'</div></div>'
+      +'<div class="dc-col"><div class="dc-top">'+f(r.currentPrice,2)+'</div><div class="dc-sub">'+f(r.refPrice,2)+'</div></div>'
+      +'<div class="dc-col"><div class="dc-top">'+f(r.currentValue,0)+' €</div><div class="dc-sub">'+f(r.refValue,0)+' €</div></div>'
+      +'</div></article>';
   }).join('');
-  const totChg=sorted.reduce((s,r)=>s+(isT?r.dayAbs:r.diffAbs),0);
-  const footLabel='Veränderung aktuelle Positionen '+(isT?'heute':'YTD');
-  const foot='<div class="neo-row" style="'+gt+';font-weight:700"><div class="neo-name">'+footLabel+'</div><div></div><div></div><div></div><div style="text-align:right;color:'+(totChg>=0?'var(--success)':'var(--orange)')+'">'+fc(totChg)+'</div></div>';
-  // Zweite Summenzeile: realisierte Verkäufe. Zusammen mit der Zeile darüber ergibt sich der obere Wert "Veränderung heute/YTD".
-  // Bewusst nur die Summenzahl (kein Erlös/Einstand), damit die Zeile gleich hoch bleibt wie "Veränderung aktuelle Positionen".
-  const realChg=(soldRows||[]).reduce((s,r)=>s+(isT?(Number(r.dayAbs)||0):(Number(r.diffAbs)||0)),0);
-  const realLabel=isT?'Heute realisiert':('Summe realisiert '+getCurrentYear());
-  const foot2='<div class="neo-row" style="'+gt+';font-weight:700"><div class="neo-name">'+realLabel+'</div><div></div><div></div><div></div><div style="text-align:right;color:'+(realChg>=0?'var(--success)':'var(--orange)')+'">'+fc(realChg)+'</div></div>';
-  wrap.innerHTML='<div class="neo-list">'+head+body+foot+foot2+'</div>';
+  // Summenzeile (kein KPI-Karten-Block) – auf das 6-Spalten-Raster ausgerichtet, mit YTD und Heute getrennt.
+  const sumCur=sorted.reduce((s,r)=>s+(Number(r.currentValue)||0),0);
+  const sumRef=sorted.reduce((s,r)=>s+(Number(r.refValue)||0),0);
+  const sumPrev=sorted.reduce((s,r)=>s+(Number(r.prevValue)||0),0);
+  const sumYtdAbs=sumCur-sumRef, sumYtdPct=sumRef?sumYtdAbs/sumRef:0;
+  const sumDayAbs=sorted.reduce((s,r)=>s+(Number(r.dayAbs)||0),0), sumDayPct=sumPrev?sumDayAbs/sumPrev:0;
+  const foot='<article class="dc-card dc-foot"><div class="dc-grid dc-grid-pos6">'
+    +'<div class="dc-col dc-name"><div class="dc-title">Veränderung aktive Positionen</div></div>'
+    +'<div class="dc-col dc-share"></div>'
+    +'<div class="dc-col '+cl(sumYtdAbs)+'"><div class="dc-top">'+fp(sumYtdPct)+'</div><div class="dc-sub">'+fc(sumYtdAbs)+'</div></div>'
+    +'<div class="dc-col '+cl(sumDayAbs)+'"><div class="dc-top">'+fp(sumDayPct)+'</div><div class="dc-sub">'+fc(sumDayAbs)+'</div></div>'
+    +'<div class="dc-col"></div>'
+    +'<div class="dc-col"><div class="dc-top">'+f(sumCur,0)+' €</div><div class="dc-sub">'+f(sumRef,0)+' €</div></div>'
+    +'</div></article>';
+  // Verkäufe-Summen immer berechnen (für die Gesamt-Zeile), auch wenn keine Verkaufszeile gezeigt wird.
+  const soldCur=(soldRows||[]).reduce((s,r)=>s+(Number(r.currentValue)||0),0);
+  const soldRefV=(soldRows||[]).reduce((s,r)=>s+(Number(r.refValue)||0),0);
+  const soldYtdAbs=soldCur-soldRefV, soldYtdPct=soldRefV?soldYtdAbs/soldRefV:0;
+  const soldDayAbs=(soldRows||[]).reduce((s,r)=>s+(Number(r.dayAbs)||0),0);
+  let foot2='';
+  if(soldRows && soldRows.length){
+    foot2='<article class="dc-card dc-foot"><div class="dc-grid dc-grid-pos6">'
+      +'<div class="dc-col dc-name"><div class="dc-title">Summe realisiert '+getCurrentYear()+'</div></div>'
+      +'<div class="dc-col dc-share"></div>'
+      +'<div class="dc-col '+cl(soldYtdAbs)+'"><div class="dc-top">'+fp(soldYtdPct)+'</div><div class="dc-sub">'+fc(soldYtdAbs)+'</div></div>'
+      +'<div class="dc-col '+cl(soldDayAbs)+'"><div class="dc-top">'+(soldDayAbs?fc(soldDayAbs):'—')+'</div><div class="dc-sub"></div></div>'
+      +'<div class="dc-col"></div>'
+      +'<div class="dc-col"><div class="dc-top">'+f(soldCur,0)+' €</div><div class="dc-sub">'+f(soldRefV,0)+' €</div></div>'
+      +'</div></article>';
+  }
+  // Gesamt YTD: Summe der beiden Zeilen darüber (aktive + realisierte Positionen).
+  // Inhalt entspricht 1:1 der YTD-Kachel oben (gleiche Logik wie in renderKpis).
+  const gesamtYtdAbs=sumYtdAbs+soldYtdAbs;
+  const avgCap=(typeof avgDeployedCapital==='function')?avgDeployedCapital():0;
+  const gesamtYtdPct=avgCap>0?gesamtYtdAbs/avgCap:((sumRef+soldRefV)?gesamtYtdAbs/(sumRef+soldRefV):0);
+  const foot3='<article class="dc-card dc-foot dc-foot-total"><div class="dc-grid dc-grid-pos6">'
+    +'<div class="dc-col dc-name"><div class="dc-title">Gesamt YTD</div></div>'
+    +'<div class="dc-col dc-share"></div>'
+    +'<div class="dc-col '+cl(gesamtYtdAbs)+'"><div class="dc-top">'+fp(gesamtYtdPct)+'</div><div class="dc-sub">'+fc(gesamtYtdAbs)+'</div></div>'
+    +'<div class="dc-col"></div>'
+    +'<div class="dc-col"></div>'
+    +'<div class="dc-col"></div>'
+    +'</div></article>';
+  wrap.innerHTML='<div class="dc-wrap">'+head+body+foot+foot2+foot3+'</div>';
 }
 function renderSold(rows){
   const wrap=document.getElementById('soldWrap'); if(!wrap) return;
@@ -3862,6 +3938,73 @@ bootstrapApp();
 .neo-row-h .sort-btn{justify-content:flex-end;width:100%;font-size:11px;text-align:right;letter-spacing:inherit;text-transform:none}
 .neo-row-h .sort-arrow{font-size:13px;margin-left:6px;color:var(--orange);opacity:.9}
 .neo-row-h .sort-btn:hover{color:var(--orange)}
+
+/* YTD/Heute-Umschalter auf der Übersicht überflüssig (Liste zeigt beide Spalten); auf Watchlist bleibt er */
+body.page-overview #perfToggleBtn{display:none}
+/* === Übersicht im WAX-Einzeldepot-Look (Hero + KPIs + Positionsliste) === */
+.dh{margin-bottom:22px}
+.dh-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 2px 14px}
+.dh-eyebrow{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+.dh-yearpill{font-size:13px;font-weight:700;color:var(--text);background:var(--card);border:1px solid var(--line-2);border-radius:999px;padding:7px 16px;white-space:nowrap}
+.dh-hero{display:grid;grid-template-columns:1fr 1.45fr;gap:12px;margin-bottom:12px}
+.dh-card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 22px rgba(0,0,0,.14)}
+.dh-values{padding:30px 34px;display:flex;flex-direction:column;justify-content:center}
+.dh-val-block{display:flex;flex-direction:column}
+.dh-val-block.top{align-items:flex-start;text-align:left}
+.dh-val-block.bottom{align-items:flex-end;text-align:right;margin-top:18px}
+.dh-bigval{font-size:34px;font-weight:800;line-height:1.02;color:var(--text);letter-spacing:-.025em}
+.dh-bigval-xl{font-size:50px;letter-spacing:-.03em;line-height:1}
+.dh-biglabel{font-size:13.5px;color:var(--text-muted);margin-top:7px;letter-spacing:.01em}
+.dh-chartcard{padding:18px 22px;display:flex;flex-direction:column;min-height:240px}
+.dh-chart-head{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);letter-spacing:.04em;margin-bottom:6px}
+.dh-chart-body{flex:1;display:flex;align-items:center}
+.dh-chart-body svg{width:100%;height:auto;display:block}
+.dh-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.dh-kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 20px;min-height:94px;box-shadow:0 6px 16px rgba(0,0,0,.10);display:flex;flex-direction:column;justify-content:center;gap:3px}
+.dh-kpi-l{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.dh-kpi-pct{font-size:23px;font-weight:800;color:var(--text);letter-spacing:-.015em;line-height:1.05}
+.dh-kpi-abs{font-size:13px;color:var(--text-muted);margin-top:2px}
+.dh-kpi-pct.pos,.dh-kpi-abs.pos{color:var(--success)!important}
+.dh-kpi-pct.neg,.dh-kpi-abs.neg{color:var(--orange)!important}
+@media(max-width:900px){.dh-hero{grid-template-columns:1fr}.dh-kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.dh-kpis{grid-template-columns:1fr}.dh-bigval{font-size:30px}.dh-bigval-xl{font-size:38px}}
+/* Positionsliste im WAX-Kartenlook */
+.dc-group{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);padding:4px 4px 8px}
+.dc-head,.dc-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:8px}
+.dc-head{background:var(--card-2)}
+.dc-card{background:var(--card)}
+.dc-card.alt{background:var(--card-2)}
+.dc-card:hover{border-color:var(--orange)}
+.dc-grid{display:grid;gap:0;align-items:stretch}
+.dc-grid.dc-grid-pos6{grid-template-columns:2.2fr 0.9fr 1.1fr 1.1fr 1.15fr 1.2fr}
+.dc-col{padding:16px 18px;border-right:1px solid var(--line);min-width:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right}
+.dc-col:last-child{border-right:none}
+.dc-col.dc-name{align-items:flex-start;text-align:left}
+.dc-col.dc-share{align-items:stretch;text-align:left}
+.dc-title{font-size:18px;font-weight:700;line-height:1.2;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:9px;letter-spacing:-.01em;min-width:0;max-width:100%}
+.dc-meta{font-size:11.5px;color:var(--text-muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.dc-top{font-size:16.5px;font-weight:700;line-height:1.1;color:var(--text);letter-spacing:-.01em}
+.dc-sub{font-size:12.5px;color:var(--text-muted);line-height:1.25;margin-top:6px}
+.dc-share-top{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.1}
+.dc-bar{height:6px;border-radius:999px;background:var(--line-2);overflow:hidden;margin-top:7px}
+.dc-bar-fill{height:100%;border-radius:999px;background:var(--orange)}
+.dc-hmain{font-size:12.5px;font-weight:700;color:var(--text);line-height:1.1}
+.dc-col.pos .dc-top,.dc-col.pos .dc-sub{color:var(--success)!important}
+.dc-col.neg .dc-top,.dc-col.neg .dc-sub{color:var(--orange)!important}
+.dc-card.dc-foot{background:var(--card-2)}
+.dc-card.dc-foot .dc-title{font-size:14px;font-weight:700;white-space:normal}
+/* Gesamt-Zeile: abweichender Hintergrund (die beiden Zeilen darüber teilen sich card-2) */
+.dc-card.dc-foot-total{background:var(--card)}
+.dc-card.dc-foot-total .dc-title{font-weight:800}
+.dc-card.dc-foot-total .dc-top{font-size:18px}
+.dc-badge-new{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:6px;background:rgba(47,163,107,.16);color:var(--success)}
+@media(max-width:720px){
+  .dc-head{display:none}
+  .dc-grid.dc-grid-pos6{grid-template-columns:1fr 1fr}
+  .dc-col{padding:11px 12px;border-right:none;border-top:1px solid var(--line)}
+  .dc-col.dc-name{grid-column:1 / -1;border-top:none;border-bottom:1px solid var(--line)}
+  .dc-title{white-space:normal}
+}
 </style>
 
 <script>
