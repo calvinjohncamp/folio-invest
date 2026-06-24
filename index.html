@@ -1510,6 +1510,9 @@ let currentSort = { key: 'currentValue', dir: 'desc' };
 let liveKurse = {};
 let prevKurse = {};
 let liveKgv = {};
+// S&P-500-Benchmark (Markt-„Bibel"): Indexstand + 52W-Hoch/Tief von ^GSPC, KGV von SPY
+// (Yahoo liefert für den Index selbst kein P/E, die großen US-S&P-500-ETFs aber schon).
+let sp500Ref = null;
 let fxRates = {};
 let lastMarketUpdate = null;
 let currentPage = 'overview';
@@ -3301,6 +3304,25 @@ async function retryMissingKurse(){
     }
   }));
 }
+async function loadSp500Reference(){
+  try{
+    const [idx, spy, hist] = await Promise.all([
+      fetchTickerWithFallback(['^GSPC']),
+      fetchTickerWithFallback(['SPY']),
+      fetchHistoryWithFallback(['^GSPC'])
+    ]);
+    const level = idx && idx.price ? Number(idx.price) : null;
+    if(!level){ return; } // alten Stand behalten, falls Index gerade nicht ladbar
+    const prev = idx && idx.prev ? Number(idx.prev) : null;
+    const kgv = (spy && spy.trailingPE!=null && isFinite(Number(spy.trailingPE))) ? Number(spy.trailingPE) : null;
+    let high12m=null, low12m=null;
+    if(hist && Array.isArray(hist.prices) && hist.prices.length){
+      const cl = hist.prices.map(p=>Number(p.close)).filter(Number.isFinite);
+      if(cl.length){ high12m=Math.max(...cl); low12m=Math.min(...cl); }
+    }
+    sp500Ref = { level, prev, kgv, high12m, low12m };
+  }catch(e){ /* alten Stand behalten */ }
+}
 async function refreshMarketData() {
   if (marketRefreshRunning) return;
   setRefreshButtonsLoading(true);
@@ -3325,6 +3347,7 @@ async function refreshMarketData() {
       await new Promise(r=>setTimeout(r,1500));
       await retryMissingKurse();
     }
+    await loadSp500Reference();
     lastMarketUpdate = new Date();
     currentSort = historicalMode ? { key: 'ytdPotential', dir: 'desc' } : { key: 'currentValue', dir: 'desc' };
     setStatus(marketStatusText());
@@ -3774,7 +3797,23 @@ function renderPositions(rows, type, soldRows){
         +(dnR!=null?chgCell(dnR,dnE):oneLine('–'))
         +'</div>';
     }).join('');
-    wrap.innerHTML='<div class="neo-list">'+head+body+'</div>'; return;
+    // S&P-500-Benchmark-Zeile ganz oben (Markt-„Bibel"): Indexstand, KGV, 52W-Hoch/Tief, Potenzial/Risiko.
+    // Kein €-Wert (kein Stückbestand), daher nur %. Eigene, dunklere Hintergrundfarbe zur Abgrenzung.
+    let sp500Html='';
+    if(sp500Ref && sp500Ref.level){
+      const lvl=Number(sp500Ref.level), hi=Number(sp500Ref.high12m), lo=Number(sp500Ref.low12m), kgv=sp500Ref.kgv;
+      const hasHi=isFinite(hi)&&hi>0, hasLo=isFinite(lo)&&lo>0;
+      const upR=(lvl>0&&hasHi)?(hi/lvl-1):null, dnR=(lvl>0&&hasLo)?(lo/lvl-1):null;
+      const kgvTxt=(kgv!=null&&isFinite(Number(kgv)))?f(Number(kgv),1):'–';
+      const pctOnly=(p)=>{ if(p==null) return oneLine('–'); const c=p>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;font-size:16px;font-weight:700;color:'+c+'">'+fp(p)+'</div>'; };
+      sp500Html='<div class="neo-row sp500-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">S&amp;P 500 Index</div><div class="neo-meta">Benchmark · Indexstand &amp; KGV (Markt-Bewertung)</div></div>'
+        +twoLine(f(lvl,0)+' Pkt.', 'KGV '+kgvTxt)
+        +twoLine(hasHi?f(hi,0)+' Pkt.':'–', hasLo?f(lo,0)+' Pkt.':'–')
+        +pctOnly(upR)
+        +pctOnly(dnR)
+        +'</div>';
+    }
+    wrap.innerHTML='<div class="neo-list">'+head+sp500Html+body+'</div>'; return;
   }
   // === Übersicht im WAX-Einzeldepot-Look: YTD und Heute parallel als eigene Spalten (kein Umschalter mehr) ===
   const yearStartIso=getCurrentYear()+'-01-01';
@@ -3889,7 +3928,7 @@ function updateModeButtons(){
   // Heute ist voreingestellt, deshalb bietet der Button YTD als Ziel an
   if(pb){ pb.textContent=perfMode==='today'?'YTD':'Heute'; pb.classList.toggle('active', perfMode==='today'); }
   const ab=document.getElementById('analysisToggleBtn');
-  if(ab){ ab.textContent='Kaufkurse?'; ab.classList.toggle('active', !analysisMode); }
+  if(ab){ ab.textContent=analysisMode?'aktuell':'Kaufkurse?'; ab.classList.toggle('active', !analysisMode); }
 }
 function updatePerfModeButtons(){ updateModeButtons(); }
 function toggleTheme(){ setTheme(currentTheme==='dark'?'original':'dark'); updateModeButtons(); }
@@ -3939,6 +3978,11 @@ bootstrapApp();
 .neo-row-h .sort-arrow{font-size:13px;margin-left:6px;color:var(--orange);opacity:.9}
 .neo-row-h .sort-btn:hover{color:var(--orange)}
 
+/* S&P-500-Benchmark-Zeile: deutlich dunkler als die normalen Positionszeilen */
+.neo-row.sp500-row{background:#101C22!important;border-color:var(--line-2)!important}
+.neo-row.sp500-row .neo-name{color:var(--text);font-weight:800}
+.neo-row.sp500-row .neo-meta{color:var(--text-muted)}
+body.theme-original .neo-row.sp500-row{background:#DCE6EA!important;border-color:#C4D2D7!important}
 /* YTD/Heute-Umschalter auf der Übersicht überflüssig (Liste zeigt beide Spalten); auf Watchlist bleibt er */
 body.page-overview #perfToggleBtn{display:none}
 /* === Übersicht im WAX-Einzeldepot-Look (Hero + KPIs + Positionsliste) === */
