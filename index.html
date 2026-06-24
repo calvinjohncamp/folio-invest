@@ -1248,7 +1248,7 @@ function resetPin(){
 <span id="positionsSectionLabel"><span class="sec-n">2 ·</span> Positionen — Gesamtdepot</span>
 <div class="mode-center">
 <button class="mode-toggle active" id="perfToggleBtn" onclick="togglePerf()" type="button">YTD</button>
-<button class="mode-toggle active" id="analysisToggleBtn" onclick="toggleAnalysis()" type="button">Potential</button>
+<button class="mode-toggle active" id="analysisToggleBtn" onclick="toggleAnalysis()" type="button">Kaufkurse?</button>
 <button class="mode-toggle mode-toggle-mini" id="themeToggleBtn" onclick="toggleTheme()" type="button">Light</button>
 </div>
 <div class="mode-tools">
@@ -3889,7 +3889,7 @@ function updateModeButtons(){
   // Heute ist voreingestellt, deshalb bietet der Button YTD als Ziel an
   if(pb){ pb.textContent=perfMode==='today'?'YTD':'Heute'; pb.classList.toggle('active', perfMode==='today'); }
   const ab=document.getElementById('analysisToggleBtn');
-  if(ab){ ab.textContent=analysisMode?'Kaufkurse?':'Potential'; ab.classList.toggle('active', !analysisMode); }
+  if(ab){ ab.textContent='Kaufkurse?'; ab.classList.toggle('active', !analysisMode); }
 }
 function updatePerfModeButtons(){ updateModeButtons(); }
 function toggleTheme(){ setTheme(currentTheme==='dark'?'original':'dark'); updateModeButtons(); }
