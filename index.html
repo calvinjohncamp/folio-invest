@@ -3889,7 +3889,7 @@ function updateModeButtons(){
   // Heute ist voreingestellt, deshalb bietet der Button YTD als Ziel an
   if(pb){ pb.textContent=perfMode==='today'?'YTD':'Heute'; pb.classList.toggle('active', perfMode==='today'); }
   const ab=document.getElementById('analysisToggleBtn');
-  if(ab){ ab.textContent=analysisMode?'aktuell':'Potential'; ab.classList.toggle('active', !analysisMode); }
+  if(ab){ ab.textContent=analysisMode?'Kaufkurse?':'Potential'; ab.classList.toggle('active', !analysisMode); }
 }
 function updatePerfModeButtons(){ updateModeButtons(); }
 function toggleTheme(){ setTheme(currentTheme==='dark'?'original':'dark'); updateModeButtons(); }
