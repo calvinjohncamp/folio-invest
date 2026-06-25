@@ -126,6 +126,12 @@ body.theme-original{--entw-blue:#2E7FA6;--entw-tint:rgba(46,127,166,.16);--entw-
 .entw-panel li{position:relative;font-size:12.5px;line-height:1.5;color:var(--text-soft);padding:4px 0 4px 16px}
 .entw-panel li::before{content:"";position:absolute;left:0;top:11px;width:6px;height:6px;border-radius:50%;background:var(--entw-blue)}
 .entw-stand{font-size:10px;font-weight:600;letter-spacing:.04em;color:var(--entw-blue);text-transform:none}
+/* "Heißer Scheiß" — Boulevard-Highlights oberhalb der 5 Newsflash-Kacheln */
+.hot-wrap{margin-bottom:20px}
+.hot-title{font-size:18px;font-weight:700;line-height:1.2;letter-spacing:-.01em;color:var(--text);margin-bottom:12px}
+.hot-list{list-style:none;margin:0;padding:0}
+.hot-item{position:relative;font-size:13.5px;line-height:1.55;font-weight:700;color:var(--text);padding:5px 0 5px 18px}
+.hot-item::before{content:"";position:absolute;left:0;top:11px;width:7px;height:7px;border-radius:50%;background:var(--entw-blue)}
 .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--card); border: 1px solid var(--line); border-radius:18px; margin-bottom: 24px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,.16); }
 .tw.detail-width{max-width:980px}
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -1307,6 +1313,7 @@ function resetPin(){
 </div>
 <div class="hidden" id="overviewNewsSection">
 <div class="sec-t"><span class="sec-n">4 ·</span> Newsflash <span id="entwStand" class="entw-stand"></span></div>
+<div id="overviewHighlights" class="hot-wrap"></div>
 <div id="overviewEntwicklungen" class="entw-wrap"></div>
 </div>
 <div class="hidden" id="soldSection">
@@ -2262,31 +2269,6 @@ function rowsFromWatchlist(){
   return rows;
 }
 function renderDate(){ document.getElementById('hdDate').textContent = new Date().toLocaleDateString('de-DE',{weekday:'short', day:'2-digit', month:'short', year:'numeric'}); }
-function renderKpis(activeRows, soldRows){
-  const activeTotal = activeRows.reduce((s,r)=>s+r.currentValue,0);
-  const activeRef = activeRows.reduce((s,r)=>s+r.refValue,0);
-  const soldTotal = soldRows.reduce((s,r)=>s+r.currentValue,0);
-  const soldRef = soldRows.reduce((s,r)=>s+r.refValue,0);
-  const total = activeTotal;
-  const ref = activeRef;
-  const diff = (activeTotal-activeRef) + (soldTotal-soldRef);
-  const diffPct = (activeRef + soldRef) ? diff/(activeRef + soldRef) : 0;
-  const dayAbs = activeRows.reduce((s,r)=>s+r.dayAbs,0) + soldRows.reduce((s,r)=>s+r.dayAbs,0);
-  const prevTotal = activeRows.reduce((s,r)=>s+r.prevValue,0);
-  const dayPct = prevTotal ? dayAbs/prevTotal : 0;
-  investPerf = { ytd: diffPct, today: dayPct }; // Benchmark-Zelle „Mein Depot"
-  const prevYearEndIso = getPrevYearEndIso();
-  const yearLabel = prevYearEndIso.replace(/^(\d{4})-(\d{2})-(\d{2})$/, (_,y,m,d) => `${d}.${m}.${y.slice(2)}`);
-  const kpis = [
-    ['Aktiver Depotwert', `${f(total)} €`, 'nur aktive Positionen', ''],
-    [`Wert ${yearLabel}`, `${f(ref)} €`, 'eingefrorene Referenzbasis aktiv', ''],
-    ['Performance heute', `${fp(dayPct)}`, 'aktive Positionen plus heutige Verkäufe', cl(dayPct)],
-    ['Veränderung heute', `${fc(dayAbs)}`, 'inkl. heute realisierter Verkäufe', cl(dayAbs)],
-    ['Gesamtgewinn YTD', `${fc(diff)}`, 'aktive + verkaufte Positionen', cl(diff)],
-    ['Performance YTD gesamt', `${fp(diffPct)}`, 'bezogen auf aktiv + verkauft', cl(diffPct)]
-  ];
-  document.getElementById('kpiGrid').innerHTML = kpis.map(([l,v,s,cls])=>`<div class="kpi"><div class="kpi-l">${l}</div><div class="kpi-v ${cls}">${v}</div><div class="kpi-s">${s}</div></div>`).join('');
-}
 function sectionLabelText(){
   if(currentPage === 'watchlist') return '<span class="sec-n">2 ·</span> Watchlist';
   if(currentPage === 'transactions') return '<span class="sec-n">2 ·</span> Transaktionen';
@@ -3411,9 +3393,11 @@ async function loadBenchmarks(){
   renderBenchmarks();
 }
 function renderBenchmarks(){
-  const isYtd = perfMode === 'ytd';
+  // Benchmarks sind immer ein YTD-Vergleich (Depot YTD % vs. Index YTD %) — wie in Folio.wax,
+  // unabhängig vom Positions-Toggle (Heute/YTD).
+  const isYtd = true;
   const titleEl = document.getElementById('benchTitle');
-  if(titleEl) titleEl.textContent = isYtd ? 'Benchmarks YTD' : 'Benchmarks Heute';
+  if(titleEl) titleEl.textContent = 'Benchmarks YTD';
   const map = [
     { ticker:'^IXIC', id:'bNasdaq' },
     { ticker:'^GSPC', id:'bSp500' },
@@ -3457,7 +3441,15 @@ const ENTW_SEED = {
   finanzen:     { summary:'Nach den Nahost-Turbulenzen richtet sich der Blick wieder auf Inflation und Zentralbanken. Sinkende Ölpreise entlasten, viele rechnen aber weiter mit restriktiver Geldpolitik. Liquidität bleibt kurzfristig der wichtigste Markttreiber.', bullets:['Anleiherenditen bleiben attraktiv.','Aktien reagieren wieder stärker auf Zinserwartungen.','Liquidität gewinnt gegenüber kurzfristigen Konjunkturdaten.'] },
   boerse:       { summary:'Die wichtigste Börsengeschichte ist nicht ein neuer Rekord, sondern die kritischere Diskussion über die Bewertungen großer KI-Unternehmen. Bei Tech- und Raumfahrtwerten deutliche Rücksetzer, während KI-Investitionen auf Rekordniveau bleiben.', bullets:['Führen die enormen KI-Investitionen wirklich zu steigenden Gewinnen?','Welche Unternehmen entwickeln nachhaltige Wettbewerbsvorteile?','Wo entstehen Überbewertungen?'] },
 };
-let __entwData = null, __entwStand = null, __entwOpen = null;
+let __entwData = null, __entwStand = null, __entwOpen = null, __entwHighlights = null;
+// "Heißer Scheiß"-Beispielinhalt (Fallback, bis der tägliche Worker `highlights` befüllt)
+const HOT_SEED = [
+  'Sport: DFB-Team dreht Spiel in der Nachspielzeit — Stadion bebt.',
+  'Streaming-Hit bricht alle Rekorde und lässt eine Aktie durch die Decke gehen.',
+  'Promi-Hochzeit des Jahres: Stars geben sich überraschend das Ja-Wort.',
+  'Neues KI-Gadget ausverkauft, noch bevor es im Laden steht.',
+  'Wetter-Kapriolen legen halb Deutschland lahm.',
+];
 function entwEscape(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 async function renderNewsflash(){
   const mount = document.getElementById('overviewEntwicklungen');
@@ -3478,10 +3470,30 @@ async function renderNewsflash(){
         }
       }
     }catch(e){ /* offline / Tabelle fehlt → Seed */ }
+    // Highlights ("Heißer Scheiß") separat & tolerant laden — die Spalte existiert evtl. noch
+    // nicht (vor dem ALTER TABLE), das darf die Themen oben NICHT auf Seed zurückwerfen.
+    try{
+      const hr = await fetch(`${SUPABASE_URL}/rest/v1/entwicklungen?select=highlights&order=stand.desc&limit=1`, { headers: supabaseHeaders() });
+      if(hr.ok){
+        const hrows = await hr.json();
+        let hl = (Array.isArray(hrows) && hrows[0]) ? hrows[0].highlights : null;
+        if(typeof hl === 'string'){ try{ hl = JSON.parse(hl); }catch(e){ hl = null; } }
+        if(Array.isArray(hl) && hl.length){ __entwHighlights = hl.map(s=>String(s)); }
+      }
+    }catch(e){ /* Spalte fehlt / offline → Seed */ }
     if(usedSeed){ __entwData = ENTW_SEED; __entwStand = 'Beispielinhalt — wird täglich automatisch aktualisiert'; }
+    if(!__entwHighlights){ __entwHighlights = HOT_SEED; }
   }
   const standEl = document.getElementById('entwStand');
   if(standEl) standEl.textContent = __entwStand ? '· ' + __entwStand : '';
+  // "Heißer Scheiß" oberhalb der 5 Kacheln
+  const hot = document.getElementById('overviewHighlights');
+  if(hot){
+    const items = (Array.isArray(__entwHighlights) ? __entwHighlights : []).slice(0,5);
+    hot.innerHTML = items.length
+      ? `<div class="hot-title">Heißer Scheiß</div><ul class="hot-list">${items.map(h=>`<li class="hot-item">${entwEscape(h)}</li>`).join('')}</ul>`
+      : '';
+  }
   const tiles = ENTW_THEMEN.map(t=>{
     const active = (__entwOpen === t.key) ? ' active' : '';
     return `<button type="button" class="entw-tile${active}" onclick="entwToggle('${t.key}')" aria-expanded="${__entwOpen===t.key}">`
