@@ -129,8 +129,12 @@ body.theme-original{--entw-blue:#2E7FA6;--entw-tint:rgba(46,127,166,.16);--entw-
 .hot-wrap{margin-bottom:20px}
 .hot-title{font-size:18px;font-weight:700;line-height:1.2;letter-spacing:-.01em;color:var(--text);margin-bottom:12px}
 .hot-list{list-style:none;margin:0;padding:0}
-.hot-item{position:relative;font-size:13.5px;line-height:1.55;font-weight:700;color:var(--text);padding:5px 0 5px 18px}
-.hot-item::before{content:"";position:absolute;left:0;top:11px;width:7px;height:7px;border-radius:50%;background:var(--entw-blue)}
+.hot-item{position:relative;padding:1px 0}
+.hot-item-btn{display:block;width:100%;text-align:left;background:none;border:none;cursor:pointer;font-family:inherit;position:relative;font-size:13.5px;line-height:1.55;font-weight:700;color:var(--text);padding:5px 4px 5px 18px;border-radius:6px;transition:background .15s}
+.hot-item-btn::before{content:"";position:absolute;left:0;top:11px;width:7px;height:7px;border-radius:50%;background:var(--entw-blue)}
+.hot-item-btn:hover{background:var(--entw-tint)}
+.hot-item-btn.active{background:var(--entw-tint-strong)}
+.hot-item-btn:focus-visible{outline:2px solid var(--entw-blue);outline-offset:2px}
 .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--card); border: 1px solid var(--line); border-radius:18px; margin-bottom: 24px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,.16); }
 .tw.detail-width{max-width:980px}
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -3440,14 +3444,14 @@ const ENTW_SEED = {
   finanzen:     { summary:'Nach den Nahost-Turbulenzen richtet sich der Blick wieder auf Inflation und Zentralbanken. Sinkende Ölpreise entlasten, viele rechnen aber weiter mit restriktiver Geldpolitik. Liquidität bleibt kurzfristig der wichtigste Markttreiber.', bullets:['Anleiherenditen bleiben attraktiv.','Aktien reagieren wieder stärker auf Zinserwartungen.','Liquidität gewinnt gegenüber kurzfristigen Konjunkturdaten.'] },
   boerse:       { summary:'Die wichtigste Börsengeschichte ist nicht ein neuer Rekord, sondern die kritischere Diskussion über die Bewertungen großer KI-Unternehmen. Bei Tech- und Raumfahrtwerten deutliche Rücksetzer, während KI-Investitionen auf Rekordniveau bleiben.', bullets:['Führen die enormen KI-Investitionen wirklich zu steigenden Gewinnen?','Welche Unternehmen entwickeln nachhaltige Wettbewerbsvorteile?','Wo entstehen Überbewertungen?'] },
 };
-let __entwData = null, __entwStand = null, __entwOpen = null, __entwHighlights = null;
+let __entwData = null, __entwStand = null, __entwOpen = null, __entwHighlights = null, __hotOpen = null;
 // "Heißer Scheiß"-Beispielinhalt (Fallback, bis der tägliche Worker `highlights` befüllt)
 const HOT_SEED = [
-  'Sport: DFB-Team dreht Spiel in der Nachspielzeit — Stadion bebt.',
-  'Streaming-Hit bricht alle Rekorde und lässt eine Aktie durch die Decke gehen.',
-  'Promi-Hochzeit des Jahres: Stars geben sich überraschend das Ja-Wort.',
-  'Neues KI-Gadget ausverkauft, noch bevor es im Laden steht.',
-  'Wetter-Kapriolen legen halb Deutschland lahm.',
+  { title:'Sport: DFB-Team dreht Spiel in der Nachspielzeit — Stadion bebt.', detail:'Beispielinhalt: Hier würde der recherchierte Kurzbeitrag stehen — was im Spiel passierte, wann die Tore fielen und wie die ersten Reaktionen ausfielen, basierend auf mehreren seriösen Quellen.' },
+  { title:'Streaming-Hit bricht alle Rekorde und lässt eine Aktie durch die Decke gehen.', detail:'Beispielinhalt: Einordnung, welche Produktion betroffen ist, welche Kennzahlen den Rekord belegen und wie der Markt reagiert hat.' },
+  { title:'Promi-Hochzeit des Jahres: Stars geben sich überraschend das Ja-Wort.', detail:'Beispielinhalt: Wer geheiratet hat, wann und wo, und was Beobachter dazu sagen.' },
+  { title:'Neues KI-Gadget ausverkauft, noch bevor es im Laden steht.', detail:'Beispielinhalt: Um welches Produkt es geht, wie hoch die Nachfrage war und was Hersteller/Händler dazu mitteilen.' },
+  { title:'Wetter-Kapriolen legen halb Deutschland lahm.', detail:'Beispielinhalt: Welche Regionen betroffen sind, welche Folgen es gab (Verkehr, Schulen, Strom) und wie die Wetterdienste die Lage einordnen.' },
 ];
 function entwEscape(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 async function renderNewsflash(){
@@ -3477,7 +3481,11 @@ async function renderNewsflash(){
         const hrows = await hr.json();
         let hl = (Array.isArray(hrows) && hrows[0]) ? hrows[0].highlights : null;
         if(typeof hl === 'string'){ try{ hl = JSON.parse(hl); }catch(e){ hl = null; } }
-        if(Array.isArray(hl) && hl.length){ __entwHighlights = hl.map(s=>String(s)); }
+        if(Array.isArray(hl) && hl.length){
+          __entwHighlights = hl.map(h => (typeof h === 'object' && h)
+            ? { title: String(h.title||''), detail: String(h.detail||'') }
+            : { title: String(h), detail: '' });
+        }
       }
     }catch(e){ /* Spalte fehlt / offline → Seed */ }
     if(usedSeed){ __entwData = ENTW_SEED; __entwStand = 'Beispielinhalt — wird täglich automatisch aktualisiert'; }
@@ -3485,14 +3493,7 @@ async function renderNewsflash(){
   }
   const standEl = document.getElementById('entwStand');
   if(standEl) standEl.textContent = __entwStand ? '· ' + __entwStand : '';
-  // "Heißer Scheiß" oberhalb der 5 Kacheln
-  const hot = document.getElementById('overviewHighlights');
-  if(hot){
-    const items = (Array.isArray(__entwHighlights) ? __entwHighlights : []).slice(0,5);
-    hot.innerHTML = items.length
-      ? `<div class="hot-title">HEISSER SCHEISS</div><ul class="hot-list">${items.map(h=>`<li class="hot-item">${entwEscape(h)}</li>`).join('')}</ul>`
-      : '';
-  }
+  renderHot();
   const tiles = ENTW_THEMEN.map(t=>{
     const active = (__entwOpen === t.key) ? ' active' : '';
     return `<button type="button" class="entw-tile${active}" onclick="entwToggle('${t.key}')" aria-expanded="${__entwOpen===t.key}">`
@@ -3502,6 +3503,32 @@ async function renderNewsflash(){
   mount.innerHTML = `<div class="entw-tiles">${tiles}</div><div id="entwPanelMount"></div>`;
   renderEntwPanel();
 }
+function renderHot(){
+  const hot = document.getElementById('overviewHighlights');
+  if(!hot) return;
+  const items = (Array.isArray(__entwHighlights) ? __entwHighlights : []).slice(0,5);
+  if(!items.length){ hot.innerHTML = ''; return; }
+  const list = items.map((h,i)=>{
+    const active = (__hotOpen === i) ? ' active' : '';
+    return `<li class="hot-item"><button type="button" class="hot-item-btn${active}" onclick="hotToggle(${i})" aria-expanded="${__hotOpen===i}">${entwEscape(h.title)}</button></li>`;
+  }).join('');
+  hot.innerHTML = `<div class="hot-title">HEISSER SCHEISS</div><ul class="hot-list">${list}</ul><div id="hotPanelMount"></div>`;
+  renderHotPanel();
+}
+function renderHotPanel(){
+  const pm = document.getElementById('hotPanelMount');
+  if(!pm) return;
+  if(__hotOpen === null){ pm.innerHTML = ''; return; }
+  const items = Array.isArray(__entwHighlights) ? __entwHighlights : [];
+  const h = items[__hotOpen] || {};
+  pm.innerHTML = `<div class="entw-panel"><h4>${entwEscape(h.title||'')}</h4>`
+    + (h.detail ? `<div class="ep-sum">${entwEscape(h.detail)}</div>` : `<div class="ep-sum">Noch kein Detailtext hinterlegt.</div>`)
+    + `</div>`;
+}
+window.hotToggle = function(i){
+  __hotOpen = (__hotOpen === i) ? null : i;
+  renderHot();
+};
 function renderEntwPanel(){
   const pm = document.getElementById('entwPanelMount');
   if(!pm) return;
