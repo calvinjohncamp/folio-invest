@@ -3694,7 +3694,6 @@ function render(){
     structureGrid.classList.add('hidden');
     soldSection.classList.remove('hidden');
     renderSold(soldRows);
-    requestAnimationFrame(applyFrozenTop);
     return;
   }
   renderKpis(activeRows, soldRows);
@@ -3705,53 +3704,6 @@ function render(){
   renderBenchmarks();
   renderNewsflash();
   renderStructure(activeRows);
-  requestAnimationFrame(applyFrozenTop);
-}
-
-// Friert auf Übersicht/Verkauft den oberen Bereich ein (Titel, KPIs, Positionen-Leiste
-// und Spaltenkopf), sodass die Positions-/Verkaufszeilen beim Scrollen dahinter verschwinden.
-// Die Elemente werden per sticky-top gestapelt, beginnend unter der fixen Kopfzeile
-// (hd 78 + nav + statusbar ≈ 140px – derselbe Wert wie .positions-header-card).
-function applyFrozenTop(){
-  document.querySelectorAll('.is-frozen').forEach(el=>{
-    el.classList.remove('is-frozen');
-    el.style.position=''; el.style.top=''; el.style.zIndex='';
-    if(el.dataset.frozenBg){ el.style.background=''; delete el.dataset.frozenBg; }
-  });
-  let seq=null;
-  if(currentPage==='overview'){
-    seq=[
-      document.getElementById('neoTop'),       // Gesamtwert + Chart + die 4 Info-Kacheln (.neo-kpis)
-      document.getElementById('overviewTitle'),
-      document.getElementById('kpiGrid'),
-      document.getElementById('positionsSection'),
-      document.getElementById('modeNote'),
-      document.querySelector('#positionsWrap .dc-head, #positionsWrap .positions-header-card, #positionsWrap .neo-row-h'),
-    ];
-  } else if(currentPage==='sold'){
-    const sec=document.getElementById('soldSection');
-    seq=[ sec&&sec.querySelector('.sec-t'), document.querySelector('#soldWrap .neo-row-h') ];
-  } else { return; }
-  // Der Body-Hintergrund ist ein Gradient über var(--midnight); backgroundColor meldet daher
-  // "transparent". Transparente Leisten (Titel) bekommen darum explizit var(--midnight)
-  // (themenabhängig: dunkel #16232A / hell #EEF2F3), damit Zeilen sauberer dahinter verschwinden.
-  let top=140;
-  seq.forEach(el=>{
-    if(!el || el.classList.contains('hidden')) return;
-    const h=el.getBoundingClientRect().height;
-    if(h<=0) return;
-    el.classList.add('is-frozen');
-    el.style.position='sticky';
-    el.style.top=top+'px';
-    el.style.zIndex='40';
-    const bg=getComputedStyle(el).backgroundColor;
-    if(!bg || bg==='rgba(0, 0, 0, 0)' || bg==='transparent'){ el.style.background='var(--midnight)'; el.dataset.frozenBg='1'; }
-    top+=h;
-  });
-}
-if(!window.__frozenTopResizeHooked){
-  window.__frozenTopResizeHooked=true;
-  window.addEventListener('resize', ()=>requestAnimationFrame(applyFrozenTop));
 }
 async function testSupabaseConnection(){
   try {
