@@ -2158,7 +2158,7 @@ function renderSortButton(key, label, showArrow = true){
 }
 function sortRows(rows){
   const sorted = [...rows];
-  if(currentPage === 'watchlist'){
+  if(currentPage === 'watchlist' && !analysisMode){
     sorted.sort((a,b)=> String(a.name || '').localeCompare(String(b.name || ''), 'de', { sensitivity:'base' }));
   } else {
     const dir = currentSort.dir === 'asc' ? 1 : -1;
@@ -2183,14 +2183,22 @@ function sortRows(rows){
         av = Number(a.below12mPct ?? -999999); bv = Number(b.below12mPct ?? -999999); break;
       case 'ytdPotential':
         av = Number(a.ytdPotential || 0); bv = Number(b.ytdPotential || 0); break;
-      case 'analysisPotentialPct':
-        av = (Number.isFinite(Number(a.high12m)) && Number(a.high12m) > 0 && Number(a.currentPrice) > 0) ? (Number(a.high12m) / Number(a.currentPrice)) - 1 : -999999;
-        bv = (Number.isFinite(Number(b.high12m)) && Number(b.high12m) > 0 && Number(b.currentPrice) > 0) ? (Number(b.high12m) / Number(b.currentPrice)) - 1 : -999999;
+      case 'analysisPotentialPct': {
+        // Bei verkauften Positionen ist "currentPrice" der Verkaufskurs – für die Analyseansicht
+        // zählt aber der aktuelle Marktkurs (marketPrice), falls vorhanden.
+        const acp = Number.isFinite(Number(a.marketPrice)) ? Number(a.marketPrice) : Number(a.currentPrice);
+        const bcp = Number.isFinite(Number(b.marketPrice)) ? Number(b.marketPrice) : Number(b.currentPrice);
+        av = (Number.isFinite(Number(a.high12m)) && Number(a.high12m) > 0 && acp > 0) ? (Number(a.high12m) / acp) - 1 : -999999;
+        bv = (Number.isFinite(Number(b.high12m)) && Number(b.high12m) > 0 && bcp > 0) ? (Number(b.high12m) / bcp) - 1 : -999999;
         break;
-      case 'analysisRiskPct':
-        av = (Number.isFinite(Number(a.low12m)) && Number(a.low12m) > 0 && Number(a.currentPrice) > 0) ? (Number(a.low12m) / Number(a.currentPrice)) - 1 : -999999;
-        bv = (Number.isFinite(Number(b.low12m)) && Number(b.low12m) > 0 && Number(b.currentPrice) > 0) ? (Number(b.low12m) / Number(b.currentPrice)) - 1 : -999999;
+      }
+      case 'analysisRiskPct': {
+        const acp = Number.isFinite(Number(a.marketPrice)) ? Number(a.marketPrice) : Number(a.currentPrice);
+        const bcp = Number.isFinite(Number(b.marketPrice)) ? Number(b.marketPrice) : Number(b.currentPrice);
+        av = (Number.isFinite(Number(a.low12m)) && Number(a.low12m) > 0 && acp > 0) ? (Number(a.low12m) / acp) - 1 : -999999;
+        bv = (Number.isFinite(Number(b.low12m)) && Number(b.low12m) > 0 && bcp > 0) ? (Number(b.low12m) / bcp) - 1 : -999999;
         break;
+      }
       default:
         av = Number(a.currentValue || 0); bv = Number(b.currentValue || 0);
     }
@@ -2243,7 +2251,7 @@ function rowsFromSold(){
     const marketValue = marketPrice * s.shares;
     const sinceSalePct = s.sellPrice ? (marketPrice / s.sellPrice) - 1 : 0;
     const hist = calcHistoricalMetrics(historicalData[s.wkn], marketPrice, s.shares);
-    return { ...s, lots:[{shares:s.shares,price:s.refPrice,date:s.sellDate}], refValue, refPrice:s.refPrice, sellPrice:s.sellPrice, currentPrice:s.sellPrice, currentValue:saleValue, saleValue, marketPrice, marketValue, sinceSalePct, prevValue:saleValue, dayAbs:soldToday, dayPct:0, diffAbs, diffPct, ...hist };
+    return { ...s, lots:[{shares:s.shares,price:s.refPrice,date:s.sellDate}], refValue, refPrice:s.refPrice, sellPrice:s.sellPrice, currentPrice:s.sellPrice, currentValue:saleValue, saleValue, marketPrice, marketValue, sinceSalePct, prevValue:saleValue, dayAbs:soldToday, dayPct:0, diffAbs, diffPct, kgv: liveKgv[s.wkn] ?? null, isLive: liveKurse[s.wkn] != null, ...hist };
   });
   const total = rows.reduce((s,r)=>s+r.currentValue,0);
   let running = 0;
@@ -4003,6 +4011,49 @@ function renderKpis(activeRows, soldRows){
      +'<div class="dh-kpi"><div class="dh-kpi-l">Aktuelle Positionen</div><div class="dh-kpi-pct">'+activeRows.length+'</div></div></div>'
    +'</div>';
 }
+// Eine Analyse-Zeile (Kurs akt./KGV · 52W Hoch/Tief · Potential · Risiko) – gemeinsam genutzt von
+// Übersicht, Watchlist und Verkauft, damit "Kaufkurse?" überall exakt gleich rechnet.
+function analysisRowHtml(r, gt, currentPriceOverride){
+  const cp=Number(currentPriceOverride!=null?currentPriceOverride:r.currentPrice)||0, hi=Number(r.high12m), lo=Number(r.low12m), sh=Number(r.shares)||0;
+  const kgv=(r.kgv!=null && isFinite(Number(r.kgv)))? f(Number(r.kgv),1) : '–';
+  const hasHi=isFinite(hi)&&hi>0, hasLo=isFinite(lo)&&lo>0;
+  const upR=(cp>0&&hasHi)?(hi/cp-1):null, upE=hasHi?(hi-cp)*sh:null;
+  const dnR=(cp>0&&hasLo)?(lo/cp-1):null, dnE=hasLo?(lo-cp)*sh:null;
+  const meta=escapeHtml(r.wkn||'')+' · '+f(sh,0)+' Stk.';
+  const twoLine=(t,b)=>'<div style="text-align:right;line-height:1.32"><div style="font-size:16px;font-weight:600;color:var(--text)">'+t+'</div><div style="font-size:16px;color:var(--text-muted)">'+b+'</div></div>';
+  const oneLine=(t)=>'<div style="text-align:right;font-size:16px;font-weight:600;color:var(--text)">'+t+'</div>';
+  const chgCell=(p,a)=>{ const c=a>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;line-height:1.3"><div style="font-size:16px;font-weight:700;color:'+c+'">'+fp(p)+'</div><div style="font-size:12.5px;font-weight:600;color:'+c+'">'+fc(a)+'</div></div>'; };
+  return '<div class="neo-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+(r.isLive?'':' · kein Live-Kurs')+'</div></div>'
+    +twoLine(f(cp,2)+' €', kgv)
+    +twoLine(hasHi?f(hi,2)+' €':'–', hasLo?f(lo,2)+' €':'–')
+    +(upR!=null?chgCell(upR,upE):oneLine('–'))
+    +(dnR!=null?chgCell(dnR,dnE):oneLine('–'))
+    +'</div>';
+}
+// S&P-500-Benchmark-Zeile ganz oben in jeder Analyseansicht (Markt-„Bibel"): Indexstand, KGV, 52W-Hoch/Tief, Potenzial/Risiko.
+function sp500AnalysisRowHtml(gt){
+  if(!(sp500Ref && sp500Ref.level)) return '';
+  const twoLine=(t,b)=>'<div style="text-align:right;line-height:1.32"><div style="font-size:16px;font-weight:600;color:var(--text)">'+t+'</div><div style="font-size:16px;color:var(--text-muted)">'+b+'</div></div>';
+  const oneLine=(t)=>'<div style="text-align:right;font-size:16px;font-weight:600;color:var(--text)">'+t+'</div>';
+  const lvl=Number(sp500Ref.level), hi=Number(sp500Ref.high12m), lo=Number(sp500Ref.low12m);
+  const hasHi=isFinite(hi)&&hi>0, hasLo=isFinite(lo)&&lo>0;
+  const upR=(lvl>0&&hasHi)?(hi/lvl-1):null, dnR=(lvl>0&&hasLo)?(lo/lvl-1):null;
+  const peTxt=(sp500Ref.gaapPe!=null)?f(Number(sp500Ref.gaapPe),1):'–';
+  const capeTxt=(sp500Ref.shillerCape!=null)?f(Number(sp500Ref.shillerCape),1):'–';
+  const pctOnly=(p)=>{ if(p==null) return oneLine('–'); const c=p>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;font-size:16px;font-weight:700;color:'+c+'">'+fp(p)+'</div>'; };
+  const valCell='<div style="text-align:right;line-height:1.34">'
+    +'<div style="font-size:16px;font-weight:600;color:var(--text)">'+f(lvl,0)+' Pkt.</div>'
+    +'<div style="font-size:13px;color:var(--text-muted)">KGV '+peTxt+'</div>'
+    +'<div style="font-size:13px;color:var(--text-muted)">CAPE '+capeTxt+'</div></div>';
+  const lnk=(u,t)=>'<a href="'+u+'" target="_blank" rel="noopener" class="sp500-link">'+t+' ↗</a>';
+  const links='<div class="sp500-links">'+lnk('https://www.multpl.com/s-p-500-pe-ratio','S&amp;P 500 KGV')+lnk('https://www.multpl.com/shiller-pe','Shiller CAPE')+'</div>';
+  return '<div class="neo-row sp500-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">S&amp;P 500 Index</div><div class="neo-meta">Benchmark · GAAP-KGV &amp; Shiller (echte Gewinne, Quelle multpl.com)</div>'+links+'</div>'
+    +valCell
+    +twoLine(hasHi?f(hi,0)+' Pkt.':'–', hasLo?f(lo,0)+' Pkt.':'–')
+    +pctOnly(upR)
+    +pctOnly(dnR)
+    +'</div>';
+}
 function renderPositions(rows, type, soldRows){
   const wrap=document.getElementById('positionsWrap'); if(!wrap) return;
   if(!rows.length){ wrap.innerHTML='<div class="neo-card" style="text-align:center;color:var(--text-muted)">Keine Positionen.</div>'; return; }
@@ -4013,7 +4064,7 @@ function renderPositions(rows, type, soldRows){
   const pctCell=(p)=>{ const c=p>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;font-size:16px;font-weight:700;color:'+c+'">'+fp(p)+'</div>'; };
   const eurCell=(a)=>{ const c=a>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;font-size:14px;font-weight:600;color:'+c+'">'+fc(a)+'</div>'; };
   const chgCell=(p,a)=>{ const c=a>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;line-height:1.3"><div style="font-size:16px;font-weight:700;color:'+c+'">'+fp(p)+'</div><div style="font-size:12.5px;font-weight:600;color:'+c+'">'+fc(a)+'</div></div>'; };
-  if(isWatch){
+  if(isWatch && !analysisMode){
     const aH=isT?'Kurs gestern':'Kurs 1.1.';
     const gt='grid-template-columns:2fr 1fr 1fr .9fr 1fr';
     const head='<div class="neo-row-h" style="display:grid;'+gt+';gap:10px"><span>Titel</span><span style="text-align:right">'+aH+'</span><span style="text-align:right">Kurs aktuell</span><span style="text-align:right">Δ %</span><span style="text-align:right">Δ €</span></div>';
@@ -4027,44 +4078,9 @@ function renderPositions(rows, type, soldRows){
   if(analysisMode){
     const gt='grid-template-columns:2fr 1fr 1.1fr 1.2fr 1.2fr';
     const head='<div class="neo-row-h" style="display:grid;'+gt+';gap:10px"><span>Position</span><span style="text-align:right">Kurs akt. / KGV</span><span style="text-align:right">52 Wo. Hoch / Tief</span><span class="neo-sort-cell" style="text-align:right">'+renderSortButton('analysisPotentialPct','Potential')+'</span><span class="neo-sort-cell" style="text-align:right">'+renderSortButton('analysisRiskPct','Risiko')+'</span></div>';
-    const body=sorted.map(r=>{
-      const cp=Number(r.currentPrice)||0, hi=Number(r.high12m), lo=Number(r.low12m), sh=Number(r.shares)||0;
-      const kgv=(r.kgv!=null && isFinite(Number(r.kgv)))? f(Number(r.kgv),1) : '–';
-      const hasHi=isFinite(hi)&&hi>0, hasLo=isFinite(lo)&&lo>0;
-      const upR=(cp>0&&hasHi)?(hi/cp-1):null, upE=hasHi?(hi-cp)*sh:null;
-      const dnR=(cp>0&&hasLo)?(lo/cp-1):null, dnE=hasLo?(lo-cp)*sh:null;
-      const meta=escapeHtml(r.wkn||'')+' · '+f(sh,0)+' Stk.';
-      return '<div class="neo-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+(r.isLive?'':' · kein Live-Kurs')+'</div></div>'
-        +twoLine(f(cp,2)+' €', kgv)
-        +twoLine(hasHi?f(hi,2)+' €':'–', hasLo?f(lo,2)+' €':'–')
-        +(upR!=null?chgCell(upR,upE):oneLine('–'))
-        +(dnR!=null?chgCell(dnR,dnE):oneLine('–'))
-        +'</div>';
-    }).join('');
+    const body=sorted.map(r=>analysisRowHtml(r, gt)).join('');
     // S&P-500-Benchmark-Zeile ganz oben (Markt-„Bibel"): Indexstand, KGV, 52W-Hoch/Tief, Potenzial/Risiko.
-    // Kein €-Wert (kein Stückbestand), daher nur %. Eigene, dunklere Hintergrundfarbe zur Abgrenzung.
-    let sp500Html='';
-    if(sp500Ref && sp500Ref.level){
-      const lvl=Number(sp500Ref.level), hi=Number(sp500Ref.high12m), lo=Number(sp500Ref.low12m);
-      const hasHi=isFinite(hi)&&hi>0, hasLo=isFinite(lo)&&lo>0;
-      const upR=(lvl>0&&hasHi)?(hi/lvl-1):null, dnR=(lvl>0&&hasLo)?(lo/lvl-1):null;
-      const peTxt=(sp500Ref.gaapPe!=null)?f(Number(sp500Ref.gaapPe),1):'–';
-      const capeTxt=(sp500Ref.shillerCape!=null)?f(Number(sp500Ref.shillerCape),1):'–';
-      const pctOnly=(p)=>{ if(p==null) return oneLine('–'); const c=p>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;font-size:16px;font-weight:700;color:'+c+'">'+fp(p)+'</div>'; };
-      // Bewertungs-Zelle: Indexstand + GAAP-KGV (echte Gewinne) + Shiller CAPE.
-      const valCell='<div style="text-align:right;line-height:1.34">'
-        +'<div style="font-size:16px;font-weight:600;color:var(--text)">'+f(lvl,0)+' Pkt.</div>'
-        +'<div style="font-size:13px;color:var(--text-muted)">KGV '+peTxt+'</div>'
-        +'<div style="font-size:13px;color:var(--text-muted)">CAPE '+capeTxt+'</div></div>';
-      const lnk=(u,t)=>'<a href="'+u+'" target="_blank" rel="noopener" class="sp500-link">'+t+' ↗</a>';
-      const links='<div class="sp500-links">'+lnk('https://www.multpl.com/s-p-500-pe-ratio','S&amp;P 500 KGV')+lnk('https://www.multpl.com/shiller-pe','Shiller CAPE')+'</div>';
-      sp500Html='<div class="neo-row sp500-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">S&amp;P 500 Index</div><div class="neo-meta">Benchmark · GAAP-KGV &amp; Shiller (echte Gewinne, Quelle multpl.com)</div>'+links+'</div>'
-        +valCell
-        +twoLine(hasHi?f(hi,0)+' Pkt.':'–', hasLo?f(lo,0)+' Pkt.':'–')
-        +pctOnly(upR)
-        +pctOnly(dnR)
-        +'</div>';
-    }
+    const sp500Html=sp500AnalysisRowHtml(gt);
     wrap.innerHTML='<div class="neo-list">'+head+sp500Html+body+'</div>'; return;
   }
   // === Übersicht im WAX-Einzeldepot-Look: YTD und Heute parallel als eigene Spalten (kein Umschalter mehr) ===
@@ -4139,6 +4155,17 @@ function renderPositions(rows, type, soldRows){
 function renderSold(rows){
   const wrap=document.getElementById('soldWrap'); if(!wrap) return;
   if(!rows.length){ wrap.innerHTML='<div class="neo-card" style="text-align:center;color:var(--text-muted)">Noch keine Verkäufe im laufenden Jahr.</div>'; return; }
+  if(analysisMode){
+    // Gleiche Analyseansicht wie Übersicht/Watchlist (Kurs akt. / KGV · 52W Hoch/Tief · Potential · Risiko),
+    // aber bezogen auf den aktuellen Marktkurs nach dem Verkauf (marketPrice), nicht den Verkaufskurs.
+    const gt='grid-template-columns:2fr 1fr 1.1fr 1.2fr 1.2fr';
+    const head='<div class="neo-row-h" style="display:grid;'+gt+';gap:10px"><span>Position</span><span style="text-align:right">Kurs akt. / KGV</span><span style="text-align:right">52 Wo. Hoch / Tief</span><span class="neo-sort-cell" style="text-align:right">'+renderSortButton('analysisPotentialPct','Potential')+'</span><span class="neo-sort-cell" style="text-align:right">'+renderSortButton('analysisRiskPct','Risiko')+'</span></div>';
+    const sortedA=sortRows(rows);
+    const body=sortedA.map(r=>analysisRowHtml(r, gt, r.marketPrice)).join('');
+    const sp500Html=sp500AnalysisRowHtml(gt);
+    wrap.innerHTML='<div class="neo-list">'+head+sp500Html+body+'</div>';
+    return;
+  }
   // Sortierung über den "realisiert"-Header: Datum (Standard) → € absteigend → € aufsteigend → Datum
   const sorted=[...rows];
   if(soldSort==='absdesc') sorted.sort((a,b)=>(Number(b.diffAbs)||0)-(Number(a.diffAbs)||0));
