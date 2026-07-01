@@ -725,9 +725,11 @@ body:not(.theme-original) .ticker-result-item.selected{
 body.theme-dark #themeToggleBtn.mode-toggle.active,
 body.theme-dark #perfToggleBtn.mode-toggle.active,
 body.theme-dark #analysisToggleBtn.mode-toggle.active,
+body.theme-dark #soldAnalysisToggleBtn.mode-toggle.active,
 body:not(.theme-original) #themeToggleBtn.mode-toggle.active,
 body:not(.theme-original) #perfToggleBtn.mode-toggle.active,
-body:not(.theme-original) #analysisToggleBtn.mode-toggle.active{
+body:not(.theme-original) #analysisToggleBtn.mode-toggle.active,
+body:not(.theme-original) #soldAnalysisToggleBtn.mode-toggle.active{
   background:#20323B;
   border-color:#2A3B44;
   color:#E4EEF0;
@@ -737,9 +739,11 @@ body:not(.theme-original) #analysisToggleBtn.mode-toggle.active{
 body.theme-dark #themeToggleBtn.mode-toggle:hover,
 body.theme-dark #perfToggleBtn.mode-toggle:hover,
 body.theme-dark #analysisToggleBtn.mode-toggle:hover,
+body.theme-dark #soldAnalysisToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #themeToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #perfToggleBtn.mode-toggle:hover,
-body:not(.theme-original) #analysisToggleBtn.mode-toggle:hover{
+body:not(.theme-original) #analysisToggleBtn.mode-toggle:hover,
+body:not(.theme-original) #soldAnalysisToggleBtn.mode-toggle:hover{
   background:#29404A;
   border-color:#3A5560;
   color:#E4EEF0;
@@ -750,9 +754,11 @@ body:not(.theme-original) #analysisToggleBtn.mode-toggle:hover{
 body.theme-dark #themeToggleBtn.mode-toggle:hover,
 body.theme-dark #perfToggleBtn.mode-toggle:hover,
 body.theme-dark #analysisToggleBtn.mode-toggle:hover,
+body.theme-dark #soldAnalysisToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #themeToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #perfToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #analysisToggleBtn.mode-toggle:hover,
+body:not(.theme-original) #soldAnalysisToggleBtn.mode-toggle:hover,
 .mode-toggle:hover{
   background:#FF7A00 !important;
   border-color:#FF7A00 !important;
@@ -963,7 +969,8 @@ body.theme-original .rollover-btn-cancel{
 body.theme-original .mode-toggle.active,
 body.theme-original #themeToggleBtn.mode-toggle.active,
 body.theme-original #perfToggleBtn.mode-toggle.active,
-body.theme-original #analysisToggleBtn.mode-toggle.active{
+body.theme-original #analysisToggleBtn.mode-toggle.active,
+body.theme-original #soldAnalysisToggleBtn.mode-toggle.active{
   background:#20323B !important;
   border-color:#20323B !important;
   color:#E4EEF0 !important;
@@ -973,6 +980,7 @@ body.theme-original .mode-toggle:hover,
 body.theme-original #themeToggleBtn.mode-toggle:hover,
 body.theme-original #perfToggleBtn.mode-toggle:hover,
 body.theme-original #analysisToggleBtn.mode-toggle:hover,
+body.theme-original #soldAnalysisToggleBtn.mode-toggle:hover,
 body.theme-original .icon-btn:hover,
 body.theme-original .pflege-small-btn:hover,
 body.theme-original .ticker-search-btn:hover{
@@ -1320,7 +1328,12 @@ function resetPin(){
 <div id="overviewEntwicklungen" class="entw-wrap"></div>
 </div>
 <div class="hidden" id="soldSection">
-<div class="sec-t"><span class="sec-n">3 ·</span> Verkauft — realisierte Positionen</div>
+<div class="sec-t mode-row">
+<span><span class="sec-n">3 ·</span> Verkauft — realisierte Positionen</span>
+<div class="mode-center">
+<button class="mode-toggle active" id="soldAnalysisToggleBtn" onclick="toggleAnalysis()" type="button">Kaufkurse?</button>
+</div>
+</div>
 <div id="soldWrap" class="positions-shell"></div>
 </div>
 <div class="sec-t" id="structureTitle"><span class="sec-n">5 ·</span> Depotstruktur — Kategorien · Länder</div>
@@ -2158,7 +2171,7 @@ function renderSortButton(key, label, showArrow = true){
 }
 function sortRows(rows){
   const sorted = [...rows];
-  if(currentPage === 'watchlist' && !analysisMode){
+  if(currentPage === 'watchlist' && !analysisModeByPage.watchlist){
     sorted.sort((a,b)=> String(a.name || '').localeCompare(String(b.name || ''), 'de', { sensitivity:'base' }));
   } else {
     const dir = currentSort.dir === 'asc' ? 1 : -1;
@@ -2522,7 +2535,7 @@ function goHome(){
   detailMode = false;
   historicalMode = false;
   perfMode = 'today';
-  analysisMode = false;
+  analysisModeByPage = { overview:false, watchlist:false, sold:false };
   currentSort = { key: 'currentValue', dir: 'desc' };
   document.getElementById('pflegeBackdrop')?.classList.remove('open');
   document.getElementById('pflegeModal')?.classList.remove('open');
@@ -4058,6 +4071,7 @@ function renderPositions(rows, type, soldRows){
   const wrap=document.getElementById('positionsWrap'); if(!wrap) return;
   if(!rows.length){ wrap.innerHTML='<div class="neo-card" style="text-align:center;color:var(--text-muted)">Keine Positionen.</div>'; return; }
   const isWatch=(type==='watchlist'); const isT=perfMode!=='ytd';
+  const analysisMode=!!analysisModeByPage[isWatch?'watchlist':'overview'];
   const sorted=sortRows(rows);
   const oneLine=(t)=>'<div style="text-align:right;font-size:16px;font-weight:600;color:var(--text)">'+t+'</div>';
   const twoLine=(t,b)=>'<div style="text-align:right;line-height:1.32"><div style="font-size:16px;font-weight:600;color:var(--text)">'+t+'</div><div style="font-size:16px;color:var(--text-muted)">'+b+'</div></div>';
@@ -4155,7 +4169,7 @@ function renderPositions(rows, type, soldRows){
 function renderSold(rows){
   const wrap=document.getElementById('soldWrap'); if(!wrap) return;
   if(!rows.length){ wrap.innerHTML='<div class="neo-card" style="text-align:center;color:var(--text-muted)">Noch keine Verkäufe im laufenden Jahr.</div>'; return; }
-  if(analysisMode){
+  if(analysisModeByPage.sold){
     // Gleiche Analyseansicht wie Übersicht/Watchlist (Kurs akt. / KGV · 52W Hoch/Tief · Potential · Risiko),
     // aber bezogen auf den aktuellen Marktkurs nach dem Verkauf (marketPrice), nicht den Verkaufskurs.
     const gt='grid-template-columns:2fr 1fr 1.1fr 1.2fr 1.2fr';
@@ -4194,7 +4208,9 @@ function renderSold(rows){
 }
 
 let perfMode='today';
-let analysisMode=false;
+// Jede Seite (Übersicht/Watchlist/Verkauft) hat einen eigenen, unabhängigen Kaufkurse?-Status:
+// Umschalten auf einer Seite wirkt sich nicht auf die anderen aus, jede startet normal (false).
+let analysisModeByPage = { overview:false, watchlist:false, sold:false };
 // Verkaufsseite: Sortierung der realisierten Positionen – 'date' | 'absdesc' | 'absasc'
 let soldSort='date';
 function toggleSoldSort(){ soldSort = soldSort==='date' ? 'absdesc' : (soldSort==='absdesc' ? 'absasc' : 'date'); render(); }
@@ -4207,12 +4223,19 @@ function updateModeButtons(){
   // Heute ist voreingestellt, deshalb bietet der Button YTD als Ziel an
   if(pb){ pb.textContent=perfMode==='today'?'YTD':'Heute'; pb.classList.toggle('active', perfMode==='today'); }
   const ab=document.getElementById('analysisToggleBtn');
-  if(ab){ ab.textContent=analysisMode?'aktuell':'Kaufkurse?'; ab.classList.toggle('active', !analysisMode); }
+  const overviewAnalysis=!!analysisModeByPage[currentPage==='watchlist'?'watchlist':'overview'];
+  if(ab){ ab.textContent=overviewAnalysis?'aktuell':'Kaufkurse?'; ab.classList.toggle('active', !overviewAnalysis); }
+  const sab=document.getElementById('soldAnalysisToggleBtn');
+  if(sab){ sab.textContent=analysisModeByPage.sold?'aktuell':'Kaufkurse?'; sab.classList.toggle('active', !analysisModeByPage.sold); }
 }
 function updatePerfModeButtons(){ updateModeButtons(); }
 function toggleTheme(){ setTheme(currentTheme==='dark'?'original':'dark'); updateModeButtons(); }
 function togglePerf(){ perfMode=(perfMode==='today')?'ytd':'today'; updateModeButtons(); render(); }
-function toggleAnalysis(){ analysisMode=!analysisMode; updateModeButtons(); render(); }
+function toggleAnalysis(){
+  const key = analysisModeByPage.hasOwnProperty(currentPage) ? currentPage : 'overview';
+  analysisModeByPage[key] = !analysisModeByPage[key];
+  updateModeButtons(); render();
+}
 function setPerfMode(m){ perfMode=(m==='ytd')?'ytd':'today'; updateModeButtons(); render(); }
 
 bootstrapApp();
