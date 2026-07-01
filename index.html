@@ -3485,7 +3485,7 @@ async function renderNewsflash(){
   if(__entwData === null){
     let usedSeed = true;
     try{
-      const url = `${SUPABASE_URL}/rest/v1/entwicklungen?select=stand,themen&order=stand.desc&limit=1`;
+      const url = `${SUPABASE_URL}/rest/v1/entwicklungen?select=stand,themen,updated_at&order=stand.desc&limit=1`;
       const r = await fetch(url, { headers: supabaseHeaders() });
       if(r.ok){
         const rows = await r.json();
@@ -3494,7 +3494,11 @@ async function renderNewsflash(){
         if(typeof themen === 'string'){ try{ themen = JSON.parse(themen); }catch(e){ themen = null; } }
         if(themen && typeof themen === 'object' && Object.keys(themen).length){
           __entwData = themen; usedSeed = false;
-          try{ __entwStand = 'Stand ' + new Date(row.stand).toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'}); }catch(e){ __entwStand = 'Stand ' + (row.stand||''); }
+          try{
+            const datum = new Date(row.stand).toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'});
+            const uhrzeit = row.updated_at ? ', ' + new Date(row.updated_at).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) + ' Uhr' : '';
+            __entwStand = 'Stand ' + datum + uhrzeit;
+          }catch(e){ __entwStand = 'Stand ' + (row.stand||''); }
         }
       }
     }catch(e){ /* offline / Tabelle fehlt → Seed */ }
