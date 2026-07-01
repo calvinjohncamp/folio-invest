@@ -367,6 +367,29 @@ body.theme-dark .pflege-note{color:#9b9ea2}
 .rollover-btn-cancel{border:1px solid var(--line-2);background:var(--card);color:var(--text-soft);border-radius:999px;padding:11px 22px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .rollover-btn-cancel:hover{background:var(--midnight)}
 
+/* 12-Monats-Kursverlauf-Popup (Klick auf eine Position/Watchlist-/Verkaufszeile) */
+[data-chart-wkn]{cursor:pointer}
+.chart-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:none;align-items:center;justify-content:center}
+.chart-modal-backdrop.open{display:flex}
+.chart-modal{background:var(--silver);border:1px solid var(--line-2);border-radius:22px;box-shadow:0 18px 60px rgba(0,0,0,.22);padding:20px;max-width:640px;width:calc(100vw - 32px);max-height:calc(100vh - 40px);overflow:auto}
+body.theme-dark .chart-modal{background:#141414;border-color:rgba(246,246,246,.10);box-shadow:0 22px 64px rgba(0,0,0,.45)}
+.chart-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.chart-modal-title{font-size:18px;font-weight:700;color:var(--text)}
+.chart-modal-sub{font-size:12px;color:var(--text-muted);margin-top:2px}
+.chart-modal-close{border:none;background:none;font-size:24px;line-height:1;cursor:pointer;color:var(--text-dim)}
+.chart-modal-price-row{display:flex;align-items:baseline;gap:10px;margin:14px 0 12px}
+.chart-modal-price{font-size:26px;font-weight:700;color:var(--text)}
+.chart-modal-change{font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--card)}
+.chart-modal-svg-wrap{width:100%}
+.chart-modal-markers{display:flex;justify-content:space-between;gap:8px;margin-top:8px}
+.chart-modal-marker{display:flex;flex-direction:column;gap:2px;min-width:0}
+.chart-modal-marker:first-child{align-items:flex-start;text-align:left}
+.chart-modal-marker:nth-child(2){align-items:center;text-align:center}
+.chart-modal-marker:last-child{align-items:flex-end;text-align:right}
+.chart-modal-marker-price{font-size:14px;font-weight:700;color:var(--text)}
+.chart-modal-marker-date{font-size:11px;color:var(--text-muted)}
+.chart-modal-empty{color:var(--text-muted);font-size:13px;text-align:center;padding:40px 0}
+@media (max-width: 480px){.chart-modal{padding:16px}.chart-modal-price{font-size:22px}}
 
 body.page-watchlist .positions-summary-card{display:none !important;}
 
@@ -1362,6 +1385,20 @@ function resetPin(){
       <button class="rollover-btn-cancel" onclick="cancelRollover()">Abbrechen</button>
       <button class="rollover-btn-confirm" onclick="confirmRollover()">Jahreswechsel durchführen</button>
     </div>
+  </div>
+</div>
+
+<!-- 12-Monats-Kursverlauf-Popup: EIN Fenster für Depot/Watchlist/Verkauft -->
+<div class="chart-modal-backdrop" id="chartModalBackdrop" style="display:none" onclick="if(event.target===this) closePriceChart()">
+  <div class="chart-modal">
+    <div class="chart-modal-head">
+      <div>
+        <div class="chart-modal-title" id="chartModalTitle">–</div>
+        <div class="chart-modal-sub" id="chartModalSub"></div>
+      </div>
+      <button class="chart-modal-close" type="button" onclick="closePriceChart()">&times;</button>
+    </div>
+    <div id="chartModalMount"></div>
   </div>
 </div>
 
@@ -3582,6 +3619,112 @@ window.entwToggle = function(key){
   renderEntwPanel();
 };
 
+// ===== 12-Monats-Kursverlauf-Popup — ein Fenster für Depot/Watchlist/Verkauft =====
+// Nutzt dieselbe historicalData[wkn] (bereits in EUR), die loadKurse() für Depot,
+// Watchlist UND Verkauft ohnehin für 52-Wochen-Hoch/Tief lädt (~12 Monate täglich).
+let __chartModalWkn = null;
+function chartPointsFor(wkn){
+  return (historicalData[wkn] || [])
+    .filter(p => p && p.date && Number.isFinite(p.close))
+    .sort((a,b) => String(a.date).localeCompare(String(b.date)));
+}
+function buildChartSvg(points, markerIdx){
+  const w = 600, h = 220, padX = 6, padY = 12;
+  const closes = points.map(p => p.close);
+  const min = Math.min(...closes), max = Math.max(...closes);
+  const span = (max - min) || 1;
+  const stepX = points.length > 1 ? (w - padX*2) / (points.length - 1) : 0;
+  const xy = (i) => {
+    const x = padX + i*stepX;
+    const y = padY + (h - padY*2) * (1 - (points[i].close - min)/span);
+    return [x, y];
+  };
+  const coords = points.map((p,i) => xy(i).map(n=>n.toFixed(1)).join(',')).join(' ');
+  const up = points[points.length-1].close >= points[0].close;
+  const stroke = up ? 'var(--success)' : 'var(--orange)';
+  const dots = (markerIdx||[]).map(i => {
+    const [x,y] = xy(i);
+    return '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="4.5" fill="var(--card)" stroke="'+stroke+'" stroke-width="2.5"/>';
+  }).join('');
+  return '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" style="width:100%;height:220px;display:block">'
+    + '<polyline points="'+coords+'" fill="none" stroke="'+stroke+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+    + dots
+    + '</svg>';
+}
+// Findet den Punkt, dessen Datum am nächsten an "monthsAgoFrom" liegt (Kalendermonate, nicht Index) —
+// robust gegen Wochenenden/Feiertage/fehlende Handelstage in der Historie.
+function pointNearestMonthsAgo(points, monthsAgo){
+  const lastDate = new Date(points[points.length-1].date);
+  const target = new Date(lastDate); target.setMonth(target.getMonth() - monthsAgo);
+  let bestIdx = 0, bestDiff = Infinity;
+  points.forEach((p,i) => {
+    const diff = Math.abs(new Date(p.date) - target);
+    if(diff < bestDiff){ bestDiff = diff; bestIdx = i; }
+  });
+  return bestIdx;
+}
+function renderChartModal(wkn, name, points){
+  const mount = document.getElementById('chartModalMount');
+  const titleEl = document.getElementById('chartModalTitle');
+  const subEl = document.getElementById('chartModalSub');
+  if(titleEl) titleEl.textContent = name || wkn || '–';
+  if(subEl) subEl.textContent = 'WKN ' + (wkn||'') + ' · Kursverlauf 12 Monate';
+  if(!mount) return;
+  if(points.length < 2){
+    mount.innerHTML = '<div class="chart-modal-empty">Kein 12-Monats-Kursverlauf verfügbar.</div>';
+    return;
+  }
+  const first = points[0], last = points[points.length-1];
+  const midIdx = pointNearestMonthsAgo(points, 6);
+  const mid = points[midIdx];
+  const chgPct = first.close ? (last.close-first.close)/first.close : 0;
+  const marker = (p) => '<div class="chart-modal-marker"><div class="chart-modal-marker-price">'+f(p.close,2)+' €</div><div class="chart-modal-marker-date">'+formatShortDateOrBlank(p.date)+'</div></div>';
+  mount.innerHTML = '<div class="chart-modal-price-row">'
+    + '<span class="chart-modal-price">' + f(last.close,2) + ' €</span>'
+    + '<span class="chart-modal-change ' + cl(chgPct) + '">' + fp(chgPct) + '</span>'
+    + '</div>'
+    + '<div class="chart-modal-svg-wrap">' + buildChartSvg(points, [0, midIdx, points.length-1]) + '</div>'
+    + '<div class="chart-modal-markers">' + marker(first) + marker(mid) + marker(last) + '</div>';
+}
+async function openPriceChart(wkn, name){
+  const backdrop = document.getElementById('chartModalBackdrop');
+  const mount = document.getElementById('chartModalMount');
+  if(!backdrop || !mount || !wkn) return;
+  __chartModalWkn = wkn;
+  backdrop.classList.add('open'); backdrop.style.display = 'flex';
+  mount.innerHTML = '<div class="chart-modal-empty">Lade Kursverlauf…</div>';
+  const titleEl = document.getElementById('chartModalTitle');
+  const subEl = document.getElementById('chartModalSub');
+  if(titleEl) titleEl.textContent = name || wkn;
+  if(subEl) subEl.textContent = 'WKN ' + wkn + ' · Kursverlauf 12 Monate';
+  let points = chartPointsFor(wkn);
+  if(!points.length){
+    const info = TICKER_MAP[wkn];
+    if(info && info.tickers && info.tickers.length){
+      try{
+        const raw = await cfFetchHistory(info.tickers[0]);
+        if(raw && raw.length){
+          historicalData[wkn] = raw.map(row => ({ ...row, close: toEUR(row.close, info.fx) }));
+          points = chartPointsFor(wkn);
+        }
+      }catch(e){ /* offline → bleibt leer, zeigt Hinweis */ }
+    }
+  }
+  if(__chartModalWkn !== wkn) return; // Popup wurde inzwischen geschlossen / anderer Titel geöffnet
+  renderChartModal(wkn, name, points);
+}
+function closePriceChart(){
+  __chartModalWkn = null;
+  const backdrop = document.getElementById('chartModalBackdrop');
+  if(backdrop){ backdrop.classList.remove('open'); backdrop.style.display = 'none'; }
+}
+document.addEventListener('click', function(e){
+  const el = e.target.closest('[data-chart-wkn]');
+  if(!el) return;
+  openPriceChart(el.getAttribute('data-chart-wkn'), el.getAttribute('data-chart-name') || '');
+});
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closePriceChart(); });
+
 async function refreshMarketData() {
   if (marketRefreshRunning) return;
   setRefreshButtonsLoading(true);
@@ -4040,7 +4183,7 @@ function analysisRowHtml(r, gt, currentPriceOverride){
   const twoLine=(t,b)=>'<div style="text-align:right;line-height:1.32"><div style="font-size:16px;font-weight:600;color:var(--text)">'+t+'</div><div style="font-size:16px;color:var(--text-muted)">'+b+'</div></div>';
   const oneLine=(t)=>'<div style="text-align:right;font-size:16px;font-weight:600;color:var(--text)">'+t+'</div>';
   const chgCell=(p,a)=>{ const c=a>=0?'var(--success)':'var(--orange)'; return '<div style="text-align:right;line-height:1.3"><div style="font-size:16px;font-weight:700;color:'+c+'">'+fp(p)+'</div><div style="font-size:12.5px;font-weight:600;color:'+c+'">'+fc(a)+'</div></div>'; };
-  return '<div class="neo-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+(r.isLive?'':' · kein Live-Kurs')+'</div></div>'
+  return '<div class="neo-row" style="'+gt+'" data-chart-wkn="'+escapeHtml(r.wkn||'')+'" data-chart-name="'+escapeHtml(r.name||'')+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+(r.isLive?'':' · kein Live-Kurs')+'</div></div>'
     +twoLine(f(cp,2)+' €', kgv)
     +twoLine(hasHi?f(hi,2)+' €':'–', hasLo?f(lo,2)+' €':'–')
     +(upR!=null?chgCell(upR,upE):oneLine('–'))
@@ -4089,7 +4232,7 @@ function renderPositions(rows, type, soldRows){
     const body=sorted.map(r=>{
       const kA=isT?r.prevPrice:r.refPrice, kB=r.currentPrice;
       const dp=isT?r.dayPct:r.diffPct, da=isT?r.dayAbs:r.diffAbs;
-      return '<div class="neo-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+escapeHtml(r.wkn||'')+(r.isLive?'':' · kein Live-Kurs')+'</div></div>'+oneLine(f(kA,2)+' €')+oneLine(f(kB,2)+' €')+pctCell(dp)+eurCell(da)+'</div>';
+      return '<div class="neo-row" style="'+gt+'" data-chart-wkn="'+escapeHtml(r.wkn||'')+'" data-chart-name="'+escapeHtml(r.name||'')+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+escapeHtml(r.wkn||'')+(r.isLive?'':' · kein Live-Kurs')+'</div></div>'+oneLine(f(kA,2)+' €')+oneLine(f(kB,2)+' €')+pctCell(dp)+eurCell(da)+'</div>';
     }).join('');
     wrap.innerHTML='<div class="neo-list">'+head+body+'</div>'; return;
   }
@@ -4116,7 +4259,7 @@ function renderPositions(rows, type, soldRows){
     const curYearLots=(r.lots||[]).filter(l=>String(l.date||'')>=yearStartIso).map(l=>l.date).sort();
     const newBadge=curYearLots.length?'<span class="dc-badge-new">NEU '+formatShortDate(curYearLots[curYearLots.length-1])+'</span>':'';
     const noLive=r.isLive?'':'<span>kein Live-Kurs</span>';
-    return '<article class="dc-card '+(idx%2?'alt':'')+'"><div class="dc-grid dc-grid-pos6">'
+    return '<article class="dc-card '+(idx%2?'alt':'')+'" data-chart-wkn="'+escapeHtml(r.wkn||'')+'" data-chart-name="'+escapeHtml(r.name||'')+'"><div class="dc-grid dc-grid-pos6">'
       +'<div class="dc-col dc-name"><div class="dc-title">'+escapeHtml(r.name)+'</div><div class="dc-meta"><span>'+escapeHtml(r.wkn||'')+'</span><span>'+f(r.shares,0)+' Stk.</span>'+newBadge+noLive+'</div></div>'
       +'<div class="dc-col dc-share"><div class="dc-share-top">'+f(pct*100,1)+'%</div><div class="dc-bar"><div class="dc-bar-fill" style="width:'+barW+'%"></div></div></div>'
       +'<div class="dc-col '+cl(r.diffAbs)+'"><div class="dc-top">'+fp(r.diffPct)+'</div><div class="dc-sub">'+fc(r.diffAbs)+'</div></div>'
@@ -4202,7 +4345,7 @@ function renderSold(rows){
     const pct=r.share||0; const barW=Math.round((pct/maxShare)*100);
     const meta=f(r.shares,0)+' Stk. · '+escapeHtml(r.wkn||'')+' · '+formatShortDate(r.sellDate);
     const anteil='<div style="display:flex;flex-direction:column;gap:5px;justify-content:center"><span style="font-size:13px;font-weight:600;color:var(--text)">'+f(pct*100,1)+'%</span><div class="neo-bar"><i style="width:'+barW+'%"></i></div></div>';
-    return '<div class="neo-row" style="'+gt+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+'</div></div>'+anteil+twoLine(f(r.sellPrice,2)+' €',f(r.refPrice,2)+' €')+twoLine(f(r.currentValue,0)+' €',f(r.refValue,0)+' €')+chgCell(r.diffPct,r.diffAbs)+'</div>';
+    return '<div class="neo-row" style="'+gt+'" data-chart-wkn="'+escapeHtml(r.wkn||'')+'" data-chart-name="'+escapeHtml(r.name||'')+'"><div style="min-width:0"><div class="neo-name">'+escapeHtml(r.name)+'</div><div class="neo-meta">'+meta+'</div></div>'+anteil+twoLine(f(r.sellPrice,2)+' €',f(r.refPrice,2)+' €')+twoLine(f(r.currentValue,0)+' €',f(r.refValue,0)+' €')+chgCell(r.diffPct,r.diffAbs)+'</div>';
   }).join('');
   const tot=sorted.reduce((s,r)=>s+r.diffAbs,0);
   const totErloes=sorted.reduce((s,r)=>s+(r.currentValue||0),0);
