@@ -11,8 +11,31 @@
 <meta name="apple-mobile-web-app-title" content="Folio.invest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700&amp;family=DM+Sans:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700&amp;family=DM+Sans:wght@300;400;500;600;700&amp;family=Roboto+Mono:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900&amp;f[]=general-sans@600,700&amp;display=swap" rel="stylesheet"/>
 <style>
+:root{
+  --font-display:'Satoshi','General Sans','Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+/* Zahlen-Look 1:1 aus Folio.wax: alle KPI-/Positions-Zahlen auf Inter/600 (statt 700-800)
+   + tabular-nums (feste Ziffernbreite), damit Spalten exakt wie bei WAX ausgerichtet wirken. */
+.kpi-v,
+.dh-bigval,
+.dh-bigval-xl,
+.dh-kpi-pct,
+.chart-modal-price,
+.dc-top,
+.structure-total,
+.bk-v,
+.bk-price,
+.bk-wax-v{
+  font-family:var(--font-body) !important;
+  font-weight:600 !important;
+  font-variant-numeric:tabular-nums !important;
+  font-feature-settings:"tnum" 1 !important;
+}
 :root{
   --silver:#F6F6F6;
   --orange:#DF5735;
@@ -107,7 +130,7 @@ body.theme-original.page-pflege .pflege-modal{background:#fff}
 }
 @media(max-width:420px){.bk-grid{grid-template-columns:1fr}}
 .bk-item{background:linear-gradient(180deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;overflow:hidden}
-.bk-l{font-family:'DM Serif Display',Georgia,serif;font-size:18px;font-weight:400;line-height:1.15;letter-spacing:-.2px;color:var(--text-muted);margin-bottom:8px}
+.bk-l{font-family:var(--font-display);font-size:18px;font-weight:700;font-style:normal;line-height:1.15;letter-spacing:-.2px;color:var(--text-muted);margin-bottom:8px}
 .bk-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px}
 .bk-price{font-size:16.5px;font-weight:700;white-space:nowrap;color:var(--text);font-family:'DM Sans',sans-serif}
 .bk-chg{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0}
@@ -234,7 +257,7 @@ body.theme-original .pos-col.kgv-mid .pos-value-top{color:#9b7a10}
 .structure-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:24px}
 .structure-card{background:#1c1c1c;border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;min-height:320px;box-shadow:0 10px 30px rgba(0,0,0,.16)}
 .structure-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
-.structure-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
+.structure-title{font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
 .structure-sub{font-size:10px;color:var(--text-muted);margin-top:3px}
 .structure-total{font-size:18px;font-weight:700;color:var(--text);white-space:nowrap}
 .donut-wrap{display:flex;align-items:center;gap:14px}
@@ -403,7 +426,7 @@ body.theme-dark .pflege-note{color:#9b9ea2}
 .chart-modal{background:var(--silver);border:1px solid var(--line-2);border-radius:22px;box-shadow:0 18px 60px rgba(0,0,0,.22);padding:20px;max-width:640px;width:calc(100vw - 32px);max-height:calc(100vh - 40px);overflow:auto}
 body.theme-dark .chart-modal{background:#141414;border-color:rgba(246,246,246,.10);box-shadow:0 22px 64px rgba(0,0,0,.45)}
 .chart-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.chart-modal-title{font-size:18px;font-weight:700;color:var(--text)}
+.chart-modal-title{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--text)}
 .chart-modal-sub{font-size:12px;color:var(--text-muted);margin-top:2px}
 .chart-modal-close{border:none;background:none;font-size:24px;line-height:1;cursor:pointer;color:var(--text-dim)}
 .chart-modal-price-row{display:flex;align-items:baseline;gap:10px;margin:14px 0 12px}
@@ -510,21 +533,21 @@ body:not(.theme-original){
 
 body.theme-dark .hd,
 body:not(.theme-original) .hd{
-  background:rgba(22,35,42,.94);
+  background:#16232A;
   border-bottom:1px solid rgba(228,238,240,.08);
-  backdrop-filter:blur(12px);
+  backdrop-filter:none;
 }
 
 body.theme-dark .nav,
 body:not(.theme-original) .nav{
-  background:rgba(22,35,42,.94);
+  background:#16232A;
   border-bottom:1px solid rgba(228,238,240,.08);
-  backdrop-filter:blur(12px);
+  backdrop-filter:none;
 }
 
 body.theme-dark .statusbar,
 body:not(.theme-original) .statusbar{
-  background:rgba(18,31,38,.94);
+  background:#16232A;
   border-bottom:1px solid rgba(228,238,240,.08);
   color:var(--text-dim);
 }
@@ -755,9 +778,7 @@ body:not(.theme-original) .ticker-result-item.selected{
 }
 
 #pinOverlay{
-  background:
-    radial-gradient(circle at 50% 30%, rgba(228,238,240,.045), transparent 32%),
-    linear-gradient(180deg, #16232A 0%, #101A20 100%) !important;
+  background: var(--brand-dark) !important;
 }
 
 #pinOverlay .k{
@@ -868,12 +889,12 @@ body.theme-original{
 /* Header, Navigation und Statusbereich bleiben im Marken-Dark-Look (1:1 Folio.wax-Farbton #14253F) */
 body.theme-original .hd,
 body.theme-original .nav{
-  background:rgba(20,37,63,.94) !important;
+  background:#14253F !important;
   border-bottom:1px solid rgba(228,238,240,.08) !important;
-  backdrop-filter:blur(12px) !important;
+  backdrop-filter:none !important;
 }
 body.theme-original .statusbar{
-  background:rgba(20,37,63,.94) !important;
+  background:#14253F !important;
   border-bottom:1px solid rgba(228,238,240,.08) !important;
   color:#81939A !important;
 }
@@ -1257,8 +1278,7 @@ body.theme-original #themeToggleBtn.mode-toggle:hover{
 <div id="pinOverlay" style="
 position:fixed; inset:0; z-index:9999;
 display:flex; align-items:center; justify-content:center;
-background: radial-gradient(circle at 50% 30%, rgba(228,238,240,0.045), transparent 32%),
-linear-gradient(180deg, #16232A 0%, #101A20 100%);
+background: #14253F;
 font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 color:var(--silver);
 ">
@@ -1692,7 +1712,7 @@ const barPalette = ['#DF5735','#2FA36B','#A8AAAC','#E3E1E2','#6F8FAF','#8D79C8',
 
 function f(v,d=2){return new Intl.NumberFormat('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d}).format(Number(v||0))}
 function fc(v){const n=Number(v||0);const s=n>=0?'+':'';return s+f(n)+' €'}
-function fp(v){const n=Number(v||0);const s=n>=0?'+':''; return s+f(n*100,2)+'%'}
+function fp(v){const n=Number(v||0);return (n>=0?'▲ +':'▼ ')+f(Math.abs(n*100),2)+'%'}
 function cl(v){return Number(v||0)>=0?'pos':'neg'}
 function formatStamp(dateStr){ if(!dateStr) return '–'; const d = new Date(dateStr); return d.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(',', ' ·'); }
 function formatShortDate(dateStr){ if(!dateStr) return '–'; const d = new Date(dateStr); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'}); }
@@ -4489,7 +4509,7 @@ body.page-overview #perfToggleBtn{display:none}
 .dc-col:last-child{border-right:none}
 .dc-col.dc-name{align-items:flex-start;text-align:left}
 .dc-col.dc-share{align-items:stretch;text-align:left}
-.dc-title{font-size:18px;font-weight:700;line-height:1.2;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:9px;letter-spacing:-.01em;min-width:0;max-width:100%}
+.dc-title{font-family:var(--font-display);font-size:18px;font-weight:700;line-height:1.2;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:9px;letter-spacing:-.01em;min-width:0;max-width:100%}
 .dc-meta{font-size:11.5px;color:var(--text-muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .dc-top{font-size:16.5px;font-weight:700;line-height:1.1;color:var(--text);letter-spacing:-.01em}
 .dc-sub{font-size:12.5px;color:var(--text-muted);line-height:1.25;margin-top:6px}
