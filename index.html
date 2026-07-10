@@ -96,12 +96,36 @@ body.theme-original.page-pflege .pflege-modal{background:#fff}
 .kpi-v { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.1; }
 .kpi-v.pos { color: var(--success); } .kpi-v.neg { color: var(--orange); }
 .kpi-s { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
-/* === Benchmarks (Übersicht) === */
-.bench-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:24px;box-shadow:0 10px 30px rgba(0,0,0,.16)}
-.bench-item{background:var(--card);padding:14px 14px;text-align:center}
-.bench-l{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px}
-.bench-v{font-size:18px;font-weight:700;color:var(--text)}
-.bench-v.pos{color:var(--success)}.bench-v.neg{color:var(--orange)}
+/* Benchmarks-Kacheln — 1:1 aus Folio.wax übernommene Kachel-Optik:
+   einzelne abgerundete Karten, Serif-Überschrift, Heute/YTD gestapelt unten rechts. */
+.bk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+@media(max-width:760px){
+  .bk-grid{grid-template-columns:repeat(2,1fr)}
+  .bk-item:nth-child(1){order:1} .bk-item:nth-child(4){order:2} .bk-item:nth-child(7){order:3}
+  .bk-item:nth-child(2){order:4} .bk-item:nth-child(5){order:5} .bk-item:nth-child(8){order:6}
+  .bk-item:nth-child(3){order:7} .bk-item:nth-child(6){order:8} .bk-item:nth-child(9){order:9}
+}
+@media(max-width:420px){.bk-grid{grid-template-columns:1fr}}
+.bk-item{background:linear-gradient(180deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;overflow:hidden}
+.bk-l{font-family:'DM Serif Display',Georgia,serif;font-size:18px;font-weight:400;line-height:1.15;letter-spacing:-.2px;color:var(--text-muted);margin-bottom:8px}
+.bk-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px}
+.bk-price{font-size:16.5px;font-weight:700;white-space:nowrap;color:var(--text);font-family:'DM Sans',sans-serif}
+.bk-chg{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0}
+.bk-chg-solo{align-items:flex-end;gap:9px;margin-top:2px}
+.bk-chg-solo .bk-v{font-size:15px}
+.bk-chg-solo.bk-chg-bottom{margin-top:auto}
+.bk-chg-row{display:flex;align-items:baseline;gap:6px}
+.bk-chg-l{font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
+.bk-v{font-family:'Roboto Mono',monospace;font-size:12px;font-weight:700;color:var(--text)}
+.bk-v.pos{color:var(--success)}.bk-v.neg{color:var(--orange)}
+.bk-sub{display:flex;justify-content:space-between;gap:8px;font-family:'Roboto Mono',monospace;font-size:12px;color:var(--text-muted);padding-top:9px;border-top:1px solid var(--line-2)}
+.bk-cr{margin-top:6px;font-weight:700}
+.bk-cr .pos{color:var(--success)}.bk-cr .neg{color:var(--orange)}
+.bk-wax-body{position:relative;flex:1;min-height:100px}
+.bk-wax-stats{position:absolute;top:0;left:0;display:flex;flex-direction:column;gap:10px}
+.bk-wax-v{font-size:16.5px;font-weight:700;white-space:nowrap;color:var(--text);font-family:'DM Sans',sans-serif}
+.bk-wax-h{font-family:'Roboto Mono',monospace;font-size:9px;color:var(--text-muted);margin-top:2px}
+.bk-wax-chg{position:absolute;bottom:0;right:0;margin-top:0}
 /* Headlines-Teaser: 1:1-Ausschnitt aus dem Masthead von Folio.wax Headlines (folio-wax.de/headlines.html),
    bewusst immer in dessen Ivory/Navy/Orange-Optik statt im Invest-Theme. */
 .headlines-teaser{display:block;background:#F5F1E8;border:2.5px solid #C8632A;border-radius:14px;padding:22px 26px 16px;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s,border-color .15s;margin-bottom:24px;box-shadow:0 2px 10px rgba(200,99,42,.12)}
@@ -114,6 +138,32 @@ body.theme-original.page-pflege .pflege-modal{background:#fff}
 .headlines-teaser-dateline .mid{font-style:italic;font-family:Georgia,"Iowan Old Style","Times New Roman",Times,serif}
 .headlines-teaser-dateline span:last-child{font-weight:700;color:#C8632A}
 @media(max-width:600px){.headlines-teaser-dateline{flex-wrap:wrap;justify-content:center;text-align:center}.headlines-teaser-dateline .mid{order:3;flex:0 0 100%;margin-top:4px}}
+/* Headlines-Zeile: Teaser nimmt 2/3 (wie bei Folio.wax), der hitjourney-Player die restliche
+   Spalte und wird auf Teaser-Höhe gestreckt. 1:1 aus Folio.wax übernommen. */
+.headlines-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;align-items:stretch}
+.headlines-row .headlines-teaser{grid-column:1/3;margin-bottom:0}
+.headlines-row .wx-box--dark{grid-column:3/4;margin-bottom:0}
+@media(max-width:760px){.headlines-row{grid-template-columns:1fr}.headlines-row .headlines-teaser,.headlines-row .wx-box--dark{grid-column:1/-1}}
+/* Anspieltipp-Player (1:1 aus Folio.wax übernommen, Farben hartkodiert wie beim Headlines-Teaser,
+   unabhängig vom Invest-Theme). */
+.wx-box--dark{display:flex;flex-direction:column;border:1.5px solid #14253F;border-radius:14px;background:#14253F;color:#F5F1E8;overflow:hidden}
+.wx-box--dark .wx-box-head{background:#14253F;color:#F5F1E8;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:8px 14px 8px 16px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+.wx-anspiel{flex:1 1 auto;display:flex;align-items:center;padding:16px 0 16px 16px}
+.wx-play-btn{width:40px;height:40px;margin-right:16px;border-radius:50%;background:#C8632A;border:0;flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.wx-play-btn:active{transform:scale(.92)}
+.wx-play-btn svg{width:20px;height:20px;color:#14253F}
+.wx-play-btn .icon-pause{display:none}
+.wx-play-btn.is-playing .icon-play{display:none}
+.wx-play-btn.is-playing .icon-pause{display:block}
+.wx-anspiel-txt{flex:0 1 auto;min-width:0;max-width:190px;font-size:12.5px;line-height:1.4;color:#CBD3E0}
+.wx-anspiel-txt b{display:block;color:#fff;font-family:Georgia,"Iowan Old Style","Times New Roman",Times,serif;font-size:15px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-anspiel-txt span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-anspiel-spacer{flex:1 1 0}
+.wx-random-btn{width:60px;height:60px;border-radius:50%;flex:none;border:0;padding:0;cursor:pointer;background:transparent;display:block;overflow:hidden}
+.wx-random-btn img{width:100%;height:100%;display:block}
+.wx-random-btn:active{transform:scale(.92)}
+.wx-anspiel-link{display:block;padding:0 16px 20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9FD8EA;text-decoration:none}
+.wx-anspiel-link:hover{text-decoration:underline}
 .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--card); border: 1px solid var(--line); border-radius:18px; margin-bottom: 24px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,.16); }
 .tw.detail-width{max-width:980px}
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -725,10 +775,12 @@ body:not(.theme-original) .ticker-result-item.selected{
    Die drei Standard-Buttons Dark / Heute / Potential bleiben dunkel.
    Orange bleibt echten Akzenten vorbehalten. */
 body.theme-dark #themeToggleBtn.mode-toggle.active,
+body.theme-dark #heroThemeToggleBtn.mode-toggle.active,
 body.theme-dark #perfToggleBtn.mode-toggle.active,
 body.theme-dark #analysisToggleBtn.mode-toggle.active,
 body.theme-dark #soldAnalysisToggleBtn.mode-toggle.active,
 body:not(.theme-original) #themeToggleBtn.mode-toggle.active,
+body:not(.theme-original) #heroThemeToggleBtn.mode-toggle.active,
 body:not(.theme-original) #perfToggleBtn.mode-toggle.active,
 body:not(.theme-original) #analysisToggleBtn.mode-toggle.active,
 body:not(.theme-original) #soldAnalysisToggleBtn.mode-toggle.active{
@@ -739,10 +791,12 @@ body:not(.theme-original) #soldAnalysisToggleBtn.mode-toggle.active{
 }
 
 body.theme-dark #themeToggleBtn.mode-toggle:hover,
+body.theme-dark #heroThemeToggleBtn.mode-toggle:hover,
 body.theme-dark #perfToggleBtn.mode-toggle:hover,
 body.theme-dark #analysisToggleBtn.mode-toggle:hover,
 body.theme-dark #soldAnalysisToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #themeToggleBtn.mode-toggle:hover,
+body:not(.theme-original) #heroThemeToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #perfToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #analysisToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #soldAnalysisToggleBtn.mode-toggle:hover{
@@ -754,10 +808,12 @@ body:not(.theme-original) #soldAnalysisToggleBtn.mode-toggle:hover{
 /* ===================== Button-Hover-Fix (ehem. v6.7) ===================== */
 
 body.theme-dark #themeToggleBtn.mode-toggle:hover,
+body.theme-dark #heroThemeToggleBtn.mode-toggle:hover,
 body.theme-dark #perfToggleBtn.mode-toggle:hover,
 body.theme-dark #analysisToggleBtn.mode-toggle:hover,
 body.theme-dark #soldAnalysisToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #themeToggleBtn.mode-toggle:hover,
+body:not(.theme-original) #heroThemeToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #perfToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #analysisToggleBtn.mode-toggle:hover,
 body:not(.theme-original) #soldAnalysisToggleBtn.mode-toggle:hover,
@@ -872,7 +928,7 @@ body.theme-original .pflege-master-table tr:hover{
 /* Tabellen */
 body.theme-original thead th,
 body.theme-original .pflege-master-table th{
-  background:#EEF4F6 !important;
+  background:#E7EEF1 !important;
   color:#6C7D84 !important;
   border-bottom:1px solid #D9E1E3 !important;
 }
@@ -970,6 +1026,7 @@ body.theme-original .rollover-btn-cancel{
 }
 body.theme-original .mode-toggle.active,
 body.theme-original #themeToggleBtn.mode-toggle.active,
+body.theme-original #heroThemeToggleBtn.mode-toggle.active,
 body.theme-original #perfToggleBtn.mode-toggle.active,
 body.theme-original #analysisToggleBtn.mode-toggle.active,
 body.theme-original #soldAnalysisToggleBtn.mode-toggle.active{
@@ -1315,26 +1372,37 @@ function resetPin(){
 <div id="positionsWrap" class="positions-shell"></div>
 <div class="hidden" id="overviewBenchSection">
 <div class="sec-t"><span class="sec-n">3 ·</span> <span id="benchTitle">Benchmarks YTD</span></div>
-<div class="bench-grid">
-<div class="bench-item"><div class="bench-l">Mein Depot</div><div class="bench-v" id="bMine">—</div></div>
-<div class="bench-item"><div class="bench-l">Nasdaq</div><div class="bench-v" id="bNasdaq">lädt…</div></div>
-<div class="bench-item"><div class="bench-l">S&amp;P 500</div><div class="bench-v" id="bSp500">lädt…</div></div>
-<div class="bench-item"><div class="bench-l">DAX</div><div class="bench-v" id="bDax">lädt…</div></div>
-<div class="bench-item"><div class="bench-l">Hang Seng</div><div class="bench-v" id="bHsi">lädt…</div></div>
-<div class="bench-item"><div class="bench-l">Durchschnitt Benchmarks</div><div class="bench-v" id="bTop4">lädt…</div></div>
-</div>
+<div class="bk-grid" id="bkGrid"></div>
 </div>
 <div class="hidden" id="overviewNewsSection">
 <div class="sec-t"><span class="sec-n">4 ·</span> Headlines</div>
-<a class="headlines-teaser" href="https://folio-wax.de/headlines.html" target="_blank" rel="noopener" title="Zu Folio.wax Headlines">
-  <div class="headlines-teaser-name">FOLIO<span class="dot">·</span>WAX</div>
-  <div class="headlines-teaser-tag">Headlines</div>
-  <div class="headlines-teaser-dateline">
-    <span id="headlinesTeaserDate"></span>
-    <span class="mid">Sorgfältig kuratiert für den Aktienclub</span>
-    <span id="headlinesTeaserEdition"></span>
+<div class="headlines-row">
+  <a class="headlines-teaser" href="headlines.html" title="Zu Folio.invest Headlines">
+    <div class="headlines-teaser-name">FOLIO<span class="dot">·</span>INVEST</div>
+    <div class="headlines-teaser-tag">Headlines</div>
+    <div class="headlines-teaser-dateline">
+      <span id="headlinesTeaserDate"></span>
+      <span class="mid">Sorgfältig kuratiert für Folio.invest</span>
+      <span id="headlinesTeaserEdition"></span>
+    </div>
+  </a>
+  <div class="wx-box--dark">
+    <div class="wx-box-head">Songwriter's Picks</div>
+    <div class="wx-anspiel">
+      <button class="wx-play-btn" id="anspielPlayBtn" type="button" aria-label="Abspielen/Pause" title="Abspielen/Pause">
+        <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.53.85l10.2-6.5a1 1 0 0 0 0-1.7L9.53 4.65A1 1 0 0 0 8 5.5Z" fill="currentColor"/></svg>
+        <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.5" fill="currentColor"/></svg>
+      </button>
+      <div class="wx-anspiel-txt"><b id="anspielTitle">—</b><span id="anspielArtist"></span></div>
+      <span class="wx-anspiel-spacer" aria-hidden="true"></span>
+      <button class="wx-random-btn" id="anspielRandomBtn" type="button" aria-label="Zufälligen Song abspielen" title="Zufälligen Song abspielen">
+        <img src="Random%20Play%20Button.png" alt="" draggable="false">
+      </button>
+      <span class="wx-anspiel-spacer" aria-hidden="true"></span>
+    </div>
+    <a class="wx-anspiel-link" href="https://hitjourney.com" target="_blank" rel="noopener">hitjourney.com</a>
   </div>
-</a>
+</div>
 </div>
 <div class="hidden" id="soldSection">
 <div class="sec-t mode-row">
@@ -1639,10 +1707,12 @@ function kgvTone(v){ const n = Number(v); if(!Number.isFinite(n)) return 'kgv-na
 function setStatus(text){ const el=document.getElementById('statusText'); if(el) el.textContent=text; }
 function setRefreshButtonsLoading(isLoading){
   marketRefreshRunning = isLoading;
-  const btn = document.getElementById('refreshBtn');
-  if (!btn) return;
-  btn.disabled = isLoading;
-  btn.classList.toggle('refreshing', isLoading);
+  ['refreshBtn','heroRefreshBtn'].forEach(id=>{
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.disabled = isLoading;
+    btn.classList.toggle('refreshing', isLoading);
+  });
 }
 function getCurrentYear(){ return new Date().getFullYear(); }
 function getPrevYearEndIso(year = getCurrentYear()){ return `${year-1}-12-31`; }
@@ -3415,62 +3485,116 @@ async function loadSp500Reference(){
     };
   }catch(e){ /* alten Stand behalten */ }
 }
-// ===== Benchmarks (Übersicht) — Yahoo via CF-Worker, identisch zu Folio.wax =====
-// Jahresanfangskurse (Schluss 31.12. des Vorjahres). Beim Jahresabschluss aktualisieren.
-const BENCH_BASIS = {
-  '^IXIC':  23241.99,  // Nasdaq    Schluss 31.12.2025
-  '^GSPC':   6845.50,  // S&P 500   Schluss 31.12.2025
-  '^GDAXI': 24490.41,  // DAX       Schluss 30.12.2025
-  '^HSI':   25250.00,  // Hang Seng Schluss 31.12.2025
-};
-let benchQuotes = {};
+// ===== Benchmarks (Übersicht) — Yahoo via CF-Worker, 1:1 aus Folio.wax übernommene Kacheln =====
+// Die 7 echten Kacheln — 1:1 Inhalt & Reihenfolge wie in Folio.wax (3 Spalten × 3 Zeilen):
+// Zeile 1: S&P 500, DAX, Gold · Zeile 2: Nasdaq, Hang Seng, Bitcoin · Zeile 3: Dow, Durchschnitt, Mein Depot.
+const BK_TICKERS = [
+  { t:'^GSPC', l:'S&amp;P 500', unit:'Pkt.', dec:0 },
+  { t:'^GDAXI', l:'DAX', unit:'Pkt.', dec:0 },
+  { t:'GC=F', l:'Gold', unit:'$', dec:0 },
+  { t:'^IXIC', l:'Nasdaq', unit:'Pkt.', dec:0 },
+  { t:'^HSI', l:'Hang Seng', unit:'Pkt.', dec:0 },
+  { t:'BTC-EUR', l:'Bitcoin', unit:'€', dec:0 },
+  { t:'^DJI', l:'Dow', unit:'Pkt.', dec:0 },
+];
+const BK_AVG_OF = ['^GSPC','^IXIC','^DJI','^GDAXI','^HSI']; // "Durchschnitt Benchmarks" = Mittel dieser 5
+let bkData = {}; // Ticker -> {price, today, ytd, high, low}
 let investPerf = { ytd: null, today: null }; // wird in renderKpis() gesetzt
-async function loadBenchmarks(){
-  const tickers = ['^IXIC','^GSPC','^GDAXI','^HSI'];
-  await Promise.all(tickers.map(async ticker => {
-    const quote = await cfFetchQuote(ticker);
-    if(!quote || !quote.price) return;
-    benchQuotes[ticker] = {
-      price: quote.price,
-      prev: quote.prev || null,
-      ytd: BENCH_BASIS[ticker] ? (quote.price - BENCH_BASIS[ticker]) / BENCH_BASIS[ticker] : null,
-      today: quote.prev ? (quote.price - quote.prev) / quote.prev : null,
-    };
+let depotTotalLive = 0; // wird in renderKpis() gesetzt — Benchmark-Kachel „Mein Depot"
+function bkIdBase(t){ return t.replace(/[^A-Za-z0-9]/g,''); }
+function bkFmtLevel(v, unit, dec){ return (v==null||isNaN(v)) ? '—' : v.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})+' '+unit; }
+function bkChgHTML(idToday, idYtd, extra){
+  return `<div class="bk-chg${extra?' '+extra:''}">
+    <div class="bk-chg-row"><span class="bk-chg-l">Heute</span><span class="bk-v" id="${idToday}">·</span></div>
+    <div class="bk-chg-row"><span class="bk-chg-l">YTD</span><span class="bk-v" id="${idYtd}">·</span></div>
+  </div>`;
+}
+function bkTileHTML(cfg){
+  const id = bkIdBase(cfg.t);
+  return `<div class="bk-item">
+  <div class="bk-l">${cfg.l}</div>
+  <div class="bk-hero"><span class="bk-price" id="bkPrice${id}">·</span>${bkChgHTML('bkToday'+id,'bkYtd'+id)}</div>
+  <div class="bk-sub"><span id="bkHi${id}">Hoch ·</span><span id="bkLo${id}">Tief ·</span></div>
+  <div class="bk-sub bk-cr"><span id="bkPot${id}">Potential ·</span><span id="bkRisk${id}">Risiko ·</span></div>
+</div>`;
+}
+function bkAvgTileHTML(){
+  return `<div class="bk-item">
+    <div class="bk-l">Durchschnitt<br>Benchmarks</div>
+    ${bkChgHTML('bTop4Today','bTop4Ytd','bk-chg-solo bk-chg-bottom')}
+  </div>`;
+}
+function bkInvestTileHTML(){
+  return `<div class="bk-item">
+    <div class="bk-l">Mein Depot</div>
+    <div class="bk-wax-body">
+      <div class="bk-wax-stats">
+        <div><div class="bk-wax-v" id="bMineWert">·</div><div class="bk-wax-h">Depotwert aktuell</div></div>
+      </div>
+      <div class="bk-chg bk-chg-solo bk-wax-chg">
+        <div class="bk-chg-row"><span class="bk-chg-l">Heute</span><span class="bk-v" id="bMineToday">·</span></div>
+        <div class="bk-chg-row"><span class="bk-chg-l">YTD</span><span class="bk-v" id="bMineYtd">·</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+function renderBkGrid(){
+  const box = document.getElementById('bkGrid');
+  if (!box) return;
+  box.innerHTML = BK_TICKERS.map(bkTileHTML).join('') + bkAvgTileHTML() + bkInvestTileHTML();
+}
+async function loadBenchmarks() {
+  await Promise.all(BK_TICKERS.map(async ({t}) => {
+    const [quote, hist] = await Promise.all([cfFetchQuote(t), cfFetchHistory(t)]);
+    let price=null, prev=null, today=null, ytd=null, high=null, low=null;
+    if (quote && quote.price) {
+      price = quote.price; prev = quote.prev || null;
+      if (prev) today = (price - prev) / prev;
+    }
+    if (Array.isArray(hist) && hist.length) {
+      const closes = hist.map(p=>p.close).filter(Number.isFinite);
+      if (closes.length) { high = Math.max(...closes); low = Math.min(...closes); }
+      // YTD-Basis = Schlusskurs vom ersten Handelstag des laufenden Jahres, aus derselben
+      // rollierenden 12-Monats-Historie wie das 52W-Hoch/Tief — identisch zu Folio.wax.
+      const yearPrefix = String(new Date().getFullYear())+'-';
+      const firstOfYear = hist.find(p=>p.date && p.date.startsWith(yearPrefix));
+      if (firstOfYear && price) ytd = (price - firstOfYear.close) / firstOfYear.close;
+    }
+    bkData[t] = { price, today, ytd, high, low };
   }));
   renderBenchmarks();
 }
-function renderBenchmarks(){
-  // Benchmarks sind immer ein YTD-Vergleich (Depot YTD % vs. Index YTD %) — wie in Folio.wax,
-  // unabhängig vom Positions-Toggle (Heute/YTD).
-  const isYtd = true;
-  const titleEl = document.getElementById('benchTitle');
-  if(titleEl) titleEl.textContent = 'Benchmarks YTD';
-  const map = [
-    { ticker:'^IXIC', id:'bNasdaq' },
-    { ticker:'^GSPC', id:'bSp500' },
-    { ticker:'^GDAXI', id:'bDax' },
-    { ticker:'^HSI', id:'bHsi' },
-  ];
-  const values = [];
-  map.forEach(({ticker,id}) => {
+function renderBenchmarks() {
+  // Zeigt Heute UND YTD gleichzeitig (keine Umschaltung) — identische Kachel-Optik wie Folio.wax.
+  const setVal = (id, val, list) => {
     const el = document.getElementById(id);
-    if(!el) return;
-    const q = benchQuotes[ticker];
-    const val = isYtd ? q?.ytd : q?.today;
-    if(val == null || isNaN(val)){ el.textContent = '—'; el.className = 'bench-v'; }
-    else { values.push(val); el.textContent = fp(val); el.className = 'bench-v ' + (val>=0?'pos':'neg'); }
+    if (!el) return;
+    if (val == null || isNaN(val)) { el.textContent = '—'; el.className = 'bk-v'; return; }
+    if (list) list.push(val);
+    el.textContent = fp(val);
+    el.className = 'bk-v ' + (val>=0?'pos':'neg');
+  };
+  const todaysForAvg = [], ytdsForAvg = [];
+  BK_TICKERS.forEach(({t, unit, dec}) => {
+    const id = bkIdBase(t), d = bkData[t] || {};
+    const priceEl = document.getElementById('bkPrice'+id);
+    if (priceEl) priceEl.textContent = d.price!=null ? bkFmtLevel(d.price, unit, dec) : '—';
+    setVal('bkToday'+id, d.today, BK_AVG_OF.includes(t) ? todaysForAvg : null);
+    setVal('bkYtd'+id, d.ytd, BK_AVG_OF.includes(t) ? ytdsForAvg : null);
+    const hiEl = document.getElementById('bkHi'+id), loEl = document.getElementById('bkLo'+id);
+    if (hiEl) hiEl.textContent = 'Hoch ' + (d.high!=null ? bkFmtLevel(d.high, unit, dec) : '—');
+    if (loEl) loEl.textContent = 'Tief ' + (d.low!=null ? bkFmtLevel(d.low, unit, dec) : '—');
+    const potEl = document.getElementById('bkPot'+id), riskEl = document.getElementById('bkRisk'+id);
+    if (potEl) { if (d.price!=null && d.high!=null) { const up=d.high/d.price-1; potEl.textContent='Potential '+fp(up); potEl.className=up>=0?'pos':'neg'; } else potEl.textContent='Potential —'; }
+    if (riskEl) { if (d.price!=null && d.low!=null) { const dn=d.low/d.price-1; riskEl.textContent='Risiko '+fp(dn); riskEl.className=dn>=0?'pos':'neg'; } else riskEl.textContent='Risiko —'; }
   });
-  const mineEl = document.getElementById('bMine');
-  if(mineEl){
-    const mineVal = isYtd ? investPerf.ytd : investPerf.today;
-    if(mineVal == null || isNaN(mineVal)){ mineEl.textContent = '—'; mineEl.className = 'bench-v'; }
-    else { mineEl.textContent = fp(mineVal); mineEl.className = 'bench-v ' + (mineVal>=0?'pos':'neg'); }
-  }
-  const top4El = document.getElementById('bTop4');
-  if(top4El){
-    if(values.length){ const avg = values.reduce((s,v)=>s+v,0)/values.length; top4El.textContent = fp(avg); top4El.className = 'bench-v ' + (avg>=0?'pos':'neg'); }
-    else { top4El.textContent = '—'; top4El.className = 'bench-v'; }
-  }
+  const avg = arr => arr.length ? arr.reduce((s,v)=>s+v,0) / arr.length : null;
+  setVal('bTop4Today', avg(todaysForAvg));
+  setVal('bTop4Ytd', avg(ytdsForAvg));
+  const mineWertEl = document.getElementById('bMineWert');
+  if(mineWertEl) mineWertEl.textContent = depotTotalLive ? f(depotTotalLive,0)+' €' : '—';
+  setVal('bMineToday', investPerf.today);
+  setVal('bMineYtd', investPerf.ytd);
 }
 
 // Headlines-Teaser (Übersicht, ersetzt seit 2026-07-10 das alte Newsflash-Feature):
@@ -3764,6 +3888,7 @@ async function testSupabaseConnection(){
 }
 async function bootstrapApp(){
   applyTheme();
+  renderBkGrid(); // Kachel-Skelett sofort anzeigen, loadBenchmarks() befüllt die Werte weiter unten
   await loadState();
   try{ window.tzLastGood=clone(serializeState()); }catch(e){}
   render();
@@ -4007,6 +4132,7 @@ function renderKpis(activeRows, soldRows){
   const prevTotal=activeRows.reduce((s,r)=>s+r.prevValue,0);
   const dayPct=prevTotal?dayAbs/prevTotal:0;
   investPerf = { ytd: diffPct, today: dayPct }; // Benchmark-Zelle „Mein Depot"
+  depotTotalLive = total;
   const year=getCurrentYear();
   if(lastMarketUpdate) recordDailySnapshot(total, diff);
   const gainSeries=buildGainHistory();
@@ -4030,7 +4156,11 @@ function renderKpis(activeRows, soldRows){
   }
   neoTop.innerHTML=
    '<div class="dh">'
-   +'<div class="dh-top"><div class="dh-eyebrow">Mein Depot</div><div class="dh-yearpill">Börsenjahr '+year+'</div></div>'
+   +'<div class="dh-top"><div class="dh-eyebrow">Mein Depot</div><div class="mode-tools">'
+     +'<button id="heroThemeToggleBtn" class="mode-toggle" onclick="toggleTheme()" type="button" title="Farbwelt wechseln">Original</button>'
+     +'<button id="heroRefreshBtn" class="icon-btn refresh-btn" type="button" title="Kurse aktualisieren" aria-label="Kurse aktualisieren" onclick="refreshMarketData()">↻</button>'
+     +'<div class="dh-yearpill">Börsenjahr '+year+'</div>'
+   +'</div></div>'
    +'<div class="dh-hero">'
      +'<div class="dh-card dh-values">'
        +'<div class="dh-val-block top"><div class="dh-bigval dh-bigval-xl">'+f(total,0)+' €</div><div class="dh-biglabel">Depotwert aktuell</div></div>'
@@ -4237,9 +4367,11 @@ let soldSort='date';
 function toggleSoldSort(){ soldSort = soldSort==='date' ? 'absdesc' : (soldSort==='absdesc' ? 'absasc' : 'date'); render(); }
 // Drei Einzel-Toggles: zeigen jeweils den aktuellen Zustand (orange = Dark/Heute/Potential, schwarz = Original/YTD/aktuell)
 function updateModeButtons(){
-  const tb=document.getElementById('themeToggleBtn');
-  // Button zeigt immer das Ziel der Umschaltung, nicht den aktuellen Zustand
-  if(tb){ tb.textContent=currentTheme==='dark'?'Light':'Dark'; tb.classList.toggle('active', currentTheme==='dark'); }
+  // Button zeigt immer das Ziel der Umschaltung, nicht den aktuellen Zustand (wie bei Folio.wax)
+  ['themeToggleBtn','heroThemeToggleBtn'].forEach(id=>{
+    const tb=document.getElementById(id);
+    if(tb){ tb.textContent=currentTheme==='dark'?'Original':'Dark'; tb.classList.toggle('active', currentTheme==='dark'); }
+  });
   const pb=document.getElementById('perfToggleBtn');
   // Heute ist voreingestellt, deshalb bietet der Button YTD als Ziel an
   if(pb){ pb.textContent=perfMode==='today'?'YTD':'Heute'; pb.classList.toggle('active', perfMode==='today'); }
@@ -4388,6 +4520,143 @@ document.addEventListener('DOMContentLoaded', function(){
     perfBtn.textContent = 'YTD';
   }
 });
+</script>
+
+<!-- Anspieltipp-Player (1:1 aus Folio.wax übernommen) — Wiedergabe wird über localStorage geteilt,
+     damit ein auf Folio.invest oder in den Headlines gestarteter Song beim Wechseln zwischen
+     beiden Seiten einfach weiterläuft, statt neu zu starten. -->
+<script>
+(function(){
+  const HJ_SB_URL = 'https://hioaqcwqzeqcvvikollq.supabase.co';
+  const HJ_SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhpb2FxY3dxemVxY3Z2aWtvbGxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNTQ3MTgsImV4cCI6MjA4NzkzMDcxOH0.IvZ7YZwrhjNg8SwwO9rnXoiDwOVncY8iVcucmipmuFI';
+  const HJ_STATE_KEY = 'folioHitjourneyState';
+  let songs = [], idx = -1, audio = null, loaded = false;
+
+  function showSong(song){
+    const t = document.getElementById('anspielTitle');
+    const a = document.getElementById('anspielArtist');
+    if(t) t.textContent = song.title || '—';
+    if(a) a.textContent = song.artist || '';
+  }
+  function setPlayIcon(playing){
+    const btn = document.getElementById('anspielPlayBtn');
+    if(btn) btn.classList.toggle('is-playing', playing);
+  }
+  function saveState(){
+    if(idx < 0 || !songs.length) return;
+    try{
+      localStorage.setItem(HJ_STATE_KEY, JSON.stringify({
+        slug: songs[idx].slug,
+        currentTime: audio ? audio.currentTime : 0,
+        paused: audio ? audio.paused : true,
+        ts: Date.now()
+      }));
+    }catch(e){}
+  }
+  let __lastSave = 0;
+  function saveStateThrottled(){
+    const now = Date.now();
+    if(now - __lastSave > 3000){ __lastSave = now; saveState(); }
+  }
+  function ensureAudio(){
+    if(audio) return audio;
+    audio = new Audio();
+    audio.addEventListener('play', () => { setPlayIcon(true); saveState(); });
+    audio.addEventListener('pause', () => { setPlayIcon(false); saveState(); });
+    audio.addEventListener('timeupdate', saveStateThrottled);
+    // Nach Songende laeuft die Playlist automatisch in Zufallswiedergabe weiter.
+    audio.addEventListener('ended', () => playRandom());
+    return audio;
+  }
+  function playSong(song){
+    showSong(song);
+    const au = ensureAudio();
+    au.src = song.mp3_url; au.currentTime = 0;
+    loaded = true;
+    au.play().catch(()=>{});
+    saveState();
+  }
+  function togglePlayPause(){
+    if(!songs.length) return;
+    if(!loaded){ playSong(songs[idx]); return; }
+    const au = ensureAudio();
+    if(au.paused){ au.play().catch(()=>{}); } else { au.pause(); }
+  }
+  function playRandom(){
+    if(!songs.length) return;
+    if(songs.length > 1){
+      let n; do{ n = Math.floor(Math.random()*songs.length); }while(n===idx);
+      idx = n;
+    } else { idx = 0; }
+    playSong(songs[idx]);
+  }
+  window.addEventListener('pagehide', saveState);
+  window.addEventListener('beforeunload', saveState);
+
+  (async function init(){
+    try{
+      const headers = { apikey: HJ_SB_ANON, Authorization: 'Bearer ' + HJ_SB_ANON };
+      const tracksRes = await fetch(HJ_SB_URL + '/rest/v1/playlist_tracks?select=song_slug,position&playlist_slug=eq.songwriters-picks&order=position.asc', { headers });
+      if(!tracksRes.ok) return;
+      const tracks = await tracksRes.json();
+      if(!Array.isArray(tracks) || !tracks.length) return;
+      const orderedSlugs = tracks.map(t => t.song_slug);
+      const slugList = orderedSlugs.map(s=>'"'+s+'"').join(',');
+      const url = HJ_SB_URL + '/rest/v1/songs?select=slug,title,artist,mp3_url&slug=in.(' + slugList + ')';
+      const res = await fetch(url, { headers });
+      if(!res.ok) return;
+      const raw = await res.json();
+      if(!Array.isArray(raw) || !raw.length) return;
+      const bySlug = {};
+      raw.forEach(s => bySlug[s.slug] = s);
+      songs = orderedSlugs.map(slug => bySlug[slug]).filter(Boolean);
+      if(!songs.length) return;
+
+      // Laufende Wiedergabe von der anderen Seite (Home/Headlines) übernehmen,
+      // statt neu von vorn/zufällig zu starten.
+      let resumed = false;
+      try{
+        const raw2 = localStorage.getItem(HJ_STATE_KEY);
+        if(raw2){
+          const st = JSON.parse(raw2);
+          if(st && st.slug && Date.now() - (st.ts||0) < 6*3600*1000){
+            const foundIdx = songs.findIndex(s => s.slug === st.slug);
+            if(foundIdx !== -1){
+              idx = foundIdx;
+              showSong(songs[idx]);
+              const au = ensureAudio();
+              const resumeTime = st.currentTime || 0;
+              const wasPlaying = !st.paused;
+              au.src = songs[idx].mp3_url;
+              loaded = true;
+              au.addEventListener('loadedmetadata', function onMeta(){
+                au.currentTime = resumeTime;
+                au.removeEventListener('loadedmetadata', onMeta);
+                if(wasPlaying) au.play().catch(()=>{});
+              });
+              resumed = true;
+            }
+          }
+        }
+      }catch(e){}
+      if(!resumed){
+        idx = Math.floor(Math.random() * songs.length);
+        showSong(songs[idx]);
+      }
+
+      const playBtn = document.getElementById('anspielPlayBtn');
+      if(playBtn) playBtn.addEventListener('click', function(e){
+        e.preventDefault(); e.stopPropagation();
+        togglePlayPause();
+      });
+      const randomBtn = document.getElementById('anspielRandomBtn');
+      if(randomBtn) randomBtn.addEventListener('click', function(e){
+        e.preventDefault(); e.stopPropagation();
+        playRandom();
+      });
+    }catch(e){ /* Netzwerk — Titel bleibt leer */ }
+  })();
+})();
 </script>
 
 </body>
