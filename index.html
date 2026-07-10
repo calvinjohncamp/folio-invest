@@ -102,44 +102,18 @@ body.theme-original.page-pflege .pflege-modal{background:#fff}
 .bench-l{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px}
 .bench-v{font-size:18px;font-weight:700;color:var(--text)}
 .bench-v.pos{color:var(--success)}.bench-v.neg{color:var(--orange)}
-/* === Newsflash (Übersicht) === */
-:root{--entw-blue:#6FC2E0;--entw-tint:rgba(95,179,212,.30);--entw-tint-strong:rgba(95,179,212,.44);--entw-border:rgba(120,200,228,.45)}
-body.theme-original{--entw-blue:#2E7FA6;--entw-tint:rgba(46,127,166,.16);--entw-tint-strong:rgba(46,127,166,.26);--entw-border:rgba(46,127,166,.40)}
-.entw-wrap{margin-bottom:24px}
-.entw-tiles{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
-@media(max-width:860px){.entw-tiles{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:480px){.entw-tiles{grid-template-columns:1fr}}
-.entw-tile{position:relative;display:flex;align-items:center;min-height:74px;text-align:left;cursor:pointer;border:1px solid var(--entw-border);background:var(--entw-tint);border-radius:12px;padding:15px 32px 15px 17px;font-family:inherit;color:var(--text);transition:transform .15s,background .15s,box-shadow .15s}
-.entw-tile:hover{transform:translateY(-2px);background:var(--entw-tint-strong);box-shadow:inset 3px 0 0 var(--entw-blue),inset 0 3px 0 var(--entw-blue),0 8px 22px rgba(0,0,0,.18)}
-.entw-tile:focus-visible{outline:2px solid var(--entw-blue);outline-offset:3px}
-.entw-tile.active{background:var(--entw-tint-strong);box-shadow:inset 3px 0 0 var(--entw-blue),inset 0 3px 0 var(--entw-blue),0 8px 22px rgba(0,0,0,.18)}
-.entw-tile .et-ttl{font-size:18px;font-weight:700;line-height:1.2;letter-spacing:-.01em;color:var(--text)}
-.entw-tile .et-chev{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--entw-blue);font-size:12px;transition:transform .2s,opacity .15s;opacity:0}
-.entw-tile:hover .et-chev,.entw-tile.active .et-chev{opacity:.85}
-.entw-tile.active .et-chev{transform:translateY(-50%) rotate(180deg)}
-.entw-panel{margin-top:12px;border:1px solid var(--line-2);border-left:3px solid var(--entw-blue);background:var(--card);border-radius:12px;padding:16px 18px;box-shadow:0 6px 16px rgba(0,0,0,.10)}
-.entw-panel h4{font-size:18px;font-weight:700;color:var(--text);letter-spacing:-.01em;margin-bottom:10px}
-.entw-panel .ep-sum{font-size:13.5px;line-height:1.6;color:var(--text);font-weight:700;margin-bottom:14px}
-.entw-panel .ep-blabel{font-size:9px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
-.entw-panel ul{list-style:none;margin:0;padding:0}
-.entw-panel li{position:relative;font-size:12.5px;line-height:1.5;color:var(--text-soft);padding:4px 0 4px 16px}
-.entw-panel li::before{content:"";position:absolute;left:0;top:11px;width:6px;height:6px;border-radius:50%;background:var(--entw-blue)}
-.entw-panel .ep-bullet-link{color:inherit;text-decoration:none}
-.entw-panel .ep-bullet-link:hover{color:var(--entw-blue);text-decoration:underline}
-.entw-panel .ep-src-tag{color:var(--text-muted);font-weight:400}
-.entw-panel .ep-src{display:inline-block;margin-top:2px;font-size:11px;font-weight:600;color:var(--entw-blue);text-decoration:none}
-.entw-panel .ep-src:hover{text-decoration:underline}
-.entw-stand{font-size:10px;font-weight:600;letter-spacing:.04em;color:var(--entw-blue);text-transform:none}
-/* Headlines — Boulevard-Highlights oberhalb der Newsflash-Kacheln (6 Positionen, Pos. 6 = Sport) */
-.hot-wrap{margin-bottom:20px}
-.hot-title{font-size:18px;font-weight:700;line-height:1.2;letter-spacing:-.01em;color:var(--text);margin-bottom:12px}
-.hot-list{list-style:none;margin:0;padding:0}
-.hot-item{position:relative;padding:1px 0}
-.hot-item-btn{display:block;width:100%;text-align:left;background:none;border:none;cursor:pointer;font-family:inherit;position:relative;font-size:13.5px;line-height:1.55;font-weight:700;color:var(--text);padding:5px 4px 5px 18px;border-radius:6px;transition:background .15s}
-.hot-item-btn::before{content:"";position:absolute;left:0;top:11px;width:7px;height:7px;border-radius:50%;background:var(--entw-blue)}
-.hot-item-btn:hover{background:var(--entw-tint)}
-.hot-item-btn.active{background:var(--entw-tint-strong)}
-.hot-item-btn:focus-visible{outline:2px solid var(--entw-blue);outline-offset:2px}
+/* Headlines-Teaser: 1:1-Ausschnitt aus dem Masthead von Folio.wax Headlines (folio-wax.de/headlines.html),
+   bewusst immer in dessen Ivory/Navy/Orange-Optik statt im Invest-Theme. */
+.headlines-teaser{display:block;background:#F5F1E8;border:2.5px solid #C8632A;border-radius:14px;padding:22px 26px 16px;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s,border-color .15s;margin-bottom:24px;box-shadow:0 2px 10px rgba(200,99,42,.12)}
+.headlines-teaser:hover{transform:translateY(-2px);border-color:#A84E1E;box-shadow:0 10px 26px rgba(200,99,42,.28)}
+.headlines-teaser-name{text-align:center;font-family:Georgia,"Iowan Old Style","Times New Roman",Times,serif;font-weight:700;font-size:30px;letter-spacing:.01em;color:#14253F}
+.headlines-teaser-name .dot{color:#C8632A;padding:0 8px}
+.headlines-teaser-tag{text-align:center;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#6B6255;margin:4px 0 14px}
+.headlines-teaser-dateline{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #14253F;padding-top:8px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;font-size:11px;color:#6B6255}
+.headlines-teaser-dateline span:first-child{font-weight:700;color:#14253F}
+.headlines-teaser-dateline .mid{font-style:italic;font-family:Georgia,"Iowan Old Style","Times New Roman",Times,serif}
+.headlines-teaser-dateline span:last-child{font-weight:700;color:#C8632A}
+@media(max-width:600px){.headlines-teaser-dateline{flex-wrap:wrap;justify-content:center;text-align:center}.headlines-teaser-dateline .mid{order:3;flex:0 0 100%;margin-top:4px}}
 .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--card); border: 1px solid var(--line); border-radius:18px; margin-bottom: 24px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,.16); }
 .tw.detail-width{max-width:980px}
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -1351,9 +1325,16 @@ function resetPin(){
 </div>
 </div>
 <div class="hidden" id="overviewNewsSection">
-<div class="sec-t"><span class="sec-n">4 ·</span> Newsflash <span id="entwStand" class="entw-stand"></span></div>
-<div id="overviewHighlights" class="hot-wrap"></div>
-<div id="overviewEntwicklungen" class="entw-wrap"></div>
+<div class="sec-t"><span class="sec-n">4 ·</span> Headlines</div>
+<a class="headlines-teaser" href="https://folio-wax.de/headlines.html" target="_blank" rel="noopener" title="Zu Folio.wax Headlines">
+  <div class="headlines-teaser-name">FOLIO<span class="dot">·</span>WAX</div>
+  <div class="headlines-teaser-tag">Headlines</div>
+  <div class="headlines-teaser-dateline">
+    <span id="headlinesTeaserDate"></span>
+    <span class="mid">Sorgfältig kuratiert für den Aktienclub</span>
+    <span id="headlinesTeaserEdition"></span>
+  </div>
+</a>
 </div>
 <div class="hidden" id="soldSection">
 <div class="sec-t mode-row">
@@ -3492,152 +3473,25 @@ function renderBenchmarks(){
   }
 }
 
-// ===== Newsflash (Übersicht) — identisch zu Folio.wax, liest dieselbe Supabase-Tabelle `entwicklungen` =====
-const ENTW_THEMEN = [
-  { key:'politik',      no:'①', titel:'Politik' },
-  { key:'wirtschaft',   no:'②', titel:'Wirtschaft' },
-  { key:'gesellschaft', no:'③', titel:'Gesellschaft' },
-  { key:'finanzen',     no:'④', titel:'Finanzen' },
-  { key:'boerse',       no:'⑤', titel:'Börse & Unternehmen' },
-  { key:'tech',         no:'⑥', titel:'Tech & Digital' },
-  { key:'sport',        no:'⑦', titel:'Sport' },
-];
-const ENTW_SEED = {
-  politik:      { summary:'Teilweise Entspannung im Konflikt USA–Iran senkt die Angst vor Energie-Engpässen; Ukraine und die Rivalität USA–China bleiben. Die Welt bewegt sich Richtung multipolarer Ordnung mit dauerhaft höheren geopolitischen Risiken.', bullets:['Energiepreise bleiben ein struktureller Unsicherheitsfaktor.','Verteidigungsausgaben bleiben langfristig hoch.','Lieferketten werden weiter regionalisiert.'] },
-  wirtschaft:   { summary:'Erstmals wieder spürbar bessere Stimmung in der deutschen Wirtschaft — ifo und Unternehmenseinschätzungen deuten auf eine Bodenbildung. Von einem kräftigen Aufschwung kann aber noch keine Rede sein.', bullets:['Deutschland könnte den Tiefpunkt hinter sich haben.','Industrie und Export bleiben anfällig.','Infrastrukturprogramme beginnen langsam zu wirken.'] },
-  gesellschaft: { summary:'KI wird vom Technologie- zunehmend zum Gesellschaftsthema: massive Investitionen, zugleich wachsende Sorgen über Arbeitsplätze, Informationsqualität und Alltag. Studien zeigen Verunsicherung durch das Tempo des Wandels.', bullets:['Produktivität dürfte steigen.','Gewinner sind Unternehmen mit echten KI-Anwendungen.','Der Wettbewerb um Fachkräfte verschiebt sich erheblich.'] },
-  finanzen:     { summary:'Nach den Nahost-Turbulenzen richtet sich der Blick wieder auf Inflation und Zentralbanken. Sinkende Ölpreise entlasten, viele rechnen aber weiter mit restriktiver Geldpolitik. Liquidität bleibt kurzfristig der wichtigste Markttreiber.', bullets:['Anleiherenditen bleiben attraktiv.','Aktien reagieren wieder stärker auf Zinserwartungen.','Liquidität gewinnt gegenüber kurzfristigen Konjunkturdaten.'] },
-  boerse:       { summary:'Die wichtigste Börsengeschichte ist nicht ein neuer Rekord, sondern die kritischere Diskussion über die Bewertungen großer KI-Unternehmen. Bei Tech- und Raumfahrtwerten deutliche Rücksetzer, während KI-Investitionen auf Rekordniveau bleiben.', bullets:['Führen die enormen KI-Investitionen wirklich zu steigenden Gewinnen?','Welche Unternehmen entwickeln nachhaltige Wettbewerbsvorteile?','Wo entstehen Überbewertungen?'] },
-  tech:         { summary:'Digitalisierung und KI-Regulierung entwickeln sich zum eigenen Markttreiber: neue EU-Vorgaben zu Datenschutz und Plattformen treffen auf enorme Investitionen der großen Tech-Konzerne. Für Anleger und Verbraucher wächst die Bedeutung von Netzpolitik und Produktzyklen.', bullets:['Welche neuen Regulierungen betreffen Tech-Konzerne?','Wo entstehen neue KI-Produkte mit echtem Marktpotenzial?','Welche Datenschutz-/Sicherheitsthemen bewegen die Branche?'] },
-  sport:        { summary:'Weltsport und deutscher Sport im Überblick: Fußball (Bundesliga, Nationalmannschaft, internationale Wettbewerbe), Tennis und weitere Disziplinen. Im Fokus stehen die wichtigsten Ergebnisse, Turniere und Personalien der vergangenen Tage.', bullets:['Wie schlägt sich der deutsche Sport international?','Welche Spiele und Turniere prägen die Schlagzeilen?','Welche Transfers und Personalentscheidungen stehen an?'] },
-};
-let __entwData = null, __entwStand = null, __entwOpen = null, __entwHighlights = null, __hotOpen = null;
-// Headlines-Beispielinhalt (Fallback, bis der tägliche Worker `highlights` befüllt)
-// Positionen 1–5 = allgemeine Boulevard-Highlights, Position 6 = immer eine Sportmeldung.
-const HOT_SEED = [
-  { title:'Streaming-Hit bricht alle Rekorde und lässt eine Aktie durch die Decke gehen.', detail:'Beispielinhalt: Einordnung, welche Produktion betroffen ist, welche Kennzahlen den Rekord belegen und wie der Markt reagiert hat.' },
-  { title:'Promi-Hochzeit des Jahres: Stars geben sich überraschend das Ja-Wort.', detail:'Beispielinhalt: Wer geheiratet hat, wann und wo, und was Beobachter dazu sagen.' },
-  { title:'Neues KI-Gadget ausverkauft, noch bevor es im Laden steht.', detail:'Beispielinhalt: Um welches Produkt es geht, wie hoch die Nachfrage war und was Hersteller/Händler dazu mitteilen.' },
-  { title:'Wetter-Kapriolen legen halb Deutschland lahm.', detail:'Beispielinhalt: Welche Regionen betroffen sind, welche Folgen es gab (Verkehr, Schulen, Strom) und wie die Wetterdienste die Lage einordnen.' },
-  { title:'Überraschungs-Comeback: Star-Künstler kündigt Welttournee an.', detail:'Beispielinhalt: Wer auftritt, welche Städte und Termine geplant sind und wie groß der Andrang auf Tickets ist.' },
-  { title:'DFB-Team dreht Spiel in der Nachspielzeit — Stadion bebt.', detail:'Beispielinhalt: Hier steht der recherchierte Kurzbeitrag — was im Spiel passiert, wann die Tore fallen und wie die ersten Reaktionen ausfallen, basierend auf mehreren seriösen Quellen.' },
-];
-function entwEscape(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-// Quell-Link für eine Headline/einen Bullet-Punkt: echte Artikel-URL, sonst Google-Suche
-// nach dem Text (Link ist dadurch nie tot, auch bei altem Seed-/Cache-Inhalt ohne url).
-function entwLink(url, fallbackText){ return url || ('https://www.google.com/search?q='+encodeURIComponent(fallbackText||'')); }
-async function renderNewsflash(){
-  const mount = document.getElementById('overviewEntwicklungen');
-  if(!mount) return;
-  if(__entwData === null){
-    let usedSeed = true;
-    try{
-      const url = `${SUPABASE_URL}/rest/v1/entwicklungen?select=stand,themen,updated_at&order=stand.desc&limit=1`;
-      const r = await fetch(url, { headers: supabaseHeaders() });
-      if(r.ok){
-        const rows = await r.json();
-        const row = Array.isArray(rows) ? rows[0] : null;
-        let themen = row && row.themen;
-        if(typeof themen === 'string'){ try{ themen = JSON.parse(themen); }catch(e){ themen = null; } }
-        if(themen && typeof themen === 'object' && Object.keys(themen).length){
-          __entwData = themen; usedSeed = false;
-          try{
-            const datum = new Date(row.stand).toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'});
-            const uhrzeit = row.updated_at ? ', ' + new Date(row.updated_at).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) + ' Uhr' : '';
-            __entwStand = 'Stand ' + datum + uhrzeit;
-          }catch(e){ __entwStand = 'Stand ' + (row.stand||''); }
-        }
-      }
-    }catch(e){ /* offline / Tabelle fehlt → Seed */ }
-    // Highlights ("Heißer Scheiß") separat & tolerant laden — die Spalte existiert evtl. noch
-    // nicht (vor dem ALTER TABLE), das darf die Themen oben NICHT auf Seed zurückwerfen.
-    try{
-      const hr = await fetch(`${SUPABASE_URL}/rest/v1/entwicklungen?select=highlights&order=stand.desc&limit=1`, { headers: supabaseHeaders() });
-      if(hr.ok){
-        const hrows = await hr.json();
-        let hl = (Array.isArray(hrows) && hrows[0]) ? hrows[0].highlights : null;
-        if(typeof hl === 'string'){ try{ hl = JSON.parse(hl); }catch(e){ hl = null; } }
-        if(Array.isArray(hl) && hl.length){
-          __entwHighlights = hl.map(h => (typeof h === 'object' && h)
-            ? { title: String(h.title||''), detail: String(h.detail||''), url: String(h.url||''), src: String(h.src||'') }
-            : { title: String(h), detail: '', url: '', src: '' });
-        }
-      }
-    }catch(e){ /* Spalte fehlt / offline → Seed */ }
-    if(usedSeed){ __entwData = ENTW_SEED; __entwStand = 'Beispielinhalt — wird täglich automatisch aktualisiert'; }
-    if(!__entwHighlights){ __entwHighlights = HOT_SEED; }
-  }
-  const standEl = document.getElementById('entwStand');
-  if(standEl) standEl.textContent = __entwStand ? '· ' + __entwStand : '';
-  renderHot();
-  const tiles = ENTW_THEMEN.map(t=>{
-    const active = (__entwOpen === t.key) ? ' active' : '';
-    return `<button type="button" class="entw-tile${active}" onclick="entwToggle('${t.key}')" aria-expanded="${__entwOpen===t.key}">`
-      + `<span class="et-ttl">${entwEscape(t.titel)}</span>`
-      + `<span class="et-chev">▾</span></button>`;
-  }).join('');
-  mount.innerHTML = `<div class="entw-tiles">${tiles}</div><div id="entwPanelMount"></div>`;
-  renderEntwPanel();
+// Headlines-Teaser (Übersicht, ersetzt seit 2026-07-10 das alte Newsflash-Feature):
+// zeigt Datum/Ausgabennummer der externen Seite folio-wax.de/headlines.html live —
+// Nr. = Tag des Jahres, Suffix -1 ab 6 Uhr morgens, -2 ab 18 Uhr abends (bzw. -2 vor 6 Uhr = Vortag).
+function renderHeadlinesTeaser(){
+  const dateEl = document.getElementById('headlinesTeaserDate');
+  const edEl = document.getElementById('headlinesTeaserEdition');
+  if(!dateEl || !edEl) return;
+  const now = new Date();
+  dateEl.textContent = new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(now);
+  const hour = now.getHours();
+  const ref = new Date(now);
+  let suffix;
+  if(hour < 6){ ref.setDate(ref.getDate()-1); suffix = 2; }
+  else if(hour < 18){ suffix = 1; }
+  else { suffix = 2; }
+  const startOfYear = new Date(ref.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((ref - startOfYear) / 86400000);
+  edEl.textContent = 'Ausgabe Nr. ' + dayOfYear + '-' + suffix;
 }
-function renderHot(){
-  const hot = document.getElementById('overviewHighlights');
-  if(!hot) return;
-  const items = (Array.isArray(__entwHighlights) ? __entwHighlights : []).slice(0,6);
-  if(!items.length){ hot.innerHTML = ''; return; }
-  const list = items.map((h,i)=>{
-    const active = (__hotOpen === i) ? ' active' : '';
-    return `<li class="hot-item"><button type="button" class="hot-item-btn${active}" onclick="hotToggle(${i})" aria-expanded="${__hotOpen===i}">${entwEscape(h.title)}</button></li>`;
-  }).join('');
-  hot.innerHTML = `<div class="hot-title">HEADLINES</div><ul class="hot-list">${list}</ul><div id="hotPanelMount"></div>`;
-  renderHotPanel();
-}
-function renderHotPanel(){
-  const pm = document.getElementById('hotPanelMount');
-  if(!pm) return;
-  if(__hotOpen === null){ pm.innerHTML = ''; return; }
-  const items = Array.isArray(__entwHighlights) ? __entwHighlights : [];
-  const h = items[__hotOpen] || {};
-  const href = entwLink(h.url, h.title);
-  pm.innerHTML = `<div class="entw-panel"><h4>${entwEscape(h.title||'')}</h4>`
-    + (h.detail ? `<div class="ep-sum">${entwEscape(h.detail)}</div>` : `<div class="ep-sum">Noch kein Detailtext hinterlegt.</div>`)
-    + `<a class="ep-src" href="${entwEscape(href)}" target="_blank" rel="noopener noreferrer">Quelle${h.src?': '+entwEscape(h.src):''} →</a>`
-    + `</div>`;
-}
-window.hotToggle = function(i){
-  __hotOpen = (__hotOpen === i) ? null : i;
-  renderHot();
-};
-function renderEntwPanel(){
-  const pm = document.getElementById('entwPanelMount');
-  if(!pm) return;
-  if(!__entwOpen){ pm.innerHTML = ''; return; }
-  const meta = ENTW_THEMEN.find(t=>t.key===__entwOpen);
-  const d = (__entwData && __entwData[__entwOpen]) || {};
-  const bullets = Array.isArray(d.bullets) ? d.bullets : [];
-  const bulletHtml = bullets.map(b=>{
-    // Rückwärtskompatibel: alte gecachte Daten liefern ggf. reine Strings statt {text,url,src}.
-    const text = (typeof b === 'object' && b) ? String(b.text||'') : String(b||'');
-    const url  = (typeof b === 'object' && b) ? String(b.url ||'') : '';
-    const src  = (typeof b === 'object' && b) ? String(b.src ||'') : '';
-    const href = entwLink(url, text);
-    return `<li><a class="ep-bullet-link" href="${entwEscape(href)}" target="_blank" rel="noopener noreferrer">${entwEscape(text)}${src?` <span class="ep-src-tag">(${entwEscape(src)})</span>`:''}</a></li>`;
-  }).join('');
-  pm.innerHTML = `<div class="entw-panel">`
-    + `<h4>${entwEscape(meta?meta.titel:'')}</h4>`
-    + (d.summary ? `<div class="ep-sum">${entwEscape(d.summary)}</div>` : '')
-    + (bullets.length ? `<div class="ep-blabel">Bedeutung für Anleger</div><ul>${bulletHtml}</ul>` : '')
-    + `</div>`;
-}
-window.entwToggle = function(key){
-  __entwOpen = (__entwOpen === key) ? null : key;
-  document.querySelectorAll('#overviewEntwicklungen .entw-tile').forEach((el,i)=>{
-    const k = ENTW_THEMEN[i] && ENTW_THEMEN[i].key;
-    const on = (k === __entwOpen);
-    el.classList.toggle('active', on);
-    el.setAttribute('aria-expanded', on?'true':'false');
-  });
-  renderEntwPanel();
-};
 
 // ===== 12-Monats-Kursverlauf-Popup — ein Fenster für Depot/Watchlist/Verkauft =====
 // Nutzt dieselbe historicalData[wkn] (bereits in EUR), die loadKurse() für Depot,
@@ -3890,7 +3744,7 @@ function render(){
   if(benchSection) benchSection.classList.remove('hidden');
   if(newsSection) newsSection.classList.remove('hidden');
   renderBenchmarks();
-  renderNewsflash();
+  renderHeadlinesTeaser();
   renderStructure(activeRows);
 }
 async function testSupabaseConnection(){
