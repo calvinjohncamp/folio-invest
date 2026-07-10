@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Folio.invest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700&amp;family=DM+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700&amp;family=DM+Sans:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
 :root{
   --silver:#F6F6F6;
@@ -32,7 +32,7 @@
   --track-bg:#2B2B2B;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { background: radial-gradient(circle at top, rgba(223,87,53,.08), transparent 28%), var(--midnight); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; min-height: 100vh; }
+body { background: radial-gradient(circle at top, rgba(223,87,53,.08), transparent 28%), var(--midnight); color: var(--text); font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 13px; min-height: 100vh; }
 .hd { background: rgba(22,22,22,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); height: 78px; position: sticky; top: 0; z-index: 100; }
 .hd-inner{padding:0 24px;display:flex;align-items:center;height:78px;width:100%}
 .hd-logo { display:flex; align-items:center; cursor:pointer; }
@@ -505,7 +505,7 @@ body:not(.theme-original){
     radial-gradient(circle at top, rgba(255,122,0,.10), transparent 28%),
     linear-gradient(180deg, #16232A 0%, #121F26 100%);
   color:var(--text);
-  font-family:'DM Sans', sans-serif;
+  font-family:'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 body.theme-dark .hd,
@@ -835,45 +835,45 @@ body:not(.theme-original) #soldAnalysisToggleBtn.mode-toggle:hover,
 
 /* Folio.invest v6.12 – Hybrid Light Mode: dunkler Marken-Header, heller Arbeitsbereich */
 body.theme-original{
-  --brand-green:#075056;
-  --brand-orange:#FF7A00;
-  --brand-light:#E4EEF0;
-  --brand-dark:#16232A;
+  --brand-green:#0FA971;
+  --brand-orange:#F28B30;
+  --brand-light:#FAF8F4;
+  --brand-dark:#14253F;
 
-  --silver:#E4EEF0;
-  --orange:#FF7A00;
-  --midnight:#F3F7F8;
-  --grey:#EEF4F6;
-  --stone:#6C7D84;
+  --silver:#FAF8F4;
+  --orange:#F28B30;
+  --midnight:#F5F1E8;
+  --grey:#F1ECE0;
+  --stone:#6B7280;
 
   --card:#FFFFFF;
-  --card-2:#F7FAFB;
-  --line:#D9E1E3;
-  --line-2:#D9E1E3;
+  --card-2:#FAF8F4;
+  --line:#E7E2D8;
+  --line-2:#E7E2D8;
 
-  --text:#16232A;
-  --text-soft:#43545C;
-  --text-muted:#6C7D84;
-  --text-dim:#6C7D84;
+  --text:#1F2937;
+  --text-soft:#3F4A56;
+  --text-muted:#6B7280;
+  --text-dim:#6B7280;
 
-  --success:#1F8A5B;
-  --warning:#FF7A00;
-  --track-bg:#D9E1E3;
+  --success:#0FA971;
+  --warning:#F28B30;
+  --track-bg:#E7E2D8;
 
-  background:#F3F7F8 !important;
+  background:#F5F1E8 !important;
   background-image:none !important;
-  color:#16232A !important;
+  color:#1F2937 !important;
 }
 
-/* Header, Navigation und Statusbereich bleiben im Marken-Dark-Look */
+/* Header, Navigation und Statusbereich bleiben im Marken-Dark-Look (1:1 Folio.wax-Farbton #14253F) */
 body.theme-original .hd,
 body.theme-original .nav{
-  background:rgba(22,35,42,.94) !important;
+  background:rgba(20,37,63,.94) !important;
   border-bottom:1px solid rgba(228,238,240,.08) !important;
   backdrop-filter:blur(12px) !important;
 }
 body.theme-original .statusbar{
-  background:rgba(18,31,38,.94) !important;
+  background:rgba(20,37,63,.94) !important;
   border-bottom:1px solid rgba(228,238,240,.08) !important;
   color:#81939A !important;
 }
@@ -882,22 +882,28 @@ body.theme-original .hd-user{color:#AEBCC1 !important}
 body.theme-original .nav-btn{color:#AEBCC1 !important}
 body.theme-original .nav-btn.active{
   color:#E4EEF0 !important;
-  border-bottom-color:#FF7A00 !important;
+  border-bottom-color:#F28B30 !important;
 }
 body.theme-original .nav-btn:hover:not(.active){color:#E4EEF0 !important}
-body.theme-original .nav-btn-pflege{color:#FF7A00 !important}
-body.theme-original .sdot{background:#1F8A5B !important}
+body.theme-original .nav-btn-pflege{color:#F28B30 !important}
+body.theme-original .sdot{background:#0FA971 !important}
 
 /* Arbeitsbereich */
 body.theme-original .content{background:transparent !important}
 body.theme-original .sec-t{
-  color:#6C7D84 !important;
-  border-bottom-color:#D9E1E3 !important;
+  color:#6B7280 !important;
+  border-bottom-color:#E7E2D8 !important;
 }
-body.theme-original .sec-n{color:#FF7A00 !important}
+body.theme-original .sec-n{color:#F28B30 !important}
 body.theme-original .muted-note,
-body.theme-original .update-stamp{color:#6C7D84 !important}
-body.theme-original .update-stamp strong{color:#43545C !important}
+body.theme-original .update-stamp{color:#6B7280 !important}
+body.theme-original .update-stamp strong{color:#3F4A56 !important}
+/* Negativwerte bleiben rot-orange (Folio.wax --wax-negative), Akzentfarbe (Buttons/Nav) bleibt eigenständig orange. */
+body.theme-original .neg,
+body.theme-original .kpi-v.neg,
+body.theme-original .bk-v.neg,
+body.theme-original .bench-v.neg,
+body.theme-original .pos-col.neg{color:#F05A3A !important}
 
 /* Karten / Flächen */
 body.theme-original .kpi-grid,
@@ -909,7 +915,7 @@ body.theme-original .pflege-page .pflege-card,
 body.theme-original .pflege-table-wrap,
 body.theme-original .page-empty{
   background:#FFFFFF !important;
-  border:1px solid #D9E1E3 !important;
+  border:1px solid #E7E2D8 !important;
   border-radius:18px !important;
   box-shadow:0 6px 18px rgba(22,35,42,.06) !important;
 }
@@ -917,51 +923,51 @@ body.theme-original .kpi,
 body.theme-original .position-card.light,
 body.theme-original .position-card.dark{
   background:#FFFFFF !important;
-  color:#16232A !important;
+  color:#1F2937 !important;
 }
 body.theme-original .position-card:hover,
 body.theme-original tbody tr:hover,
 body.theme-original .pflege-master-table tr:hover{
-  background:rgba(255,122,0,.055) !important;
+  background:rgba(242,139,48,.055) !important;
 }
 
 /* Tabellen */
 body.theme-original thead th,
 body.theme-original .pflege-master-table th{
-  background:#E7EEF1 !important;
-  color:#6C7D84 !important;
-  border-bottom:1px solid #D9E1E3 !important;
+  background:#F1ECE0 !important;
+  color:#6B7280 !important;
+  border-bottom:1px solid #E7E2D8 !important;
 }
 body.theme-original tbody tr,
 body.theme-original .pflege-master-table td{
-  border-bottom:1px solid #D9E1E3 !important;
+  border-bottom:1px solid #E7E2D8 !important;
 }
 body.theme-original td,
-body.theme-original .pflege-master-table td{color:#43545C !important}
+body.theme-original .pflege-master-table td{color:#3F4A56 !important}
 body.theme-original td:first-child,
-body.theme-original .pflege-master-table .wkn-cell{color:#16232A !important}
+body.theme-original .pflege-master-table .wkn-cell{color:#1F2937 !important}
 body.theme-original .total-row td{
-  background:#EEF4F6 !important;
-  border-top:2px solid #D9E1E3 !important;
-  color:#16232A !important;
+  background:#F1ECE0 !important;
+  border-top:2px solid #E7E2D8 !important;
+  color:#1F2937 !important;
 }
 
 /* Positions-Header / Summary */
 body.theme-original .positions-header-card,
 body.theme-original.page-watchlist .positions-header-card,
 body.theme-original.page-transactions .positions-header-card{
-  background:#EEF4F6 !important;
-  border:1px solid #D9E1E3 !important;
+  background:#F1ECE0 !important;
+  border:1px solid #E7E2D8 !important;
   box-shadow:0 6px 18px rgba(22,35,42,.06) !important;
 }
 body.theme-original .positions-summary-card{
   background:#20323B !important;
-  border:1px solid #D9E1E3 !important;
+  border:1px solid #E7E2D8 !important;
   box-shadow:0 6px 18px rgba(22,35,42,.08) !important;
 }
 body.theme-original .pos-col,
 body.theme-original .positions-header-card .pos-col{
-  border-right-color:#D9E1E3 !important;
+  border-right-color:#E7E2D8 !important;
 }
 body.theme-original .pos-head-main,
 body.theme-original .pos-main-title,
@@ -971,7 +977,7 @@ body.theme-original .donut-center strong,
 body.theme-original .bar-value,
 body.theme-original .pos-value-top,
 body.theme-original .pos-share-top{
-  color:#16232A !important;
+  color:#1F2937 !important;
 }
 body.theme-original .pos-head-sub,
 body.theme-original .pos-main-meta,
@@ -985,10 +991,10 @@ body.theme-original .structure-title,
 body.theme-original .structure-sub,
 body.theme-original .bar-label,
 body.theme-original .legend-item{
-  color:#43545C !important;
+  color:#3F4A56 !important;
 }
 body.theme-original .text-muted,
-body.theme-original .dim{color:#6C7D84 !important}
+body.theme-original .dim{color:#6B7280 !important}
 body.theme-original .positions-summary-card .pos-value-top,
 body.theme-original .positions-summary-card .pos-value-sub,
 body.theme-original .positions-summary-card .pos-share-top,
@@ -1002,15 +1008,15 @@ body.theme-original .positions-summary-card .pos-muted{
 /* Markenfarben / Werte */
 body.theme-original .pos,
 body.theme-original .kpi-v.pos,
-body.theme-original .pos-col.pos{color:#1F8A5B !important}
+body.theme-original .pos-col.pos{color:#0FA971 !important}
 body.theme-original .neg,
 body.theme-original .kpi-v.neg,
 body.theme-original .pos-col.neg,
 body.theme-original .pos-pctnote.upside-high,
-body.theme-original .pos-pctnote.upside-very-high{color:#FF7A00 !important}
+body.theme-original .pos-pctnote.upside-very-high{color:#F28B30 !important}
 body.theme-original .pos-col.kgv-mid .pos-value-top{color:#9B7A10 !important}
-body.theme-original .pos-col.kgv-high .pos-value-top{color:#FF7A00 !important}
-body.theme-original .pos-col.kgv-low .pos-value-top{color:#1F8A5B !important}
+body.theme-original .pos-col.kgv-high .pos-value-top{color:#F28B30 !important}
+body.theme-original .pos-col.kgv-low .pos-value-top{color:#0FA971 !important}
 
 /* Buttons: normal weiß, aktiv dunkel, Hover orange */
 body.theme-original .mode-toggle,
@@ -1020,8 +1026,8 @@ body.theme-original .ticker-search-btn,
 body.theme-original .pflege-submit.secondary,
 body.theme-original .rollover-btn-cancel{
   background:#FFFFFF !important;
-  border-color:#D9E1E3 !important;
-  color:#43545C !important;
+  border-color:#E7E2D8 !important;
+  color:#3F4A56 !important;
   box-shadow:none !important;
 }
 body.theme-original .mode-toggle.active,
@@ -1043,76 +1049,76 @@ body.theme-original #soldAnalysisToggleBtn.mode-toggle:hover,
 body.theme-original .icon-btn:hover,
 body.theme-original .pflege-small-btn:hover,
 body.theme-original .ticker-search-btn:hover{
-  background:#FF7A00 !important;
-  border-color:#FF7A00 !important;
-  color:#16232A !important;
+  background:#F28B30 !important;
+  border-color:#F28B30 !important;
+  color:#1F2937 !important;
 }
 body.theme-original .pflege-submit,
 body.theme-original .pflege-small-btn.primary,
 body.theme-original .rollover-btn-confirm{
-  background:#FF7A00 !important;
-  border-color:#FF7A00 !important;
-  color:#16232A !important;
+  background:#F28B30 !important;
+  border-color:#F28B30 !important;
+  color:#1F2937 !important;
 }
 
 /* Pflege / Formulare */
 body.theme-original .pflege-hero{
-  background:linear-gradient(180deg,rgba(255,122,0,.055),rgba(7,80,86,.025)),#FFFFFF !important;
+  background:linear-gradient(180deg,rgba(242,139,48,.055),rgba(7,80,86,.025)),#FFFFFF !important;
 }
 body.theme-original .pflege-hero h2,
-body.theme-original .pflege-title{color:#16232A !important}
+body.theme-original .pflege-title{color:#1F2937 !important}
 body.theme-original .pflege-hero p,
 body.theme-original .pflege-note,
 body.theme-original .pflege-section-title,
 body.theme-original .jahres-card .jahres-text,
-body.theme-original .jahres-hint{color:#6C7D84 !important}
+body.theme-original .jahres-hint{color:#6B7280 !important}
 body.theme-original .pflege-form input,
 body.theme-original .pflege-form select,
 body.theme-original .pflege-master-table input,
 body.theme-original .pflege-master-table select{
   background:#FFFFFF !important;
-  border-color:#D9E1E3 !important;
-  color:#16232A !important;
+  border-color:#E7E2D8 !important;
+  color:#1F2937 !important;
 }
 body.theme-original .ticker-result-item{
   background:#FFFFFF !important;
-  border-color:#D9E1E3 !important;
+  border-color:#E7E2D8 !important;
 }
 body.theme-original .ticker-result-item:hover,
 body.theme-original .ticker-result-item.selected{
-  background:rgba(255,122,0,.055) !important;
-  border-color:#FF7A00 !important;
+  background:rgba(242,139,48,.055) !important;
+  border-color:#F28B30 !important;
 }
-body.theme-original .ticker-result-symbol{color:#16232A !important}
+body.theme-original .ticker-result-symbol{color:#1F2937 !important}
 body.theme-original .ticker-result-name,
-body.theme-original .ticker-result-meta{color:#6C7D84 !important}
+body.theme-original .ticker-result-meta{color:#6B7280 !important}
 
 /* Charts */
-body.theme-original .donut{background:#D9E1E3 !important}
+body.theme-original .donut{background:#E7E2D8 !important}
 body.theme-original .donut::after{
   background:#FFFFFF !important;
-  box-shadow:inset 0 0 0 1px #D9E1E3 !important;
+  box-shadow:inset 0 0 0 1px #E7E2D8 !important;
 }
-body.theme-original .bar-track{background:#D9E1E3 !important}
-body.theme-original .structure-footer{border-top-color:#D9E1E3 !important;color:#16232A !important}
+body.theme-original .bar-track{background:#E7E2D8 !important}
+body.theme-original .structure-footer{border-top-color:#E7E2D8 !important;color:#1F2937 !important}
 
 /* Dialoge */
 body.theme-original .rollover-modal{
   background:#FFFFFF !important;
-  border-color:#D9E1E3 !important;
+  border-color:#E7E2D8 !important;
   box-shadow:0 18px 48px rgba(22,35,42,.16) !important;
 }
-body.theme-original .rollover-modal h2{color:#16232A !important}
-body.theme-original .rollover-modal p{color:#43545C !important}
-body.theme-original .rollover-modal ul{color:#43545C !important}
+body.theme-original .rollover-modal h2{color:#1F2937 !important}
+body.theme-original .rollover-modal p{color:#3F4A56 !important}
+body.theme-original .rollover-modal ul{color:#3F4A56 !important}
 
 @media (max-width:720px){
-  body.theme-original .pos-col{border-right-color:#D9E1E3 !important}
-  body.theme-original .pos-col:nth-child(2){border-bottom-color:#D9E1E3 !important}
+  body.theme-original .pos-col{border-right-color:#E7E2D8 !important}
+  body.theme-original .pos-col:nth-child(2){border-bottom-color:#E7E2D8 !important}
   body.theme-original .pos-col:nth-child(5),
   body.theme-original .pos-col:nth-child(6),
   body.theme-original .pos-col:nth-child(7),
-  body.theme-original .pos-col:nth-child(8){border-top-color:#D9E1E3 !important}
+  body.theme-original .pos-col:nth-child(8){border-top-color:#E7E2D8 !important}
 }
 
 /* ===================== Feinschliff Tabellen/Karten (ehem. v6.14) ===================== */
@@ -1122,7 +1128,7 @@ thead th{font-size:10px!important;font-weight:800!important;letter-spacing:.12em
 .pos-col.pos .pos-value-top,.pos-col.neg .pos-value-top{font-size:22px!important;font-weight:800!important}
 .pos-col.pos .pos-value-sub,.pos-col.neg .pos-value-sub{font-size:12px!important;opacity:.9}
 .refresh-btn{font-size:18px!important}
-body.theme-original thead th{background:#E7EEF1!important}
+body.theme-original thead th{background:#F1ECE0!important}
 
 /* ===================== Visuelles Upgrade (ehem. v6.16) ===================== */
 
@@ -1158,7 +1164,7 @@ body.theme-original thead th{background:#E7EEF1!important}
 }
 .neo-row:hover{
   transform:translateY(-1px);
-  border-color:rgba(255,122,0,.28)!important;
+  border-color:rgba(242,139,48,.28)!important;
 }
 .neo-row:last-child{margin-bottom:0!important;border-bottom:1px solid var(--line)!important}
 .neo-row-h .sort-btn{font-size:11.5px!important;font-weight:800!important}
@@ -1169,8 +1175,8 @@ body.theme-original thead th{background:#E7EEF1!important}
 
 /* Original / Light Mode: etwas edler, weniger flach */
 body.theme-original{
-  --midnight:#EEF2F3!important;
-  background:#EEF2F3!important;
+  --midnight:#F5F1E8!important;
+  background:#F5F1E8!important;
 }
 body.theme-original .neo-card,
 body.theme-original .neo-kpi,
@@ -1190,16 +1196,16 @@ body.theme-original .neo-list{box-shadow:none!important}
 body.theme-original .neo-row,
 body.theme-original .neo-row-h{
   background:#FFFFFF!important;
-  border-color:#D9E1E3!important;
+  border-color:#E7E2D8!important;
 }
 body.theme-original .neo-row:hover{
   background:#FBFEFF!important;
-  border-color:rgba(255,122,0,.35)!important;
+  border-color:rgba(242,139,48,.35)!important;
 }
 body.theme-original thead th,
 body.theme-original .pflege-master-table th,
 body.theme-original .neo-row-h{
-  background:#E7EEF1!important;
+  background:#F1ECE0!important;
 }
 
 /* Tabellenköpfe etwas klarer */
@@ -1310,7 +1316,7 @@ function press(n){
  updateDots();
  if(input.length===6){
    if(input===correctPIN){
-     setTheme('dark');
+     setTheme('original');
      document.getElementById('pinOverlay').style.display='none';
    } else {
      input="";
@@ -1613,7 +1619,7 @@ const STORAGE_KEY = 'folio-invest-state-v3';
 const STORAGE_TS_KEY = 'folio-invest-state-v3-updated';
 const DEFAULT_META = { category:'Nicht zugeordnet', country:'Nicht zugeordnet', exchange:'–' };
 const THEME_STORAGE_KEY = 'folio-invest-theme';
-let currentTheme = 'dark';
+let currentTheme = 'original';
 const BASE_PORTFOLIO = [
   {wkn:'EWG2LD',name:'ETC-Zertifikat auf 100 GR Gold',lots:[{shares:2400,price:122.15,date:'2025-12-31'}],meta:{category:'Precious Metals',country:'Europa',exchange:'Xetra'}},
   {wkn:'A0F5UH',name:'iShares STOXX Global Select Div 100',lots:[{shares:3000,price:35.16,date:'2025-12-31'}],meta:{category:'Broad Market ETFs',country:'Global',exchange:'Xetra'}},
@@ -2632,7 +2638,7 @@ function goHome(){
   currentSort = { key: 'currentValue', dir: 'desc' };
   document.getElementById('pflegeBackdrop')?.classList.remove('open');
   document.getElementById('pflegeModal')?.classList.remove('open');
-  setTheme('dark');
+  setTheme('original');
   render();
   window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -4454,8 +4460,8 @@ body.page-overview #perfToggleBtn{display:none}
 .dh-val-block{display:flex;flex-direction:column}
 .dh-val-block.top{align-items:flex-start;text-align:left}
 .dh-val-block.bottom{align-items:flex-end;text-align:right;margin-top:18px}
-.dh-bigval{font-size:34px;font-weight:800;line-height:1.02;color:var(--text);letter-spacing:-.025em}
-.dh-bigval-xl{font-size:50px;letter-spacing:-.03em;line-height:1}
+.dh-bigval{font-size:32px;font-weight:600;line-height:1.02;color:var(--text);letter-spacing:-.025em}
+.dh-bigval-xl{font-size:32px;font-weight:600;letter-spacing:-.025em;line-height:1}
 .dh-biglabel{font-size:13.5px;color:var(--text-muted);margin-top:7px;letter-spacing:.01em}
 .dh-chartcard{padding:18px 22px;display:flex;flex-direction:column;min-height:240px}
 .dh-chart-head{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);letter-spacing:.04em;margin-bottom:6px}
@@ -4469,7 +4475,7 @@ body.page-overview #perfToggleBtn{display:none}
 .dh-kpi-pct.pos,.dh-kpi-abs.pos{color:var(--success)!important}
 .dh-kpi-pct.neg,.dh-kpi-abs.neg{color:var(--orange)!important}
 @media(max-width:900px){.dh-hero{grid-template-columns:1fr}.dh-kpis{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){.dh-kpis{grid-template-columns:1fr}.dh-bigval{font-size:30px}.dh-bigval-xl{font-size:38px}}
+@media(max-width:560px){.dh-kpis{grid-template-columns:1fr}.dh-bigval{font-size:28px}.dh-bigval-xl{font-size:28px}}
 /* Positionsliste im WAX-Kartenlook */
 .dc-group{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);padding:4px 4px 8px}
 .dc-head,.dc-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:8px}
