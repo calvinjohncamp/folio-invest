@@ -1352,14 +1352,24 @@ body.page-watchlist .positions-summary-card{display:none !important;}
 const correctPIN="337114";
 let input="";
 
+// Sitzung merken (gleiches Prinzip wie bei Folio.wax ueber sessionStorage):
+// einmal freigeschaltet bleibt es fuer den Rest dieser Tab-Sitzung freigeschaltet,
+// auch nach einem vollen Seiten-Reload (z.B. Navigation zu headlines.html und
+// zurueck) - erst ein neuer Tab/Browserstart verlangt den Code erneut.
+const INVEST_SESSION_KEY = 'invest_unlocked';
+function freischalten(){
+ try{ sessionStorage.setItem(INVEST_SESSION_KEY, '1'); }catch(e){}
+ setTheme('original');
+ document.getElementById('pinOverlay').style.display='none';
+}
+
 function press(n){
  if(input.length>=6) return;
  input+=n;
  updateDots();
  if(input.length===6){
    if(input===correctPIN){
-     setTheme('original');
-     document.getElementById('pinOverlay').style.display='none';
+     freischalten();
    } else {
      input="";
      updateDots();
@@ -1377,6 +1387,15 @@ function clearPin(){
 function resetPin(){
  input=""; updateDots();
 }
+
+// Erst nach vollstaendigem Laden pruefen (setTheme ist erst in einem spaeteren
+// <script>-Block definiert) - war diese Tab-Sitzung schon freigeschaltet, den
+// PIN-Bildschirm gar nicht erst zeigen.
+document.addEventListener('DOMContentLoaded', () => {
+  try{
+    if(sessionStorage.getItem(INVEST_SESSION_KEY) === '1') freischalten();
+  }catch(e){}
+});
 </script>
 
 <div class="hd">
